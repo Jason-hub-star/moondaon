@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
+import type { Group } from 'three'
+import { CaptureRig } from './capture/CaptureRig'
+import { useCapture, buildPrompt, CAPTURE_MS, type CameraPath } from './capture/capture'
+import { openAR } from './ar/openAR'
 import { OrbitControls } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
@@ -34,6 +38,33 @@ export default function App() {
   // 자동재생 — 자동중문 감속(ease-out) 연출 (R2-06: 모션만)
   const [playing, setPlaying] = useState(false)
   const raf = useRef(0)
+  const doorRef = useRef<Group>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const capActive = useCapture((s) => s.active)
+  const [compare, setCompare] = useState(false)
+  const [capMenu, setCapMenu] = useState(false)
+  const [capDone, setCapDone] = useState<{ url: string; prompt: string; base: string } | null>(null)
+  const record = (path: CameraPath) => {
+    const canvas = canvasRef.current
+    if (!canvas || capActive) return
+    setCapMenu(false); setPlaying(false)
+    const stream = canvas.captureStream(30)
+    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 })
+    const chunks: Blob[] = []
+    rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
+    rec.onerror = (e) => console.error('[capture] recorder error', e)
+    rec.onstop = () => {
+      const st = useConfig.getState()
+      const blob = new Blob(chunks, { type: 'video/webm' })
+      console.log('[capture] chunks', chunks.length, 'bytes', blob.size)
+      // 제스처 없는 자동 다운로드는 차단됨 — 완료 모달에서 버튼 클릭으로 저장
+      setCapDone({ url: URL.createObjectURL(blob), prompt: buildPrompt(st, path), base: `moondaon_${st.productId}_${path}` })
+    }
+    rec.start(500) // 500ms 타임슬라이스 — 조기 종료·프레임 유실 진단 겸 안전
+    useCapture.getState().begin(path)
+    setTimeout(() => { rec.stop(); useCapture.getState().end() }, CAPTURE_MS + 200)
+  }
   useEffect(() => {
     if (!playing) { cancelAnimationFrame(raf.current); return }
     const ease = (u: number) => 1 - Math.pow(1 - u, 3)
@@ -55,18 +86,40 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ flex: 1, position: 'relative' }}>
-        <Canvas shadows camera={{ position: [1.8, 1.5, 3.4], fov: 45 }}>
+        <Canvas shadows camera={{ position: [1.8, 1.5, 3.4], fov: 45 }}
+          gl={{ preserveDrawingBuffer: true }}
+          onCreated={({ gl }) => { canvasRef.current = gl.domElement }}>
           <color attach="background" args={['#f4f1ec']} />
           <ambientLight intensity={0.75} />
           <directionalLight position={[2.5, 2.6, 3]} intensity={1.6} castShadow />
           <directionalLight position={[-2, 2.5, -2]} intensity={0.5} />
           <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
           <Entryway doorW={wallW} doorH={spec.height} />
+          <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
             pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]), archProfile: (pattern as { archProfile?: number }).archProfile }}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
-          <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} />
+          </group>
+          <CaptureRig />
+          <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
         </Canvas>
+        <div style={{ position: 'absolute', top: 16, left: 24, display: 'flex', gap: 8 }}>
+          <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current) }}>실물 크기로 보기 (AR)</TopBtn>
+          <TopBtn onClick={() => { setCompare((c) => !c); if (!compare) useCapture.getState().firePreset() }}>
+            {compare ? '커스텀으로 돌아가기' : '제작사례와 비교'}</TopBtn>
+          <div style={{ position: 'relative' }}>
+            <TopBtn onClick={() => setCapMenu((m) => !m)}>{capActive ? '● 녹화 중…' : '캡처 (영상AI 레퍼런스)'}</TopBtn>
+            {capMenu && !capActive && (
+              <div style={{ position: 'absolute', top: 40, left: 0, background: '#fff', border: '1px solid #e6e1d8',
+                borderRadius: 10, padding: 8, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
+                {(['front', 'orbit', 'walk'] as CameraPath[]).map((p) => (
+                  <Chip key={p} active={false} onClick={() => record(p)}>
+                    {{ front: '정면 고정', orbit: '궤도 회전', walk: '워크스루' }[p]}</Chip>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         <div style={{ position: 'absolute', left: 24, right: 24, bottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 13 }}>닫힘</span>
           <input type="range" min={0} max={1} step={0.01} value={t} aria-label="개폐"
@@ -79,6 +132,33 @@ export default function App() {
           </button>
         </div>
       </div>
+      {capDone && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,15,.55)', zIndex: 40,
+          display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#faf9f7', borderRadius: 14, padding: 22, width: 560, maxWidth: '92vw' }}>
+            <h2 style={{ fontSize: 16, margin: '0 0 10px' }}>캡처 완료 — 영상AI 레퍼런스 페어</h2>
+            <video src={capDone.url} controls style={{ width: '100%', borderRadius: 8, background: '#000' }} />
+            <pre style={{ fontSize: 11, background: '#f1ede6', borderRadius: 8, padding: 10, whiteSpace: 'pre-wrap',
+              maxHeight: 150, overflowY: 'auto' }}>{capDone.prompt}</pre>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <Chip active={false} onClick={() => {
+                const a = document.createElement('a'); a.href = capDone.url; a.download = `${capDone.base}.webm`; a.click()
+              }}>영상 저장 (.webm)</Chip>
+              <Chip active={false} onClick={() => navigator.clipboard.writeText(capDone.prompt)}>프롬프트 복사</Chip>
+              <Chip active onClick={() => { URL.revokeObjectURL(capDone.url); setCapDone(null) }}>닫기</Chip>
+            </div>
+          </div>
+        </div>
+      )}
+      {compare ? (
+        <aside style={{ width: 380, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
+          <h1 style={{ fontSize: 16, margin: '0 0 6px' }}>제작사례 (리플렛 실사진)</h1>
+          <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 12px' }}>
+            왼쪽 3D를 같은 앵글(정면)에 두고 색·패턴을 맞춰보세요. 이 비교가 신규 패턴 등록의 검수 도구입니다 (R1-09).</p>
+          <img src="/cases/cases-3track.jpg" alt="3연동 제작사례" style={{ width: '100%', borderRadius: 8, marginBottom: 12 }} />
+          <img src="/cases/cases-louver.jpg" alt="간살 제작사례" style={{ width: '100%', borderRadius: 8 }} />
+        </aside>
+      ) : (
       <aside style={{ width: 300, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
         <h1 style={{ fontSize: 18, margin: '0 0 4px', letterSpacing: '0.06em' }}>문다온</h1>
         <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
@@ -138,7 +218,15 @@ export default function App() {
           이 구성 공유 링크 복사
         </button>
       </aside>
+      )}
     </div>
+  )
+}
+
+function TopBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} style={{ padding: '8px 14px', fontSize: 13, borderRadius: 18, cursor: 'pointer',
+      border: '1px solid #c5a572', background: 'rgba(255,255,255,.88)', color: '#2b2926' }}>{children}</button>
   )
 }
 

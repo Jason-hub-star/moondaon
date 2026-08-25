@@ -7,3 +7,4 @@
 - 2026-08-25 · AR: 아이폰 USDZExporter→Quick Look(유리는 opacity 스왑 후 export), 안드 model-viewer. 마커 AR 비채택
 - 2026-08-25 · 데이터 SSOT = md frontmatter 카드 → Zod → TS 생성물 (JSON 직접 import 비채택)
 - 2026-08-25 · v1 경계: 견적·로그인·발주 제외, URL 해시 공유 포함, 확장 가능 구조 유지
+- 2026-08-25 · 캡처 산출은 자동 다운로드가 아니라 완료 모달(제스처 저장) — Chrome 무제스처 다운로드 차단 실측
