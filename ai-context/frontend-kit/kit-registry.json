@@ -1,0 +1,1519 @@
+{
+  "schemaVersion": 1,
+  "name": "frontend-kit-registry",
+  "description": "Portable frontend feature catalog for AI-assisted page assembly.",
+  "sourceProjects": [
+    "WEFLOW"
+  ],
+  "usageContract": {
+    "inputPattern": "Use feature IDs such as K-HERO-01, K-FORM-01, K-CTA-01.",
+    "agentSteps": [
+      "Resolve selected IDs in this registry.",
+      "Check files, deps, whenToUse, avoidWhen, and promptSnippet.",
+      "Adapt to the target project's tokens, routing, and component boundaries.",
+      "Verify desktop 1440, tablet 768, and mobile 375."
+    ]
+  },
+  "items": [
+    {
+      "id": "K-BG-01",
+      "name": "BrandDepthBackground",
+      "category": "background",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "global CSS utility",
+      "livePreview": "/kit#background-layers",
+      "whenToUse": "Use when a marketing site feels flat and needs subtle premium depth without distracting from content.",
+      "avoidWhen": "Avoid heavy patterns, decorative orbs, or strong gradients on operational dashboards or text-heavy docs.",
+      "files": [
+        "app/globals.css"
+      ],
+      "deps": [
+        "css color-mix support",
+        "design tokens"
+      ],
+      "props": [
+        "brand-depth-section",
+        "body layered background"
+      ],
+      "promptSnippet": "Use K-BG-01 for subtle blueprint/grid depth. Implement with design tokens only, keep contrast readable, and verify 375/768/1440."
+    },
+    {
+      "id": "K-BG-02",
+      "name": "MeshGradientBackground",
+      "category": "background",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#background-layers",
+      "whenToUse": "Use for atmospheric hero or CTA sections where motion can reinforce brand energy.",
+      "avoidWhen": "Avoid when performance budget is tight, the section already has a strong image/video, or reduced-motion users need static clarity.",
+      "files": [
+        "components/motion/MeshGradientBackground.tsx"
+      ],
+      "deps": [
+        "framer-motion"
+      ],
+      "props": [
+        "colors?",
+        "speed?"
+      ],
+      "promptSnippet": "Use K-BG-02 behind hero/CTA content only. Add reduced-motion fallback and keep foreground text above AA contrast."
+    },
+    {
+      "id": "K-BG-03",
+      "name": "GridTextureOverlay",
+      "category": "background",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/BackgroundLayersSection.tsx",
+      "registryKey": "GridTextureOverlay@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#background-layers",
+      "whenToUse": "Review WEFLOW kit description: 밋밋한 배경 위에 얇은 선 무늬를 올립니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/GridTextureOverlay.tsx",
+        "apps/web/app/kit/sections/BackgroundLayersSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider GridTextureOverlay from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CARD-01",
+      "name": "PremiumCardSurface",
+      "category": "surface",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "global CSS utility",
+      "livePreview": "/kit#primitives",
+      "whenToUse": "Use on conversion-critical cards, forms, pricing cards, review cards, and comparison panels.",
+      "avoidWhen": "Avoid applying to every small nested element; reserve it for primary surfaces.",
+      "files": [
+        "app/globals.css",
+        "components/primitives/Card.tsx"
+      ],
+      "deps": [
+        "design tokens"
+      ],
+      "props": [
+        "premium-card",
+        "premium-card-hover"
+      ],
+      "promptSnippet": "Use K-CARD-01 on primary cards only. Do not nest premium cards inside premium cards. Keep border radius consistent with the design system."
+    },
+    {
+      "id": "K-CARD-02",
+      "name": "SpotlightCard",
+      "category": "surface",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use for feature grids where hover should clarify the active card.",
+      "avoidWhen": "Avoid on mobile-only dense lists or inside scroll containers where pointer tracking adds little value.",
+      "files": [
+        "components/motion/SpotlightCard.tsx"
+      ],
+      "deps": [
+        "framer-motion"
+      ],
+      "props": [
+        "glowColor?",
+        "glowSize?",
+        "glowOpacity?",
+        "children"
+      ],
+      "promptSnippet": "Use K-CARD-02 for feature/why cards. Ensure the glow follows pointer on desktop and degrades cleanly on touch devices."
+    },
+    {
+      "id": "K-CARD-03",
+      "name": "StickyStackCards",
+      "category": "surface",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionInteractionSignatures.tsx",
+      "registryKey": "StickyStackCards@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: children 각 카드가 sticky로 위에 쌓이며 뒤 카드는 scale + opacity로 페이드. 서비스·기능 소개 강조용. 홈 Services 4 단계 적용 중.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/StickyStackCards.tsx",
+        "apps/web/app/kit/sections/MotionInteractionSignatures.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider StickyStackCards from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CARD-04",
+      "name": "Card",
+      "category": "surface",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx",
+      "registryKey": "Card@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 콘텐츠를 감싸는 상자. 평면 · 그림자 · 유리(블러) 3가지.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Card.tsx",
+        "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Card from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CONTENT-01",
+      "name": "FaqAccordion",
+      "category": "content",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "livePreview": "/kit#primitives",
+      "whenToUse": "Use for common objections, service scope, pricing explanations, or policy clarifications.",
+      "avoidWhen": "Avoid hiding essential checkout/legal information only inside accordions.",
+      "files": [
+        "components/primitives/FaqAccordion.tsx",
+        "components/primitives/Accordion.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "items",
+        "defaultOpenId?"
+      ],
+      "promptSnippet": "Use K-CONTENT-01 for FAQ. Put the most conversion-relevant objections first and keep answers concrete."
+    },
+    {
+      "id": "K-CONTENT-02",
+      "name": "BlogListWithPagination",
+      "category": "content",
+      "status": "candidate",
+      "sourceProject": "generic",
+      "sourceImport": "to be implemented or adapted",
+      "livePreview": null,
+      "whenToUse": "Use for blogs, notices, resources, or changelogs with multiple pages.",
+      "avoidWhen": "Avoid if content count is under 6; a simple card grid is enough.",
+      "files": [
+        "components/content/BlogList.tsx",
+        "components/primitives/Pagination.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "items",
+        "page",
+        "pageSize",
+        "total"
+      ],
+      "promptSnippet": "Use K-CONTENT-02 for content indexes. Add category filters only when content volume justifies it."
+    },
+    {
+      "id": "K-CONTENT-03",
+      "name": "ProcessAccordion",
+      "category": "content",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "ProcessAccordion@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 제작 단계가 좌측 세로선 + 번호 dot으로 표시됩니다. 클릭하면 본문이 펼쳐져요.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ProcessAccordion.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ProcessAccordion from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CONTENT-04",
+      "name": "Accordion",
+      "category": "content",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "Accordion@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: FAQ·프로세스 항목을 접고 펼치는 부품. 모바일 가독성 ↑.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Accordion.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Accordion from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CONTENT-05",
+      "name": "Breadcrumbs",
+      "category": "content",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "Breadcrumbs@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 현재 위치 표시 네비. 상품/사례/블로그 상세에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Breadcrumbs.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Breadcrumbs from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CONTENT-06",
+      "name": "Pagination",
+      "category": "content",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "Pagination@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 목록 페이지 번호 네비. 블로그·사례 리스트에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Pagination.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Pagination from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-CTA-01",
+      "name": "CTASection",
+      "category": "cta",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "livePreview": "/kit#primitives",
+      "whenToUse": "Use at the end of pages or major sections to drive one primary action.",
+      "avoidWhen": "Avoid multiple competing CTAs in one section.",
+      "files": [
+        "components/primitives/CTASection.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "eyebrow?",
+        "title",
+        "sub?",
+        "primary?",
+        "secondary?"
+      ],
+      "promptSnippet": "Use K-CTA-01 as the closing conversion block. Keep one dominant CTA and one optional secondary CTA."
+    },
+    {
+      "id": "K-FILTER-01",
+      "name": "TagFilter",
+      "category": "filter",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "livePreview": "/kit#primitives",
+      "whenToUse": "Use for cases, reviews, blog posts, notices, or product lists with simple categories.",
+      "avoidWhen": "Avoid when filtering requires server-side search, facets, or large datasets.",
+      "files": [
+        "components/primitives/TagFilter.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "items",
+        "active",
+        "onChange",
+        "ariaLabel"
+      ],
+      "promptSnippet": "Use K-FILTER-01 for small category filters. Keep labels short and sync URL params if the page is shareable."
+    },
+    {
+      "id": "K-FILTER-02",
+      "name": "TagFilter",
+      "category": "filter",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "TagFilter@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 카테고리 칩 단일 선택 (controlled). 부모는 RSC 유지, 본 컴포넌트만 'use client'로 격리. cases · reviews · blog · notice · faq 5 라우트 공통.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/TagFilter.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider TagFilter from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FILTER-03",
+      "name": "Tag",
+      "category": "filter",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx",
+      "registryKey": "Tag@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 해시태그 모양 꼬리표. 필터·키워드에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Tag.tsx",
+        "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Tag from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FORM-01",
+      "name": "DiagnoseWizard",
+      "category": "form",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "app/contact/form",
+      "livePreview": "/contact/form",
+      "whenToUse": "Use for free diagnosis, onboarding, quote request, or structured inquiry flows.",
+      "avoidWhen": "Avoid if the user needs a one-field newsletter or ultra-short contact form.",
+      "files": [
+        "app/contact/form/*",
+        "app/api/diagnose/route.ts",
+        "content/pages/diagnose-form.json",
+        "lib/content/diagnose-form-schema.ts",
+        "lib/email/diagnose-email.ts",
+        "components/primitives/RadioGroup.tsx"
+      ],
+      "deps": [
+        "next",
+        "zod",
+        "resend"
+      ],
+      "props": [
+        "steps",
+        "questions",
+        "answers",
+        "otherTexts",
+        "contact field"
+      ],
+      "promptSnippet": "Use K-FORM-01 for a multi-step diagnosis form. Keep steps under 5-6, persist draft locally, validate per step, and provide a review screen."
+    },
+    {
+      "id": "K-FORM-02",
+      "name": "ReservationForm",
+      "category": "form",
+      "status": "candidate",
+      "sourceProject": "generic",
+      "sourceImport": "to be implemented",
+      "livePreview": null,
+      "whenToUse": "Use for appointment booking, consultation scheduling, or service reservation.",
+      "avoidWhen": "Avoid if availability rules, timezone handling, or calendar sync are not defined.",
+      "files": [
+        "components/forms/ReservationForm.tsx",
+        "components/primitives/TimeSlotGrid.tsx"
+      ],
+      "deps": [
+        "react-hook-form",
+        "zod"
+      ],
+      "props": [
+        "date",
+        "timeSlot",
+        "contact",
+        "consent"
+      ],
+      "promptSnippet": "Use K-FORM-02 for reservation. First define availability rules, blocked dates, timezone, and submission destination."
+    },
+    {
+      "id": "K-FORM-03",
+      "name": "RadioGroup",
+      "category": "form",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx",
+      "registryKey": "RadioGroup@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 단일 선택 라디오 그룹. role=radiogroup + 키보드 내장. 선택 시 카드에 accent ring 표시.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/RadioGroup.tsx",
+        "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider RadioGroup from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FORM-04",
+      "name": "Input",
+      "category": "form",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveFormCards.tsx",
+      "registryKey": "Input@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 텍스트 한 줄 입력칸. 라벨 · 도움말 · 에러 메시지 자동 처리.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Input.tsx",
+        "apps/web/app/kit/sections/PrimitiveFormCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Input from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FORM-05",
+      "name": "Textarea",
+      "category": "form",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveFormCards.tsx",
+      "registryKey": "Textarea@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 여러 줄 입력칸. 문의·후기에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Textarea.tsx",
+        "apps/web/app/kit/sections/PrimitiveFormCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Textarea from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FORM-06",
+      "name": "Select",
+      "category": "form",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveFormCards.tsx",
+      "registryKey": "Select@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 드롭다운 선택. 업종·예산·일정 등 옵션 선택.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Select.tsx",
+        "apps/web/app/kit/sections/PrimitiveFormCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Select from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-FORM-07",
+      "name": "Checkbox",
+      "category": "form",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveFormCards.tsx",
+      "registryKey": "Checkbox@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 동의·옵션 체크. 약관·마케팅 수신 등.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Checkbox.tsx",
+        "apps/web/app/kit/sections/PrimitiveFormCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Checkbox from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-GLOBAL-01",
+      "name": "SmoothScrollProvider",
+      "category": "global",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/GlobalsSection.tsx",
+      "registryKey": "SmoothScrollProvider@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#globals",
+      "whenToUse": "Review WEFLOW kit description: 페이지가 딱딱 끊기지 않고 부드럽게 내려가게 합니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/SmoothScrollProvider.tsx",
+        "apps/web/app/kit/sections/GlobalsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider SmoothScrollProvider from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-GLOBAL-02",
+      "name": "StickyHeaderWatcher",
+      "category": "global",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/layout/StickyHeaderWatcher",
+      "sourceKitFile": "apps/web/app/kit/sections/GlobalsSection.tsx",
+      "registryKey": "StickyHeaderWatcher@@@/components/layout/StickyHeaderWatcher",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#globals",
+      "whenToUse": "Review WEFLOW kit description: 아래로 내리면 상단 메뉴가 살짝 구분되어 보이게 합니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/layout/StickyHeaderWatcher.tsx",
+        "apps/web/app/kit/sections/GlobalsSection.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider StickyHeaderWatcher from @/components/layout/StickyHeaderWatcher. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-HERO-01",
+      "name": "HeroVideo",
+      "category": "hero",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use when the first viewport needs an immersive marketing hero with video or poster fallback.",
+      "avoidWhen": "Avoid on dense SaaS dashboards or pages where users need immediate tables/forms above the fold.",
+      "files": [
+        "components/motion/HeroVideo.tsx",
+        "public/hero/*"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [
+        "src?",
+        "poster?",
+        "children",
+        "visualOverlay?",
+        "mascot?",
+        "minHeight?"
+      ],
+      "promptSnippet": "Use K-HERO-01 for an immersive first viewport. Keep the product/offer visible immediately, include one primary CTA, and provide image/poster fallback."
+    },
+    {
+      "id": "K-HERO-02",
+      "name": "PageHero",
+      "category": "hero",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "livePreview": "/kit#primitives",
+      "whenToUse": "Use for internal marketing pages that need a consistent title, eyebrow, subcopy, and optional visual slot.",
+      "avoidWhen": "Avoid on pages where the first screen should show cards or filters immediately.",
+      "files": [
+        "components/primitives/PageHero.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "eyebrow?",
+        "title",
+        "sub?",
+        "align?",
+        "children?"
+      ],
+      "promptSnippet": "Use K-HERO-02 as the page opening. Keep headline literal, subcopy benefit-led, and ensure mobile text wraps cleanly."
+    },
+    {
+      "id": "K-HOOK-01",
+      "name": "useMouseParallax",
+      "category": "hook",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionHooksSection.tsx",
+      "registryKey": "useMouseParallax@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-hooks",
+      "whenToUse": "Review WEFLOW kit description: 마우스가 움직이면 카드가 아주 조금 따라오게 합니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/useMouseParallax.tsx",
+        "apps/web/app/kit/sections/MotionHooksSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider useMouseParallax from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-HOOK-02",
+      "name": "useScrollLinkedValue",
+      "category": "hook",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionHooksSection.tsx",
+      "registryKey": "useScrollLinkedValue@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-hooks",
+      "whenToUse": "Review WEFLOW kit description: 페이지를 내릴수록 이미지가 커지거나 글자가 사라지게 합니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/useScrollLinkedValue.tsx",
+        "apps/web/app/kit/sections/MotionHooksSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider useScrollLinkedValue from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-HOOK-03",
+      "name": "useLenisVelocity",
+      "category": "hook",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionHooksSection.tsx",
+      "registryKey": "useLenisVelocity@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-hooks",
+      "whenToUse": "Review WEFLOW kit description: 사용자가 지금 빠르게 내리는지 천천히 내리는지 알아냅니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/useLenisVelocity.tsx",
+        "apps/web/app/kit/sections/MotionHooksSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider useLenisVelocity from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-HOOK-04",
+      "name": "useCountupText",
+      "category": "hook",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionHooksSection.tsx",
+      "registryKey": "useCountupText@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-hooks",
+      "whenToUse": "Review WEFLOW kit description: 문자열 안 숫자만 부드럽게 보간 → 가격/메트릭 카운트업. ko-KR 콤마 자동, reduced-motion 시 즉시.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/useCountupText.tsx",
+        "apps/web/app/kit/sections/MotionHooksSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider useCountupText from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-LAYOUT-01",
+      "name": "SiteHeader",
+      "category": "layout",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/layout/SiteHeader",
+      "sourceKitFile": "apps/web/app/kit/sections/LayoutSection.tsx",
+      "registryKey": "SiteHeader@@@/components/layout/SiteHeader",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#layout",
+      "whenToUse": "Review WEFLOW kit description: 사이트 맨 위에 있는 로고와 메뉴 줄입니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/layout/SiteHeader.tsx",
+        "apps/web/app/kit/sections/LayoutSection.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider SiteHeader from @/components/layout/SiteHeader. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-LAYOUT-02",
+      "name": "SiteFooter",
+      "category": "layout",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/layout/SiteFooter",
+      "sourceKitFile": "apps/web/app/kit/sections/LayoutSection.tsx",
+      "registryKey": "SiteFooter@@@/components/layout/SiteFooter",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#layout",
+      "whenToUse": "Review WEFLOW kit description: 사이트 맨 아래에 있는 회사 정보와 링크 묶음입니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/layout/SiteFooter.tsx",
+        "apps/web/app/kit/sections/LayoutSection.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider SiteFooter from @/components/layout/SiteFooter. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-LAYOUT-03",
+      "name": "MobileDrawer",
+      "category": "layout",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/layout/MobileDrawer",
+      "sourceKitFile": "apps/web/app/kit/sections/LayoutSection.tsx",
+      "registryKey": "MobileDrawer@@@/components/layout/MobileDrawer",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#layout",
+      "whenToUse": "Review WEFLOW kit description: 모바일에서 메뉴 버튼을 누르면 옆에서 나오는 메뉴입니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/layout/MobileDrawer.tsx",
+        "apps/web/app/kit/sections/LayoutSection.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider MobileDrawer from @/components/layout/MobileDrawer. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-01",
+      "name": "DeveloperBuildBoard",
+      "category": "motion",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use when a service site needs to show human review, build steps, or quality checks.",
+      "avoidWhen": "Avoid if the product is fully automated and human review is not part of the offer.",
+      "files": [
+        "components/motion/DeveloperBuildBoard.tsx"
+      ],
+      "deps": [
+        "framer-motion"
+      ],
+      "props": [
+        "mascotSrc?",
+        "mascotAlt?"
+      ],
+      "promptSnippet": "Use K-MOTION-01 to show a trustworthy checklist. Align the step labels with the actual form or service process."
+    },
+    {
+      "id": "K-MOTION-02",
+      "name": "TiltCard",
+      "category": "motion",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use for portfolio, case, or service cards that benefit from tactile hover.",
+      "avoidWhen": "Avoid on dense lists, accessibility-critical controls, or mobile-only surfaces.",
+      "files": [
+        "components/motion/TiltCard.tsx"
+      ],
+      "deps": [
+        "framer-motion"
+      ],
+      "props": [
+        "maxTilt",
+        "children"
+      ],
+      "promptSnippet": "Use K-MOTION-02 on a small number of cards. Keep maxTilt restrained and ensure reduced-motion users get a static card."
+    },
+    {
+      "id": "K-MOTION-03",
+      "name": "ServiceSuccessStack",
+      "category": "motion",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use for service benefits or process cards that should build one after another.",
+      "avoidWhen": "Avoid inside short pages where sticky scroll would feel heavy.",
+      "files": [
+        "components/motion/ServiceSuccessStack.tsx"
+      ],
+      "deps": [
+        "framer-motion",
+        "next"
+      ],
+      "props": [
+        "items",
+        "linkHref?",
+        "linkLabel?",
+        "topOffset?",
+        "scaleStep?"
+      ],
+      "promptSnippet": "Use K-MOTION-03 for 3-5 service success cards. Keep each card concise and provide a static/mobile-friendly fallback."
+    },
+    {
+      "id": "K-MOTION-04",
+      "name": "PauseMarquee",
+      "category": "motion",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use for reviews, logos, tags, or social proof that should feel abundant.",
+      "avoidWhen": "Avoid for long paragraphs or critical information users must read once.",
+      "files": [
+        "components/motion/PauseMarquee.tsx",
+        "app/globals.css"
+      ],
+      "deps": [
+        "css animations"
+      ],
+      "props": [
+        "speed",
+        "children"
+      ],
+      "promptSnippet": "Use K-MOTION-04 for social proof. Duplicate content seamlessly, pause on hover, and respect prefers-reduced-motion."
+    },
+    {
+      "id": "K-MOTION-05",
+      "name": "StaggerReveal",
+      "category": "motion",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Use for one major heading per section when the copy itself should feel crafted.",
+      "avoidWhen": "Avoid on many paragraphs or frequently changing text.",
+      "files": [
+        "components/motion/StaggerReveal.tsx"
+      ],
+      "deps": [
+        "framer-motion"
+      ],
+      "props": [
+        "text",
+        "split?",
+        "stagger?",
+        "duration?"
+      ],
+      "promptSnippet": "Use K-MOTION-05 for a key headline. Prefer word split for Korean/English mixed text and verify line wrapping."
+    },
+    {
+      "id": "K-MOTION-06",
+      "name": "MagneticButton",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "MagneticButton@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: 마우스가 가까이 오면 버튼이 살짝 끌려옵니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/MagneticButton.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider MagneticButton from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-07",
+      "name": "MaskRevealText",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "MaskRevealText@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: 중요한 문장이 왼쪽에서 오른쪽으로 천천히 드러납니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/MaskRevealText.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider MaskRevealText from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-08",
+      "name": "FloatingPill",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "FloatingPill@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: 작은 태그 카드가 앞뒤 깊이감을 가지고 천천히 떠다닙니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/FloatingPill.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider FloatingPill from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-09",
+      "name": "ScrollCue",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "ScrollCue@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: 첫 화면 아래에 더 볼 내용이 있다는 표시를 보여줍니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ScrollCue.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ScrollCue from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-10",
+      "name": "ScrollProgressRail",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "ScrollProgressRail@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: lg+ 화면 좌측에 sticky 세로 진행 인디케이터. IntersectionObserver로 활성 섹션 자동 감지.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ScrollProgressRail.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ScrollProgressRail from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-11",
+      "name": "HorizontalPinScroll",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionInteractionSignatures.tsx",
+      "registryKey": "HorizontalPinScroll@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 섹션이 sticky로 화면에 고정되고 페이지 스크롤이 children의 가로 translateX로 변환됩니다. 사례 갤러리·작업 흐름 강조에 유용. 모바일은 정적 가로 스크롤로 폴백.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/HorizontalPinScroll.tsx",
+        "apps/web/app/kit/sections/MotionInteractionSignatures.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider HorizontalPinScroll from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-12",
+      "name": "MascotOrbit",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "MascotOrbit@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 마스코트가 위아래로 둥둥 떠다니며 미세하게 회전합니다. Why 섹션 · 빈 영역 보조 포인트.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/MascotOrbit.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider MascotOrbit from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-13",
+      "name": "FloatingParticles",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "FloatingParticles@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 키워드·태그 N개가 깊이감을 가지고 동시에 떠다닙니다. Hero 배경 보강에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/FloatingParticles.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider FloatingParticles from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-14",
+      "name": "ServiceRailDrag",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "ServiceRailDrag@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 카드들을 가로로 드래그하거나 스와이프해서 볼 수 있습니다. 모바일에 특히 좋아요.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ServiceRailDrag.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ServiceRailDrag from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-15",
+      "name": "ClientLogoMarquee",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionSignaturesSection.tsx",
+      "registryKey": "ClientLogoMarquee@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-signatures",
+      "whenToUse": "Review WEFLOW kit description: 파트너·클라이언트 로고가 좌우로 무한히 흐릅니다. 양옆은 페이드 처리.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ClientLogoMarquee.tsx",
+        "apps/web/app/kit/sections/MotionSignaturesSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ClientLogoMarquee from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-16",
+      "name": "SiteBuildStoryboard",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/PageSectionsSection.tsx",
+      "registryKey": "SiteBuildStoryboard@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#page-sections",
+      "whenToUse": "Review WEFLOW kit description: 사장님 시점 6단계를 WEFLOW 전용 Flow Loop 심볼로 보여주는 인터랙티브 섹션입니다. 데스크톱(lg+)은 600vh sticky 안에서 심볼이 화면 중앙으로 이동하고 단계별 텍스트가 교차 등장합니다. 모바일은 단계 카드 이동에 맞춰 -50°씩 회전합니다. 데이터는 home.json `process` SSOT에서 받습니다.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/SiteBuildStoryboard.tsx",
+        "apps/web/app/kit/sections/PageSectionsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider SiteBuildStoryboard from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-MOTION-17",
+      "name": "SectionBadge",
+      "category": "motion",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "SectionBadge@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 섹션 상단에 단독으로 떠 있는 정체성 pill — '리얼 후기', '신규 기능', '성공 사례' 같은 짧은 라벨. icon 슬롯 + accent/amber/muted tone + sm/md size. 출처: DogCoach TestimonialsSection 패턴.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/SectionBadge.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider SectionBadge from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-PRICE-01",
+      "name": "PricingQuickCompare",
+      "category": "pricing",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "app/pricing/PricingQuickCompare",
+      "livePreview": "/pricing",
+      "whenToUse": "Use when pricing has multiple plan groups and users need comparison by category.",
+      "avoidWhen": "Avoid when there are only one or two plans; simple cards are clearer.",
+      "files": [
+        "app/pricing/PricingQuickCompare.tsx",
+        "content/pages/pricing.json"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "plans",
+        "compareRows",
+        "selectedPlan"
+      ],
+      "promptSnippet": "Use K-PRICE-01 for complex pricing. Add category filters, comparison rows, and a selected-plan detail panel."
+    },
+    {
+      "id": "K-PRIM-01",
+      "name": "Badge",
+      "category": "primitive",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx",
+      "registryKey": "Badge@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 작은 라벨. 추천 · 신규 · 상태 표시 등에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Badge.tsx",
+        "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Badge from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-PRIM-02",
+      "name": "ComingSoonChip",
+      "category": "primitive",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx",
+      "registryKey": "ComingSoonChip@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 섹션·카드에 미래 기능을 암시하는 점멸 칩. 정적/onClick/href 3분기 자동.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/ComingSoonChip.tsx",
+        "apps/web/app/kit/sections/PrimitiveBasicsCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ComingSoonChip from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-PRIM-03",
+      "name": "Tabs",
+      "category": "primitive",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "Tabs@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 여러 패널을 탭으로 전환. 상품 상세·가격 플랜 비교에 사용.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Tabs.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Tabs from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-PRIM-04",
+      "name": "MetricBadge",
+      "category": "primitive",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "MetricBadge@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 결과 수치 강조 pill — 후기·사례 카드의 '문의 +180%', '예약 +220%' 같은 성과 지표. trend(up/down/neutral/accent)에 따라 화살표·색 자동 차등. 출처: DogCoach TestimonialsSection result badge 패턴.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/MetricBadge.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider MetricBadge from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-STICKY-01",
+      "name": "FloatingCTA",
+      "category": "cta",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/layout/FloatingCTA",
+      "livePreview": "/kit#layout",
+      "whenToUse": "Use when users may need contact, phone, chat, or free diagnosis from any scroll position.",
+      "avoidWhen": "Avoid if it overlaps cookie banners, chat widgets, or checkout controls.",
+      "files": [
+        "components/layout/FloatingCTA.tsx",
+        "lib/config.ts"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "config.social",
+        "config.company.phoneTel"
+      ],
+      "promptSnippet": "Use K-STICKY-01 for persistent contact. Verify it does not cover mobile content or fixed bottom navigation."
+    },
+    {
+      "id": "K-TRUST-01",
+      "name": "ReviewCardWithRating",
+      "category": "trust",
+      "status": "proven",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives and app/reviews",
+      "livePreview": "/reviews",
+      "whenToUse": "Use when the page needs testimonials, ratings, industry labels, or proof snippets.",
+      "avoidWhen": "Avoid fabricated metrics or testimonials; mark placeholders clearly.",
+      "files": [
+        "app/reviews/ReviewCard.tsx",
+        "components/primitives/RatingStars.tsx",
+        "components/primitives/Avatar.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [
+        "review",
+        "rating",
+        "industry",
+        "avatar"
+      ],
+      "promptSnippet": "Use K-TRUST-01 for proof. Keep claims honest, avoid fake performance metrics, and include industry/context labels."
+    },
+    {
+      "id": "K-TRUST-02",
+      "name": "ReviewModal",
+      "category": "trust",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/motion",
+      "sourceKitFile": "apps/web/app/kit/sections/MotionComponentsSection.tsx",
+      "registryKey": "ReviewModal@@@/components/motion",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#motion-components",
+      "whenToUse": "Review WEFLOW kit description: 후기 상세 모달. focus trap + ESC + 화살표 키 carousel + 별점 분포 mini chart.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/motion/ReviewModal.tsx",
+        "apps/web/app/kit/sections/MotionComponentsSection.tsx"
+      ],
+      "deps": [
+        "next",
+        "framer-motion"
+      ],
+      "props": [],
+      "promptSnippet": "Consider ReviewModal from @/components/motion. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-TRUST-03",
+      "name": "RatingStars",
+      "category": "trust",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "RatingStars@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 별점 표시 (읽기 전용). 후기·리뷰 평균에 사용. 소수점 부분 자동 채움.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/RatingStars.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider RatingStars from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-TRUST-04",
+      "name": "Avatar",
+      "category": "trust",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "Avatar@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 프로필 아이콘. 사진 없으면 이름 첫 글자로 자동 fallback.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/Avatar.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider Avatar from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    },
+    {
+      "id": "K-TRUST-05",
+      "name": "StatBar",
+      "category": "trust",
+      "status": "needs-curation",
+      "sourceProject": "WEFLOW",
+      "sourceImport": "@/components/primitives",
+      "sourceKitFile": "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx",
+      "registryKey": "StatBar@@@/components/primitives",
+      "generatedBy": "scripts/sync-frontend-kit-registry.mjs",
+      "livePreview": "/kit#kit",
+      "whenToUse": "Review WEFLOW kit description: 총·평균·만족도 등 통계 항목을 가로로 나열. 후기·랜딩 LP 상단에 사용. 강조 항목은 accent 색으로 자동 부각.",
+      "avoidWhen": "Needs curation. Confirm fit, accessibility, performance, and content truthfulness before reuse.",
+      "files": [
+        "components/primitives/StatBar.tsx",
+        "apps/web/app/kit/sections/PrimitiveDisclosureCards.tsx"
+      ],
+      "deps": [
+        "next"
+      ],
+      "props": [],
+      "promptSnippet": "Consider StatBar from @/components/primitives. Curate whenToUse/avoidWhen, then adapt it to the target project's tokens, routes, and responsive rules."
+    }
+  ]
+}

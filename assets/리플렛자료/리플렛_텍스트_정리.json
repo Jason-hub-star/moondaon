@@ -1,0 +1,516 @@
+{
+  "document": {
+    "title": "문다온 중문·도어 리플렛 텍스트 및 제품 맥락",
+    "source_directory": "리플렛자료",
+    "source_type": "HEIC 사진 5장",
+    "purpose": [
+      "브랜드·제품 맥락을 구조화하여 영상 생성 프롬프트에 재사용",
+      "Three.js에서 실제 문 열림·닫힘 동작을 검수할 기준 데이터로 사용",
+      "검수 통과 제품의 영상 레퍼런스 제작 및 생성 AI 입력 토큰 절감"
+    ],
+    "extraction_note": "사진의 선택 가능한 텍스트는 별도 텍스트 레이어가 아니라 macOS 기본 텍스트 인식 결과입니다. 아래 visible_text는 사진에 보이는 문구를 정리한 것이며, ocr_uncertainties에는 촬영 각도·작은 글씨 때문에 재확인이 필요한 항목을 기록했습니다."
+  },
+  "brand_context": {
+    "brand_name": "문다온",
+    "product_domain": "실내 중문, 슬라이딩 도어, 스윙 도어, 간살 도어, 자동 실내중문, ABS 도어",
+    "design_language": [
+      "초슬림 알루미늄 프레임",
+      "3연동·원슬라이딩·양방향 스윙·자동문·커스텀 제작",
+      "유리·MDF 랩핑시트·도장·아노다이징 조합",
+      "현관과 실내 공간을 분리하면서 개방감과 채광을 유지하는 디자인"
+    ],
+    "common_materials": [
+      "알루미늄",
+      "고밀도 MDF 9MM",
+      "랩핑시트",
+      "강화유리",
+      "인테리어시트",
+      "ABS"
+    ],
+    "common_motion_models": [
+      {
+        "id": "sliding_multi_panel",
+        "label": "3연동 슬라이딩",
+        "three_js_motion": "여러 패널이 같은 방향으로 순차 겹침 이동"
+      },
+      {
+        "id": "sliding_single_panel",
+        "label": "원슬라이딩",
+        "three_js_motion": "단일 패널 또는 복수 패널이 한쪽으로 평행 이동"
+      },
+      {
+        "id": "swing_bi_directional",
+        "label": "양방향 스윙",
+        "three_js_motion": "힌지를 중심으로 양쪽 방향 회전"
+      },
+      {
+        "id": "automatic_sliding",
+        "label": "자동 슬라이딩",
+        "three_js_motion": "센서·모터 작동 후 슬라이딩, 감속 정지"
+      },
+      {
+        "id": "custom_arch",
+        "label": "커스텀 아치도어",
+        "three_js_motion": "아치형 패널의 힌지 또는 슬라이딩 트랙 기반 동작"
+      },
+      {
+        "id": "louver_sliding",
+        "label": "간살 도어",
+        "three_js_motion": "세로 간살 패널이 슬라이딩 또는 스윙"
+      },
+      {
+        "id": "abs_hinged_or_hidden_hanger",
+        "label": "ABS 여닫이·히든 행거",
+        "three_js_motion": "여닫이 힌지 또는 상부 행거 레일 슬라이딩"
+      }
+    ]
+  },
+  "photos": [
+    {
+      "file": "IMG_6279.heic",
+      "pages": [
+        {
+          "side": "left",
+          "product_id": "slim_3track_19",
+          "product_category": "초슬림 3연동 도어",
+          "english_header": "SUPER SLIM 3-TRACK SLIDING DOOR",
+          "collection": "초슬림 1.9 / 3연동 (랩핑 / 도장)",
+          "opening_model": "sliding_multi_panel",
+          "visible_text": [
+            "초슬림 3연동 도어",
+            "COLLECTION",
+            "문틀 프레임 : 알루미늄 (117mm) / 랩핑문틀 (132/140mm)",
+            "하부 프레임 : 7MM / 20MM 운영",
+            "문짝 프레임 : 알루미늄 (랩핑시트) (19X32)",
+            "오픈형",
+            "고시형",
+            "디바이딩",
+            "구간별 사이즈",
+            "기본칫수(가로)",
+            "최대높이",
+            "A. 1200~1400",
+            "B. 1401~1600",
+            "C. 1601~1800",
+            "D. 1801~2000",
+            "H 2300",
+            "컬러색상",
+            "기본색상 (기본운영)",
+            "베이직색상 (주문제 시트)",
+            "우드색상 (주문제 시트)",
+            "현대보닥 / LG / 영림 / 예림 / KCC / 한샘 / 두원 / 삼성 인테리어시트 랩핑운영",
+            "적용 유리(글라스)",
+            "투명 (5mm)",
+            "브론즈 (5mm)",
+            "미스트 (5mm)",
+            "아쿠아 (5mm)",
+            "모루에스 (5mm)",
+            "투명 샤틴 (5mm)",
+            "브론즈 샤틴 (5mm)",
+            "투명티타늄망입 (5mm)",
+            "브론즈티타늄망입 (5mm)",
+            "철망입 (5mm)",
+            "상단의 10가지 유리를 포함한 유리로 제작 가능하며, 5T강화유리 옵션은 별도 (망입은 강화불가)",
+            "디자인 / 디바이딩",
+            "접착 및 분할 디자인 적용으로 다양한 연출이 가능합니다. 고시형 디자인 선택시 디자인 커스텀에 따라 MDF / 유리 시트 랩핑 작업"
+          ],
+          "visualization_constraints": {
+            "frame": "초슬림 알루미늄 프레임",
+            "panels": 3,
+            "motion": "3개 패널이 한쪽으로 순차 슬라이딩",
+            "variants": ["오픈형", "고시형", "디바이딩"]
+          },
+          "ocr_uncertainties": ["색상 견본의 개별 명칭은 사진 해상도상 일부 판독이 어려움"]
+        },
+        {
+          "side": "right",
+          "product_id": "bezel_3track_11",
+          "product_category": "베젤 3연동 도어",
+          "english_header": "SUPER SLIM 3-TRACK SLIDING DOOR",
+          "collection": "시그니처 베젤 1.1 / 3연동",
+          "opening_model": "sliding_multi_panel",
+          "visible_text": [
+            "베젤 3연동 도어",
+            "COLLECTION",
+            "개방감 넘치는 베젤 초슬림 3연동",
+            "문틀 프레임 : 알루미늄 (117mm)",
+            "문짝 프레임 : 알루미늄 (랩핑시트) (11X32)",
+            "색상선택",
+            "티파니 화이트 (분체/불소 도장)",
+            "블랙 (분체/불소 도장)",
+            "샴페인골드 (아노다이징)",
+            "재고 운영에 따라 랩핑시트 운영",
+            "색상유리 / 디바이딩 디자인 : 1.9바 옵션과 동일",
+            "부속 기타사양",
+            "기본손잡이 (접착식 손잡이)",
+            "고급형 (일체형 손잡이)",
+            "131 나무목문틀",
+            "목문틀 다대바 131X30",
+            "목문틀 다대바 캐처 모헤어 적용",
+            "목문틀 하부 132X20 / 가공 108X5",
+            "목문틀 픽스바 110X30 (기본운영)",
+            "100X24 (주문제)",
+            "3연동 제품 디자인 제작사례 (1.7바 / 1.9바 통일 사양)"
+          ],
+          "visualization_constraints": {
+            "frame": "베젤 초슬림 알루미늄 프레임",
+            "panels": 3,
+            "motion": "3개 패널이 한쪽으로 순차 슬라이딩",
+            "design_focus": "프레임을 얇게 보이게 하여 개방감 강조"
+          },
+          "ocr_uncertainties": ["제품명 하위 규격 표기는 촬영 각도에 따라 1.1 또는 1.9 일부가 흐림"]
+        }
+      ]
+    },
+    {
+      "file": "IMG_6280.heic",
+      "pages": [
+        {
+          "side": "left",
+          "product_id": "one_sliding",
+          "product_category": "원슬라이딩",
+          "english_header": "SUPER SLIM 1-TRACK SLIDING DOOR",
+          "collection": "원슬라이딩 1SD / 2SD / 4SD",
+          "opening_model": "sliding_single_panel",
+          "visible_text": [
+            "원슬라이딩",
+            "COLLECTION",
+            "상부 문틀 프레임 : 알루미늄 (43X45)",
+            "하부레일 : 알루미늄 (25X5)",
+            "문짝 프레임 세로 : 알루미늄 (19X32)",
+            "컬러색상",
+            "색상선택 (도장 기본운영)",
+            "티파니 화이트 (분체/불소 도장)",
+            "블랙 (분체/불소 도장)",
+            "샴페인골드 (아노다이징)",
+            "우드색상",
+            "디자인 / 디바이딩",
+            "오픈형",
+            "비대칭 분할3구",
+            "비대칭 분할4(2)",
+            "접착 및 분할디자인 적용으로 다양한 연출이 가능합니다. 고시형 디자인 선택시 디자인 커스텀에 따라 MDF / 유리 시트 랩핑 작업",
+            "적용 유리(글라스)",
+            "투명 (5mm)",
+            "브론즈 (5mm)",
+            "미스트 (5mm)",
+            "아쿠아 (5mm)",
+            "투명 샤틴 (5mm)",
+            "브론즈 샤틴 (5mm)",
+            "투명티타늄망입 (5mm)",
+            "브론즈티타늄망입 (5mm)",
+            "철망입 (5mm)",
+            "상단의 10가지 유리를 포함한 유리로 제작 가능하며, 5T강화유리 옵션은 별도 (망입은 강화불가)",
+            "원슬라이딩 적용 사례"
+          ],
+          "visualization_constraints": {
+            "panels": "1SD / 2SD / 4SD",
+            "motion": "패널이 한쪽으로 평행 이동하여 벽면 또는 고정 패널 뒤로 겹침",
+            "variants": ["오픈형", "비대칭 분할3구", "비대칭 분할4(2)"]
+          },
+          "ocr_uncertainties": ["하단 적용 사례 사진의 개별 캡션은 대부분 작아서 제외하고 제품군 맥락만 기록"]
+        },
+        {
+          "side": "right",
+          "product_id": "custom_arch",
+          "product_category": "커스텀 중문 / 아치도어",
+          "english_header": "커스텀 중문 디자인",
+          "collection": "3연동 커스텀 아치 컬렉션 (1.9 / 1.1)",
+          "opening_model": "custom_arch",
+          "visible_text": [
+            "커스텀 중문 / 아치도어",
+            "COLLECTION",
+            "3연동 커스텀 아치 컬렉션 (1.9 / 1.1)",
+            "아치1",
+            "아치2",
+            "아치3",
+            "아치4",
+            "아치5",
+            "아치6",
+            "아치7",
+            "원슬라이딩 / 커스텀 슬라이딩",
+            "상기 제품은 커스텀 제작으로 디자인 / 색상 상담이 필요한 제품입니다.",
+            "마감몰딩 : 고밀도MDF 9MM 문선 랩핑시트마감",
+            "프레임 재질 : 디자인 사양에 따라 도장 / 아노다이징 / 랩핑시트마감 제작"
+          ],
+          "visualization_constraints": {
+            "motion": "제품 설계에 따라 슬라이딩 또는 힌지 회전",
+            "arch_variants": ["아치1", "아치2", "아치3", "아치4", "아치5", "아치6", "아치7"],
+            "must_confirm_before_animation": ["패널 수", "트랙 또는 힌지 방식", "열림 방향", "아치 프로파일"]
+          },
+          "ocr_uncertainties": ["일부 아치 프로파일 캡션은 사진상 작아 도형 기준으로만 기록"]
+        }
+      ]
+    },
+    {
+      "file": "IMG_6281.heic",
+      "pages": [
+        {
+          "side": "left",
+          "product_id": "bezel_swing_bi",
+          "product_category": "베젤 스윙 도어(양방향)",
+          "english_header": "SUPER SLIM SWING DOOR",
+          "collection": "스마트 양방향 1.1 베젤양개도어",
+          "opening_model": "swing_bi_directional",
+          "visible_text": [
+            "베젤 스윙 도어(양방향)",
+            "COLLECTION",
+            "문틀 프레임 : 알루미늄 (65X20mm)",
+            "문짝 프레임 : 알루미늄 (11X32)",
+            "제작칫수",
+            "1S 양방향 600~950 / H 2350",
+            "2S 비대칭 1000~1300",
+            "2S 대칭 1200~1600 / H 2300",
+            "운영색상 (분체/불소 도장)",
+            "티파니화이트",
+            "컬러 운영 : 티파니화이트(불소) / 그외 전 색상 커스텀 랩핑 운영",
+            "스마트 스윙 양방향 디자인 / 디바이딩",
+            "아치옵션은 디자인에 따라 아크릴 및 고밀도MDF 랩핑시트 작업",
+            "양개도어 주문시 강화유리 기본적용",
+            "적용 유리(글라스)",
+            "브론즈 (5mm)",
+            "아쿠아 (5mm)",
+            "상단의 5가지 유리를 포함한 유리로 제작 가능하며, 5T강화유리 옵션은 별도 (망입은 강화불가)",
+            "기본운영 하드웨어",
+            "기본 재고운영 손잡이 : 라인반달 (300MM) / (900MM)",
+            "주문제 : 반달 손잡이 90X180X40 (타공 130)",
+            "색상 : 화이트 / 블랙 / 샴페인골드 / 세이지",
+            "기본 주문시 손잡이 선택 추가",
+            "베젤 스윙도어 적용 사례"
+          ],
+          "visualization_constraints": {
+            "panels": "1S 또는 2S",
+            "motion": "중앙 또는 측면 힌지를 기준으로 양방향 회전",
+            "variants": ["1S 양방향", "2S 비대칭", "2S 대칭"],
+            "safety_check": "문짝 회전 반경과 양쪽 간섭 여부 확인"
+          },
+          "ocr_uncertainties": ["규격 표의 일부 숫자는 1.1/1.7 표기가 촬영 각도에 따라 다르게 인식될 수 있음"]
+        },
+        {
+          "side": "right",
+          "product_id": "louver_door",
+          "product_category": "간살 도어",
+          "english_header": "커스텀 중문 디자인 간살 도어",
+          "collection": "3연동 / 원슬라이딩 간살도어",
+          "opening_model": "louver_sliding",
+          "visible_text": [
+            "간살 도어",
+            "COLLECTION",
+            "3연동 / 원슬라이딩 간살도어",
+            "오픈형",
+            "가로 1줄",
+            "가로 2줄",
+            "3연동 / 원슬 동일",
+            "구간별 사이즈",
+            "기본칫수(가로)",
+            "A. 1000~1100",
+            "B. 1201~1300",
+            "C. 1301~1400",
+            "D. 1401~1500",
+            "H 2300",
+            "간살 기본간격 30~40미리 사이",
+            "마감몰딩 : 고밀도MDF 9MM",
+            "문선 랩핑시트마감",
+            "간살 색상 디자인에 따라 : 알루미늄 / MDF랩핑시트 마감",
+            "컬러색상",
+            "우드색상 (주문제 시트)",
+            "현대보닥 / LG / 영림 / 예림 / KCC / 한샘 / 두원 / 삼성",
+            "인테리어시트 랩핑운영",
+            "적용 유리(글라스)",
+            "투명 샤틴 (5mm)",
+            "브론즈 (5mm)",
+            "아쿠아 (5mm)",
+            "상단의 5가지를 포함한 유리로 제작 가능하며, 5T강화유리 옵션은 별도 (망입은 강화불가)",
+            "간살 디자인 적용사례 (실제 현장사진)"
+          ],
+          "visualization_constraints": {
+            "motion": "간살 패널의 3연동 또는 원슬라이딩 이동",
+            "variants": ["오픈형", "가로 1줄", "가로 2줄"],
+            "spacing": "간살 기본 간격 약 30~40mm"
+          },
+          "ocr_uncertainties": ["유리 옵션은 사진상 5가지 목록 중 일부 명칭이 작아 대표 옵션 위주로 기록"]
+        }
+      ]
+    },
+    {
+      "file": "IMG_6283.heic",
+      "pages": [
+        {
+          "side": "left",
+          "product_id": "automatic_interior_door",
+          "product_category": "자동 실내중문(3연동/원슬라이딩)",
+          "english_header": "SUPER SLIM TRACK AUTOMATIC SLIDING DOOR",
+          "collection": "모던하고 스마트한 연동형 실내 자동문",
+          "opening_model": "automatic_sliding",
+          "visible_text": [
+            "자동 실내중문(3연동/원슬라이딩)",
+            "COLLECTION",
+            "3연동 문틀 프레임 : 알루미늄(140mm) - 하부 레일 : 7MM / 10MM / 무레일",
+            "원슬라이딩 상부프레임 : 알루미늄(80X110) - 하부레일 : 6MM / 무레일",
+            "문짝 프레임 : 19X32",
+            "자동중문 3연동 / 원슬라이딩 자동문 옵션사양(고급형)",
+            "대기전력 0.8W 이하의 에너지 절감형 전원공급장치 내장",
+            "복잡한 드라이브 벨트와 연관 부품들이 없어 간결한 작동 / 고장률 감소 / 신뢰성 향상",
+            "3연동(자동중문)",
+            "원슬라이딩(자동중문)",
+            "안전하다. 보다 조용하다. 더욱 간결하다. 그리고 탁월하다.",
+            "개폐 중 충격감지 이중보호 정지기능",
+            "감속기어 구동벨트 제거로 인한 작은소음",
+            "부품 일체화를 통한 AS 발생요인 감소 / 최신식 실내전용 자동문 시스템 적용 신개념 제품",
+            "Geariss BLDC 모터 채용",
+            "반영구적이며 감속기가 없어 소음 감소",
+            "모터와 콘트롤러, 구동롤러와 행거를 모두 합쳐",
+            "인터그레이티드화 시킨 TDU",
+            "3연동 자동중문 상세도",
+            "원슬라이딩 자동중문 상세도"
+          ],
+          "visualization_constraints": {
+            "motion": "센서 감지 후 3연동 또는 원슬라이딩 자동 개방, 감속 후 정지",
+            "variants": ["3연동 자동중문", "원슬라이딩 자동중문"],
+            "safety_features": ["충격감지 이중보호 정지", "저소음", "에너지 절감형 전원공급"]
+          },
+          "ocr_uncertainties": ["모터·TDU 제품명은 사진의 작은 캡션에서 일부 오인식 가능하므로 최종 영상 프롬프트에는 기능 중심으로 사용"]
+        },
+        {
+          "side": "right",
+          "product_id": "l_shape_3track",
+          "product_category": "3연동 기역자 중문",
+          "english_header": "SUPER SLIM 3-TRACK SLIDING DOOR",
+          "collection": "초슬림 1.9 / 3연동 기역자",
+          "opening_model": "sliding_multi_panel",
+          "visible_text": [
+            "3연동 기역자 중문",
+            "COLLECTION",
+            "초슬림 1.9",
+            "3연동 기역자",
+            "문틀 프레임 : 알루미늄 (117mm) / 랩핑문틀 (132/140mm)",
+            "문짝 프레임 : 알루미늄 (랩핑시트) (19X32)",
+            "하부 프레임 : 7MM / 20MM 운영"
+          ],
+          "visualization_constraints": {
+            "panels": 3,
+            "motion": "기역자 코너에 맞춘 3연동 슬라이딩",
+            "must_confirm_before_animation": ["두 벽면의 각도", "패널별 트랙 위치", "코너에서의 순차 겹침 방향"]
+          },
+          "ocr_uncertainties": ["오른쪽 페이지의 현장 사진 캡션은 대부분 작아 제품명·규격 중심으로 기록"]
+        }
+      ]
+    },
+    {
+      "file": "IMG_6284.heic",
+      "pages": [
+        {
+          "side": "left",
+          "product_id": "abs_collection_1",
+          "product_category": "ABS 도어 컬렉션 1",
+          "english_header": "ABS DOOR COLLECTION",
+          "opening_model": "abs_hinged_or_hidden_hanger",
+          "visible_text": [
+            "도어 컬렉션 1",
+            "COLLECTION",
+            "ABS 도어 컬러",
+            "기본 컬러 : 화이트 / 펄백색 / US201 / 화이트오크 / 그레이 / 다크그레이 / 체리 / 홍송 / 티크",
+            "본 카다록에 표현된 색상은 실제 제품과 다소 차이가 있을 수 있습니다.",
+            "ABS 도어 디자인",
+            "612, 01, 02, 05, 06, 08, 09",
+            "017, 030, 014, 07, 515, 611, 138",
+            "ABS 타공도어 디자인",
+            "410-7, 410-3상, 410-3, 420-2, 410-2, 410-1, 410-6",
+            "ABS 프렌치 양개 여닫이 도어",
+            "팔각 양개",
+            "사각 양개",
+            "원형 양개"
+          ],
+          "visualization_constraints": {
+            "motion": "프렌치 양개는 중앙 힌지 기준 양쪽 회전; 일반 ABS 도어는 단일 힌지 회전",
+            "variants": ["ABS 평판 도어", "ABS 타공도어", "ABS 프렌치 양개 여닫이 도어"],
+            "design_codes": ["612", "01", "02", "05", "06", "08", "09", "017", "030", "014", "07", "515", "611", "138", "410-7", "410-3상", "410-3", "420-2", "410-2", "410-1", "410-6"]
+          },
+          "ocr_uncertainties": ["일부 ABS 디자인 번호는 견본 하단의 작은 숫자 기준으로 정리했으며, 영상 프롬프트에서는 코드보다 디자인 실루엣을 우선 사용"]
+        },
+        {
+          "side": "right",
+          "product_id": "abs_collection_2",
+          "product_category": "ABS 도어 컬렉션 2",
+          "english_header": "ABS DOOR COLLECTION",
+          "opening_model": "abs_hinged_or_hidden_hanger",
+          "visible_text": [
+            "도어 컬렉션 2",
+            "COLLECTION",
+            "히든 행거",
+            "개폐에 필요한 레일이 도어 뒷쪽에 설치되어 외부로 노출되지 않아 심플한 인테리어에 제격입니다.",
+            "제품 특성상 방음이 필요한 공간보다는 공간 분리를 위한 용도",
+            "도어를 고정할 수 있는 콘크리트 벽체나 보강된 벽체 설치를 권장",
+            "행거 철물은 세트 판매만 가능하며, 현장 상황에 맞춰 재단 사용",
+            "양방향 댐퍼 적용 시 도어 최소 사이즈 : 750mm",
+            "애견 펫 도어",
+            "반려동물을 위한 전용도어 펫도어 - 닫힌 도어에서도 자유롭게 이동이 가능하며, 감금 사고를 방지할 수 있습니다.",
+            "애견 크기에 따라 제작시공이 불가할 수 있습니다.",
+            "냉난방 에너지 절약",
+            "공간 분리가 되어 냉난방 에너지 효율을 높임",
+            "양방향 출입 가능 도어",
+            "고정자석을 부착해 문이 안정적으로 열리고 닫힘",
+            "소음차단",
+            "모헤어 브러시가 문 틈새를 막아 소음을 최소화",
+            "끼임&감금 사고 방지",
+            "반려동물이 감금되는 사고를 방지",
+            "타공 / 펫도어",
+            "ABS 발포 문틀 사이즈",
+            "문틀 110mm / 130mm / 140mm / 155mm",
+            "문틀 175mm / 195mm / 210mm / 230mm",
+            "발포 가스켓",
+            "Door Frame 110T / 130T / 140T / 155T / 175T / 195T / 210T / 230T",
+            "백색 / 검정색 / 황토색"
+          ],
+          "visualization_constraints": {
+            "hidden_hanger": "상부 행거 레일을 도어 뒤에 숨긴 슬라이딩",
+            "pet_door": "하부 또는 도어 패널에 반려동물 출입구가 있는 변형",
+            "safety_features": ["양방향 댐퍼", "고정자석", "모헤어 브러시", "끼임·감금 사고 방지"]
+          },
+          "ocr_uncertainties": ["오른쪽 페이지의 하드웨어 이미지 옆 일부 짧은 라벨은 작아 기능 설명 위주로 기록"]
+        }
+      ]
+    }
+  ],
+  "three_js_validation_schema": {
+    "required_fields_per_model": [
+      "opening_model",
+      "panel_count_or_variant",
+      "frame_material",
+      "track_or_hinge_type",
+      "opening_direction",
+      "clearance_and_collision_rules",
+      "closed_state_reference",
+      "open_state_reference"
+    ],
+    "validation_checks": [
+      "문짝이 프레임과 간섭하지 않는가",
+      "슬라이딩 패널의 이동 방향과 순서가 제품 설명과 일치하는가",
+      "스윙 도어의 회전축·회전 반경이 실제 구조와 일치하는가",
+      "3연동 패널이 트랙을 벗어나거나 서로 관통하지 않는가",
+      "기역자·아치형 구조에서 코너와 벽체 충돌이 없는가",
+      "자동문의 센서·감속·정지 동작이 자연스러운가",
+      "ABS 히든 행거의 레일이 외부에 노출되지 않는가"
+    ]
+  },
+  "video_prompt_template": {
+    "required_context": [
+      "brand_name",
+      "product_category",
+      "opening_model",
+      "panel_count_or_variant",
+      "frame_and_surface_material",
+      "glass_or_panel_design",
+      "closed_to_open_motion",
+      "camera_angle",
+      "realistic_clearance_and_collision_behavior",
+      "negative_constraints"
+    ],
+    "negative_constraints": [
+      "문짝이 벽을 관통하지 않음",
+      "패널 수와 트랙 수를 임의로 바꾸지 않음",
+      "힌지 스윙 도어를 슬라이딩처럼 움직이지 않음",
+      "프레임이 휘거나 유리가 녹지 않음",
+      "손잡이·레일·간살 위치가 프레임과 분리되지 않음",
+      "제품에 없는 장식과 로고를 추가하지 않음"
+    ]
+  }
+}

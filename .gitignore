@@ -1,0 +1,79 @@
+# __PROJECT_NAME__ — .gitignore
+#
+# 이 파일은 템플릿이 기본 제공하는 "유출 방어선"이다. 2026-07-25 실제 사고 2건에서 역산했다:
+#   · dogscannar: `evidence/*.glb` 패턴이 최상위만 매칭해 하위폴더 GLB·npz가 새어나가 979MB 커밋 직전
+#   · Vtube:      experiments 규칙 7개가 실제 산출물 경로를 빗나가 .git 1.2GB, untracked 372MB
+# 교훈 3가지를 규칙으로 굳혔다:
+#   1) 확장자 패턴은 반드시 `**` 재귀로 쓴다. `dir/*.ext` 는 하위폴더를 못 잡는다.
+#   2) 산출물 디렉터리는 통째로 제외하고, 남길 텍스트만 `!` 화이트리스트로 되살린다.
+#   3) 판정 수치는 문서(SSOT)에 남기고 바이너리는 git 밖에 둔다. 재생성 가능하면 커밋하지 않는다.
+
+# ── OS · 편집기 ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# ── 의존성 · 빌드 ─────────────────────────────────────────────────────────
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+coverage/
+htmlcov/
+.next/
+.turbo/
+tmp/
+
+# ── 비밀 (커밋되면 되돌릴 수 없다) ────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.*
+
+# ── 대용량 바이너리 — 확장자는 항상 `**` 재귀로 ───────────────────────────
+**/*.glb
+**/*.gltf
+**/*.fbx
+**/*.usdz
+**/*.blend
+**/*.blend[0-9]*
+**/*.psd
+**/*.npz
+**/*.npy
+**/*.ckpt
+**/*.safetensors
+**/*.pth
+**/*.onnx
+**/*.mp4
+**/*.mov
+**/*.zip
+**/*.tar.gz
+
+# ── 실험·산출물 디렉터리: 통째 제외 후 텍스트만 되살리기 ──────────────────
+# 새 산출물 폴더가 생겨도 자동으로 막히는 게 핵심. 확장자 열거는 반드시 새어나간다.
+experiments/*/
+outputs/
+runs/
+runs_archive/
+evidence/*
+!evidence/.gitkeep
+!evidence/*.md
+!evidence/*.json
+# 실험 폴더의 판정 문서만 예외로 추적 (수치·결론은 git 안에 남긴다)
+!experiments/*/README.md
+!experiments/*/RESULT.md
+!experiments/**/*.md
+
+# ── 에이전트 세션 스크래치 (SSOT 아님) ────────────────────────────────────
+docs/status/SCOUT.md
+docs/status/SCOUT-LOG.md
+.playwright-mcp/
+.claude/local/
