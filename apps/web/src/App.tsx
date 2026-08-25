@@ -10,12 +10,13 @@ import {
 } from './generated/cards'
 
 /** P1~P2 노출 제품 (이후 페이즈에서 카드 phase로 자동 확장) */
-const VISIBLE_PHASES = ['P1', 'P2', 'P3', 'P4']
+const VISIBLE_PHASES = ['P1', 'P2', 'P3', 'P4', 'P5']
 
 const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['category'] }[] = [
   { label: '기본색상 (기본운영)', category: 'basic-op' },
   { label: '베이직색상 (주문제 시트)', category: 'basic-sheet' },
   { label: '우드색상 (주문제 시트)', category: 'wood-sheet' },
+  { label: 'ABS 도어 컬러', category: 'abs' },
 ]
 
 export default function App() {
@@ -24,6 +25,12 @@ export default function App() {
   const pattern = PATTERNS[patternId]
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
+  const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
+  const isArch = productId === 'custom-arch'
+  const colorGroups = COLOR_GROUPS.filter((g) => (isAbs ? g.category === 'abs' : g.category !== 'abs'))
+  const archOf = (id: PatternId) => (PATTERNS[id] as { archProfile?: number }).archProfile
+  const patternIds = (Object.keys(PATTERNS) as PatternId[]).filter((id) =>
+    isArch ? archOf(id) != null || id === 'open' : archOf(id) == null)
   // 자동재생 — 자동중문 감속(ease-out) 연출 (R2-06: 모션만)
   const [playing, setPlaying] = useState(false)
   const raf = useRef(0)
@@ -56,7 +63,7 @@ export default function App() {
           <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
           <Entryway doorW={wallW} doorH={spec.height} />
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
-            pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]) }}
+            pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]), archProfile: (pattern as { archProfile?: number }).archProfile }}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} />
         </Canvas>
@@ -77,10 +84,19 @@ export default function App() {
         <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
         <Section title="제품">
           {(Object.keys(PRODUCTS) as ProductId[]).filter((id) => VISIBLE_PHASES.includes(PRODUCTS[id].phase)).map((id) => (
-            <Chip key={id} active={productId === id} onClick={() => set({ productId: id })}>{PRODUCTS[id].name}</Chip>
+            <Chip key={id} active={productId === id} onClick={() => {
+              const abs = PRODUCTS[id].motion === 'abs_hinged'
+              const arch = id === 'custom-arch'
+              const patch: Parameters<typeof set>[0] = { productId: id }
+              if (abs !== (COLORS[colorId].category === 'abs')) patch.colorId = abs ? 'abs-white' : 'white'
+              const curArch = (PATTERNS[patternId] as { archProfile?: number }).archProfile != null
+              if (arch && !curArch) patch.patternId = 'arch3'
+              if (!arch && curArch) patch.patternId = 'open'
+              set(patch)
+            }}>{PRODUCTS[id].name}</Chip>
           ))}
         </Section>
-        {COLOR_GROUPS.map(({ label, category }) => (
+        {colorGroups.map(({ label, category }) => (
           <Section key={category} title={label}>
             {(Object.keys(COLORS) as ColorId[]).filter((id) => COLORS[id].category === category).map((id) => (
               <button key={id} onClick={() => set({ colorId: id })} title={COLORS[id].name}
@@ -89,16 +105,20 @@ export default function App() {
             ))}
           </Section>
         ))}
-        <Section title="적용 유리 (5mm)">
-          {(Object.keys(GLASSES) as GlassId[]).map((id) => (
-            <Chip key={id} active={glassId === id} onClick={() => set({ glassId: id })}>{GLASSES[id].name}</Chip>
-          ))}
-        </Section>
-        <Section title="디자인 / 디바이딩">
-          {(Object.keys(PATTERNS) as PatternId[]).map((id) => (
-            <Chip key={id} active={patternId === id} onClick={() => set({ patternId: id })}>{PATTERNS[id].name}</Chip>
-          ))}
-        </Section>
+        {!isAbs && (
+          <Section title="적용 유리 (5mm)">
+            {(Object.keys(GLASSES) as GlassId[]).map((id) => (
+              <Chip key={id} active={glassId === id} onClick={() => set({ glassId: id })}>{GLASSES[id].name}</Chip>
+            ))}
+          </Section>
+        )}
+        {!isAbs && (
+          <Section title="디자인 / 디바이딩">
+            {patternIds.map((id) => (
+              <Chip key={id} active={patternId === id} onClick={() => set({ patternId: id })}>{PATTERNS[id].name}</Chip>
+            ))}
+          </Section>
+        )}
         <Section title="손잡이">
           {(Object.keys(HANDLES) as HandleId[]).map((id) => (
             <Chip key={id} active={handleId === id} onClick={() => set({ handleId: id })}>{HANDLES[id].name}</Chip>

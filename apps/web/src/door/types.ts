@@ -22,6 +22,8 @@ export interface PatternGrid {
   hLines: number[]
   /** 랩핑MDF(막힘) 셀 — [row, col]. 없으면 전면 유리(오픈형) */
   solidCells: [number, number][]
+  /** 아치 rise 비율 (문짝 높이 대비) — 있으면 상단 아치 문짝 (approx, 실측 시 교체) */
+  archProfile?: number
 }
 
 export interface DoorConfig {

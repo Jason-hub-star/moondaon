@@ -11,7 +11,7 @@ const hex = z.string().regex(/^#[0-9a-f]{6}$/)
 const schemas = {
   colors: z.object({
     id: z.string(), name: z.string(),
-    category: z.enum(['basic-op', 'basic-sheet', 'wood-sheet']),
+    category: z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'abs']),
     finish: z.string(), hex, hexSource: z.enum(['approx', 'measured']),
     sheetCode: z.string().nullable(), source: z.string(),
   }),
@@ -24,6 +24,7 @@ const schemas = {
     id: z.string(), name: z.string(),
     vLines: z.array(z.number().min(0).max(1)), hLines: z.array(z.number().min(0).max(1)),
     solidCells: z.array(z.tuple([z.number().int(), z.number().int()])),
+    archProfile: z.number().min(0).max(0.6).optional(),
     geometrySource: z.enum(['approx', 'measured']), source: z.string(),
   }),
   handles: z.object({

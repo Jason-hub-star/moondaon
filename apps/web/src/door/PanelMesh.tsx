@@ -1,5 +1,16 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
+
+function archShape(w: number, h: number, rise: number) {
+  const sh = new THREE.Shape()
+  const y1 = h / 2 - rise
+  sh.moveTo(-w / 2, -h / 2)
+  sh.lineTo(-w / 2, y1)
+  sh.quadraticCurveTo(0, h / 2 + rise, w / 2, y1)
+  sh.lineTo(w / 2, -h / 2)
+  sh.closePath()
+  return sh
+}
 import type { DoorSpec, PatternGrid } from './types'
 
 /** 문짝 1장 — 프레임 4변(19×32) + 분할 그리드 셀(유리|랩핑MDF) */
@@ -15,6 +26,31 @@ export function PanelMesh({ w, h, spec, mats, pattern, handleLen }: {
   const innerW = w - 2 * s
   const innerH = h - 2 * s
   const solid = new Set(pattern.solidCells.map(([r, c]) => `${r}:${c}`))
+  const arch = pattern.archProfile
+  const archGeos = useMemo(() => {
+    if (!arch) return null
+    const rise = arch * h
+    const outer = archShape(w, h, rise)
+    outer.holes.push(archShape(w - 2 * s, h - 2 * s, Math.max(0.01, rise - s)))
+    const frame = new THREE.ExtrudeGeometry(outer, { depth: d, bevelEnabled: false })
+    frame.translate(0, 0, -d / 2)
+    const glass = new THREE.ExtrudeGeometry(archShape(w - 2 * s, h - 2 * s, Math.max(0.01, rise - s)), { depth: 0.005, bevelEnabled: false })
+    glass.translate(0, 0, -0.0025)
+    return { frame, glass }
+  }, [arch, w, h, s, d])
+  if (archGeos) {
+    return (
+      <group>
+        <mesh material={mats.frame} geometry={archGeos.frame} />
+        <mesh material={mats.glass} geometry={archGeos.glass} />
+        {handleLen > 0 && (
+          <mesh material={mats.frame} position={[w / 2 - 0.045, 0, d / 2 + 0.008]}>
+            <boxGeometry args={[0.012, handleLen, 0.014]} />
+          </mesh>
+        )}
+      </group>
+    )
+  }
   return (
     <group>
       {/* 프레임 4변 */}
