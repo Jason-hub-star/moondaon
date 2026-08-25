@@ -1,9 +1,10 @@
 import { create } from 'zustand'
-import type { ColorId, GlassId, PatternId, HandleId } from '../generated/cards'
+import type { ColorId, GlassId, PatternId, HandleId, ProductId } from '../generated/cards'
 
 export interface ShareState {
   /** URL 공유 스키마 버전 (수렴: 카드 변경에서 옛 링크 보호) */
   v: 1
+  productId: ProductId
   colorId: ColorId
   glassId: GlassId
   patternId: PatternId
@@ -18,7 +19,7 @@ interface ConfigState extends ShareState {
   set: (p: Partial<Omit<ConfigState, 'set' | 'v'>>) => void
 }
 
-const DEFAULTS: ShareState = { v: 1, colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.6 }
+const DEFAULTS: ShareState = { v: 1, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.6 }
 
 function decodeHash(): Partial<ShareState> {
   try {
@@ -41,8 +42,8 @@ export const useConfig = create<ConfigState>((set, get) => ({
   quality: 'high',
   set: (p) => {
     set(p)
-    const { v, colorId, glassId, patternId, handleId, widthM } = get()
-    encodeHash({ v, colorId, glassId, patternId, handleId, widthM })
+    const { v, productId, colorId, glassId, patternId, handleId, widthM } = get()
+    encodeHash({ v, productId, colorId, glassId, patternId, handleId, widthM })
   },
 }))
 

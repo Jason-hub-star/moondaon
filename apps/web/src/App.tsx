@@ -1,13 +1,15 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { SlidingDoor3 } from './door/SlidingDoor3'
-import { SLIM_3TRACK } from './door/types'
+import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { useConfig, sizeZone } from './configurator/store'
 import {
-  COLORS, GLASSES, PATTERNS, HANDLES,
-  type ColorId, type GlassId, type PatternId, type HandleId,
+  COLORS, GLASSES, PATTERNS, HANDLES, PRODUCTS,
+  type ColorId, type GlassId, type PatternId, type HandleId, type ProductId,
 } from './generated/cards'
+
+/** P1~P2 노출 제품 (이후 페이즈에서 카드 phase로 자동 확장) */
+const VISIBLE_PHASES = ['P1', 'P2']
 
 const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['category'] }[] = [
   { label: '기본색상 (기본운영)', category: 'basic-op' },
@@ -16,9 +18,10 @@ const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['categor
 ]
 
 export default function App() {
-  const { t, colorId, glassId, patternId, handleId, widthM, quality, set } = useConfig()
-  const spec = { ...SLIM_3TRACK, width: widthM }
+  const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, set } = useConfig()
+  const spec = specFrom(productId, widthM)
   const pattern = PATTERNS[patternId]
+  const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ flex: 1, position: 'relative' }}>
@@ -29,7 +32,7 @@ export default function App() {
           <directionalLight position={[-2, 2.5, -2]} intensity={0.5} />
           <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
           <Entryway doorW={spec.width} doorH={spec.height} />
-          <SlidingDoor3 spec={spec} colorId={colorId} glassId={glassId}
+          <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
             pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]) }}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} />
@@ -43,7 +46,12 @@ export default function App() {
       </div>
       <aside style={{ width: 300, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
         <h1 style={{ fontSize: 18, margin: '0 0 4px', letterSpacing: '0.06em' }}>문다온</h1>
-        <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 18px' }}>초슬림 3연동 도어 · 1.9</p>
+        <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
+        <Section title="제품">
+          {(Object.keys(PRODUCTS) as ProductId[]).filter((id) => VISIBLE_PHASES.includes(PRODUCTS[id].phase)).map((id) => (
+            <Chip key={id} active={productId === id} onClick={() => set({ productId: id })}>{PRODUCTS[id].name}</Chip>
+          ))}
+        </Section>
         {COLOR_GROUPS.map(({ label, category }) => (
           <Section key={category} title={label}>
             {(Object.keys(COLORS) as ColorId[]).filter((id) => COLORS[id].category === category).map((id) => (
@@ -68,8 +76,8 @@ export default function App() {
             <Chip key={id} active={handleId === id} onClick={() => set({ handleId: id })}>{HANDLES[id].name}</Chip>
           ))}
         </Section>
-        <Section title={`치수 — ${Math.round(widthM * 1000)}mm · ${sizeZone(widthM)}`}>
-          <input type="range" min={1.2} max={2.0} step={0.01} value={widthM} aria-label="가로 치수"
+        <Section title={`치수 — ${Math.round(spec.width * 1000)}mm${PRODUCTS[productId].motion === 'sliding_multi_panel' ? ' · ' + sizeZone(spec.width) : ''}`}>
+          <input type="range" min={wMin} max={wMax} step={0.01} value={Math.min(wMax, Math.max(wMin, widthM))} aria-label="가로 치수"
             onChange={(e) => set({ widthM: Number(e.target.value) })} style={{ width: '100%', accentColor: '#c5a572' }} />
         </Section>
         <Section title="품질">

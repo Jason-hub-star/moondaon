@@ -71,8 +71,8 @@ function Panel({ w, h, spec, mats, pattern, handleLen }: {
   )
 }
 
-/** 초슬림 3연동 — 3트랙, 순차 겹침 (연동 비율 0 : 1/2 : 1) */
-export function SlidingDoor3({ spec, colorId, glassId, pattern, handleLengthM, quality, t }: Props) {
+/** 슬라이딩 도어 범용 — N트랙 순차 겹침 (연동비 i/(N-1)), N=1은 원슬라이딩(전폭 이동) */
+export function SlidingDoor({ spec, colorId, glassId, pattern, handleLengthM, quality, t }: Props) {
   const mats = useMemo(() => ({
     frame: makeFrameMaterial(colorId),
     glass: makeGlassMaterial(glassId, quality),
@@ -82,14 +82,15 @@ export function SlidingDoor3({ spec, colorId, glassId, pattern, handleLengthM, q
   const { W, H } = { W: spec.width, H: spec.height }
   const fd = spec.frameDepth
   const jamb = 0.04 // 문틀 정면폭 (근사)
-  // 패널 폭: 개구부를 3분할 + 겹침
-  const pw = (W + 2 * spec.overlap) / 3
+  const N = spec.panels
+  // 패널 폭: 개구부 N분할 + 겹침 (N=1이면 전폭)
+  const pw = N > 1 ? (W + (N - 1) * spec.overlap) / N : W
   const stride = pw - spec.overlap // 인접 트랙 이동 거리
-  // 트랙 z 오프셋 (117mm 안에 3트랙) — Z-파이팅 방지
-  const trackZ = [-0.033, 0, 0.033]
-  // 연동 비율: 고정 0, 중간 1/2, 선두 1 (t=1이면 전부 왼쪽 스택)
-  const ratio = [0, 0.5, 1]
-  const maxTravel = 2 * stride
+  // 트랙 z 오프셋 — 문틀 깊이 안에 N트랙, Z-파이팅 방지
+  const trackZ = Array.from({ length: N }, (_, i) => (i - (N - 1) / 2) * 0.033)
+  // 연동 비율: i/(N-1). 원슬라이딩(N=1)은 1 — 벽면 앞으로 전폭 이동
+  const ratio = Array.from({ length: N }, (_, i) => (N > 1 ? i / (N - 1) : 1))
+  const maxTravel = N > 1 ? (N - 1) * stride : W * 0.92
 
   return (
     <group>
