@@ -1,0 +1,12 @@
+{
+ "name": "moondaon-workspace",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "cards": "node scripts/build-cards.mjs"
+ },
+ "devDependencies": {
+  "gray-matter": "^4.0.3",
+  "zod": "^4.4.3"
+ }
+}

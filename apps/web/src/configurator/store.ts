@@ -1,27 +1,58 @@
 import { create } from 'zustand'
-import type { FrameColorId, GlassId } from '../door/materials'
-import { OPEN_PATTERN, GOSI_PATTERN, type PatternGrid } from '../door/types'
+import type { ColorId, GlassId, PatternId, HandleId } from '../generated/cards'
 
-export type PatternId = 'open' | 'gosi'
-export const PATTERNS: Record<PatternId, { name: string; grid: PatternGrid }> = {
-  open: { name: '오픈형', grid: OPEN_PATTERN },
-  gosi: { name: '고시형', grid: GOSI_PATTERN },
-}
-
-interface ConfigState {
-  t: number
-  frameColor: FrameColorId
+export interface ShareState {
+  /** URL 공유 스키마 버전 (수렴: 카드 변경에서 옛 링크 보호) */
+  v: 1
+  colorId: ColorId
   glassId: GlassId
   patternId: PatternId
-  quality: 'high' | 'lite'
-  set: (p: Partial<Omit<ConfigState, 'set'>>) => void
+  handleId: HandleId
+  /** 개구부 가로 (m) — 팜플렛 구간 A~D */
+  widthM: number
 }
 
-export const useConfig = create<ConfigState>((set) => ({
+interface ConfigState extends ShareState {
+  t: number
+  quality: 'high' | 'lite'
+  set: (p: Partial<Omit<ConfigState, 'set' | 'v'>>) => void
+}
+
+const DEFAULTS: ShareState = { v: 1, colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.6 }
+
+function decodeHash(): Partial<ShareState> {
+  try {
+    const h = location.hash.slice(1)
+    if (!h) return {}
+    const o = JSON.parse(atob(h.replace(/-/g, '+').replace(/_/g, '/')))
+    return o?.v === 1 ? o : {}
+  } catch { return {} }
+}
+
+export function encodeHash(s: ShareState) {
+  const b64 = btoa(JSON.stringify(s)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  history.replaceState(null, '', `#${b64}`)
+}
+
+export const useConfig = create<ConfigState>((set, get) => ({
+  ...DEFAULTS,
+  ...decodeHash(),
   t: 0,
-  frameColor: 'tiffany-white',
-  glassId: 'clear',
-  patternId: 'open',
   quality: 'high',
-  set: (p) => set(p),
+  set: (p) => {
+    set(p)
+    const { v, colorId, glassId, patternId, handleId, widthM } = get()
+    encodeHash({ v, colorId, glassId, patternId, handleId, widthM })
+  },
 }))
+
+/** 팜플렛 구간별 사이즈 A~D 판정 */
+export function sizeZone(widthM: number): string {
+  const mm = widthM * 1000
+  if (mm < 1200) return '범위 밖 (최소 1200)'
+  if (mm <= 1400) return 'A구간 (1200~1400)'
+  if (mm <= 1600) return 'B구간 (1401~1600)'
+  if (mm <= 1800) return 'C구간 (1601~1800)'
+  if (mm <= 2000) return 'D구간 (1801~2000)'
+  return '범위 밖 (최대 2000)'
+}

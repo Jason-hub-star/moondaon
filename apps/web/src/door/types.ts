@@ -39,6 +39,3 @@ export const SLIM_3TRACK: DoorSpec = {
   overlap: 0.06,
 }
 
-export const OPEN_PATTERN: PatternGrid = { vLines: [], hLines: [], solidCells: [] }
-/** 고시형 예시 — 하단 1/3 랩핑MDF 막힘 */
-export const GOSI_PATTERN: PatternGrid = { vLines: [], hLines: [0.33], solidCells: [[0, 0]] }

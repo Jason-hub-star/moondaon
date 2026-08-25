@@ -1,26 +1,25 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import type { DoorSpec, PatternGrid } from './types'
-import {
-  makeFrameMaterial, makeGlassMaterial, makeWrapMaterial,
-  type FrameColorId, type GlassId,
-} from './materials'
+import { makeFrameMaterial, makeGlassMaterial, makeWrapMaterial } from './materials'
+import type { ColorId, GlassId } from '../generated/cards'
 
 interface Props {
   spec: DoorSpec
-  frameColor: FrameColorId
+  colorId: ColorId
   glassId: GlassId
   pattern: PatternGrid
+  handleLengthM: number
   quality: 'high' | 'lite'
   /** 개폐 파라미터 t: 0=닫힘, 1=열림 (자유도 1 — 물리엔진 비채택, R1-10) */
   t: number
 }
 
 /** 문짝 1장 — 프레임 4변(19×32) + 분할 그리드 셀(유리|랩핑MDF) */
-function Panel({ w, h, spec, mats, pattern, handle }: {
+function Panel({ w, h, spec, mats, pattern, handleLen }: {
   w: number; h: number; spec: DoorSpec; pattern: PatternGrid
   mats: { frame: THREE.Material; glass: THREE.Material; wrap: THREE.Material }
-  handle: boolean
+  handleLen: number
 }) {
   const s = spec.stileWidth
   const d = spec.stileDepth
@@ -62,10 +61,10 @@ function Panel({ w, h, spec, mats, pattern, handle }: {
           )
         }),
       )}
-      {/* 기본 접착식 손잡이 (300mm 라인) */}
-      {handle && (
+      {/* 손잡이 — 기본 접착식 300mm / 고급 일체형 900mm (카드) */}
+      {handleLen > 0 && (
         <mesh material={mats.frame} position={[w / 2 - 0.045, 0, d / 2 + 0.008]}>
-          <boxGeometry args={[0.012, 0.3, 0.014]} />
+          <boxGeometry args={[0.012, handleLen, 0.014]} />
         </mesh>
       )}
     </group>
@@ -73,12 +72,12 @@ function Panel({ w, h, spec, mats, pattern, handle }: {
 }
 
 /** 초슬림 3연동 — 3트랙, 순차 겹침 (연동 비율 0 : 1/2 : 1) */
-export function SlidingDoor3({ spec, frameColor, glassId, pattern, quality, t }: Props) {
+export function SlidingDoor3({ spec, colorId, glassId, pattern, handleLengthM, quality, t }: Props) {
   const mats = useMemo(() => ({
-    frame: makeFrameMaterial(frameColor),
+    frame: makeFrameMaterial(colorId),
     glass: makeGlassMaterial(glassId, quality),
-    wrap: makeWrapMaterial(frameColor),
-  }), [frameColor, glassId, quality])
+    wrap: makeWrapMaterial(colorId),
+  }), [colorId, glassId, quality])
 
   const { W, H } = { W: spec.width, H: spec.height }
   const fd = spec.frameDepth
@@ -106,7 +105,7 @@ export function SlidingDoor3({ spec, frameColor, glassId, pattern, quality, t }:
         const x = closedX - t * r * maxTravel
         return (
           <group key={i} position={[x, H / 2, trackZ[i]]}>
-            <Panel w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={pattern} handle={i === 2} />
+            <Panel w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={pattern} handleLen={i === 2 ? handleLengthM : 0} />
           </group>
         )
       })}
