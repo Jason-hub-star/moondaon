@@ -27,6 +27,7 @@ export function specFrom(productId: ProductId, widthM: number): DoorSpec {
     stileDepth: p.stileDepthM,
     panels: p.panels,
     overlap: 0.06,
+    louver: p.motion === 'louver_sliding' ? { barW: 0.03, gap: 0.035 } : undefined,
   }
 }
 

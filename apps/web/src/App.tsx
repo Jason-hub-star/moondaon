@@ -10,7 +10,7 @@ import {
 } from './generated/cards'
 
 /** P1~P2 노출 제품 (이후 페이즈에서 카드 phase로 자동 확장) */
-const VISIBLE_PHASES = ['P1', 'P2', 'P3']
+const VISIBLE_PHASES = ['P1', 'P2', 'P3', 'P4']
 
 const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['category'] }[] = [
   { label: '기본색상 (기본운영)', category: 'basic-op' },

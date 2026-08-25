@@ -12,6 +12,8 @@ export interface DoorSpec {
   panels: number
   /** 패널 겹침폭 (m) */
   overlap: number
+  /** 간살 도어 — 세로 간살 (팜플렛: 기본간격 30~40mm) */
+  louver?: { barW: number; gap: number }
 }
 
 /** 문짝 분할 그리드 — 고시형/디바이딩 (R1-07). 좌표는 문짝 로컬 0~1 정규화 */

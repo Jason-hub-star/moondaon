@@ -49,6 +49,18 @@ export function PanelMesh({ w, h, spec, mats, pattern, handleLen }: {
         }),
       )}
       {/* 손잡이 — 기본 접착식 300mm / 고급 일체형 900mm (카드) */}
+      {/* 간살 — 세로 바 배열 (알루미늄/MDF랩핑), 유리 뒤 z 오프셋 */}
+      {spec.louver && (() => {
+        const { barW, gap } = spec.louver
+        const n = Math.max(1, Math.floor((innerW + gap) / (barW + gap)))
+        const pitch = innerW / n
+        return Array.from({ length: n }, (_, i) => (
+          <mesh key={`lv${i}`} material={mats.frame}
+            position={[-innerW / 2 + pitch * (i + 0.5), 0, d / 2 + 0.006]}>
+            <boxGeometry args={[barW, innerH, 0.012]} />
+          </mesh>
+        ))
+      })()}
       {handleLen > 0 && (
         <mesh material={mats.frame} position={[w / 2 - 0.045, 0, d / 2 + 0.008]}>
           <boxGeometry args={[0.012, handleLen, 0.014]} />
