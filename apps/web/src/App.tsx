@@ -44,26 +44,58 @@ export default function App() {
   const [compare, setCompare] = useState(false)
   const [capMenu, setCapMenu] = useState(false)
   const [capDone, setCapDone] = useState<{ url: string; prompt: string; base: string } | null>(null)
-  const record = (path: CameraPath) => {
+  const record = async (path: CameraPath) => {
     const canvas = canvasRef.current
     if (!canvas || capActive) return
-    setCapMenu(false); setPlaying(false)
-    const stream = canvas.captureStream(30)
-    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
-    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 })
-    const chunks: Blob[] = []
-    rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
-    rec.onerror = (e) => console.error('[capture] recorder error', e)
-    rec.onstop = () => {
-      const st = useConfig.getState()
-      const blob = new Blob(chunks, { type: 'video/webm' })
-      console.log('[capture] chunks', chunks.length, 'bytes', blob.size)
-      // 제스처 없는 자동 다운로드는 차단됨 — 완료 모달에서 버튼 클릭으로 저장
-      setCapDone({ url: URL.createObjectURL(blob), prompt: buildPrompt(st, path), base: `moondaon_${st.productId}_${path}` })
+    // 근본수정: MediaRecorder(webm) 제거 — WebCodecs+mp4-muxer로 항상 진짜 mp4 배출
+    if (typeof VideoEncoder === 'undefined') {
+      alert('이 브라우저는 mp4 캡처(WebCodecs)를 지원하지 않습니다. 크롬/엣지/사파리 최신 버전을 사용하세요.')
+      return
     }
-    rec.start(500) // 500ms 타임슬라이스 — 조기 종료·프레임 유실 진단 겸 안전
+    setCapMenu(false); setPlaying(false)
+    const { Muxer, ArrayBufferTarget } = await import('mp4-muxer')
+    const w = canvas.width - (canvas.width % 2) // H.264 짝수 해상도 요구
+    const h = canvas.height - (canvas.height % 2)
+    const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec: 'avc', width: w, height: h }, fastStart: 'in-memory' })
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      error: (e) => console.error('[capture] encoder', e),
+    })
+    const cfg = { codec: 'avc1.640033', width: w, height: h, bitrate: 8_000_000, framerate: 30 } as VideoEncoderConfig
+    const sup = await VideoEncoder.isConfigSupported(cfg)
+    console.log('[capture] config supported:', sup.supported, w, 'x', h)
+    encoder.configure(cfg)
+    const FRAME_US = 1_000_000 / 30
+    let frame = 0
+    let stopped = false
+    const grab = () => {
+      if (stopped) return
+      try {
+        if (encoder.encodeQueueSize < 8) { // 백프레셔 — 큐 폭주 시 프레임 스킵
+          const vf = new VideoFrame(canvas, { timestamp: Math.round(frame * FRAME_US), duration: Math.round(FRAME_US) })
+          encoder.encode(vf, { keyFrame: frame % 60 === 0 })
+          vf.close()
+          frame++
+        }
+      } catch (e) {
+        console.error('[capture] grab failed at frame', frame, e)
+        stopped = true
+        return
+      }
+      setTimeout(grab, 1000 / 30)
+    }
     useCapture.getState().begin(path)
-    setTimeout(() => { rec.stop(); useCapture.getState().end() }, CAPTURE_MS + 200)
+    grab()
+    setTimeout(async () => {
+      stopped = true
+      useCapture.getState().end()
+      await encoder.flush()
+      muxer.finalize()
+      const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' })
+      console.log('[capture] frames', frame, 'bytes', blob.size)
+      const st = useConfig.getState()
+      setCapDone({ url: URL.createObjectURL(blob), prompt: buildPrompt(st, path), base: `moondaon_${st.productId}_${path}` })
+    }, CAPTURE_MS + 100)
   }
   useEffect(() => {
     if (!playing) { cancelAnimationFrame(raf.current); return }
@@ -142,8 +174,8 @@ export default function App() {
               maxHeight: 150, overflowY: 'auto' }}>{capDone.prompt}</pre>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <Chip active={false} onClick={() => {
-                const a = document.createElement('a'); a.href = capDone.url; a.download = `${capDone.base}.webm`; a.click()
-              }}>영상 저장 (.webm)</Chip>
+                const a = document.createElement('a'); a.href = capDone.url; a.download = `${capDone.base}.mp4`; a.click()
+              }}>영상 저장 (.mp4)</Chip>
               <Chip active={false} onClick={() => navigator.clipboard.writeText(capDone.prompt)}>프롬프트 복사</Chip>
               <Chip active onClick={() => { URL.revokeObjectURL(capDone.url); setCapDone(null) }}>닫기</Chip>
             </div>
