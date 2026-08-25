@@ -1,5 +1,6 @@
 import { SlidingDoor } from './SlidingDoor'
 import { SwingDoor } from './SwingDoor'
+import { LShapeDoor } from './LShapeDoor'
 import type { DoorSpec, PatternGrid } from './types'
 import { PRODUCTS, type ColorId, type GlassId, type ProductId } from '../generated/cards'
 
@@ -36,6 +37,8 @@ export function DoorModel({ productId, widthM, ...rest }: Props) {
   switch (p.motion) {
     case 'swing_bi_directional':
       return <SwingDoor spec={spec} {...rest} />
+    case 'sliding_multi_panel_corner':
+      return <LShapeDoor spec={spec} {...rest} />
     case 'sliding_multi_panel':
     case 'sliding_single_panel':
     default:

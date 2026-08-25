@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
@@ -9,7 +10,7 @@ import {
 } from './generated/cards'
 
 /** P1~P2 노출 제품 (이후 페이즈에서 카드 phase로 자동 확장) */
-const VISIBLE_PHASES = ['P1', 'P2']
+const VISIBLE_PHASES = ['P1', 'P2', 'P3']
 
 const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['category'] }[] = [
   { label: '기본색상 (기본운영)', category: 'basic-op' },
@@ -22,6 +23,28 @@ export default function App() {
   const spec = specFrom(productId, widthM)
   const pattern = PATTERNS[patternId]
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
+  const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
+  // 자동재생 — 자동중문 감속(ease-out) 연출 (R2-06: 모션만)
+  const [playing, setPlaying] = useState(false)
+  const raf = useRef(0)
+  useEffect(() => {
+    if (!playing) { cancelAnimationFrame(raf.current); return }
+    const ease = (u: number) => 1 - Math.pow(1 - u, 3)
+    const start = performance.now()
+    const OPEN = 2200, HOLD = 900, CLOSE = 2200, CYCLE = OPEN + HOLD + CLOSE + HOLD
+    const tick = (now: number) => {
+      const e = (now - start) % CYCLE
+      let v: number
+      if (e < OPEN) v = ease(e / OPEN)
+      else if (e < OPEN + HOLD) v = 1
+      else if (e < OPEN + HOLD + CLOSE) v = 1 - ease((e - OPEN - HOLD) / CLOSE)
+      else v = 0
+      useConfig.setState({ t: v })
+      raf.current = requestAnimationFrame(tick)
+    }
+    raf.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf.current)
+  }, [playing])
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ flex: 1, position: 'relative' }}>
@@ -31,7 +54,7 @@ export default function App() {
           <directionalLight position={[2.5, 2.6, 3]} intensity={1.6} castShadow />
           <directionalLight position={[-2, 2.5, -2]} intensity={0.5} />
           <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
-          <Entryway doorW={spec.width} doorH={spec.height} />
+          <Entryway doorW={wallW} doorH={spec.height} />
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
             pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]) }}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
@@ -42,6 +65,11 @@ export default function App() {
           <input type="range" min={0} max={1} step={0.01} value={t} aria-label="개폐"
             onChange={(e) => set({ t: Number(e.target.value) })} style={{ flex: 1, accentColor: '#c5a572' }} />
           <span style={{ fontSize: 13 }}>열림</span>
+          <button onClick={() => setPlaying((p) => !p)} aria-label="자동재생"
+            style={{ padding: '6px 12px', fontSize: 13, borderRadius: 16, cursor: 'pointer',
+              border: '1px solid #c5a572', background: playing ? '#c5a572' : '#f6efe3', color: playing ? '#fff' : '#2b2926' }}>
+            {playing ? '■ 정지' : '▶ 자동'}
+          </button>
         </div>
       </div>
       <aside style={{ width: 300, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
