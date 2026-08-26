@@ -21,7 +21,7 @@ interface ConfigState extends ShareState {
   set: (p: Partial<Omit<ConfigState, 'set' | 'v'>>) => void
 }
 
-const DEFAULTS: ShareState = { v: 2, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.6 }
+const DEFAULTS: ShareState = { v: 2, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.25 } // widthM: KKARTdoor 쇼츠 64편 실측 중앙값 1214mm(2026-08-26)
 
 function decodeHash(): Partial<ShareState> {
   try {

@@ -33,10 +33,12 @@ description: 쇼룸 씬(Entryway) 소품·구조물 제작 절차 — A급(맨�
 - 텍스처 비동기 → **rAF 렌더 루프 필수** (단발 렌더는 검정), `pbr/` 추출물도 복사
 - `python3 -m http.server`로 서빙, 크롬 `zoom` 캡처로 게이트 증거 수집
 
-## 4. Entryway.tsx 이식 규칙
+## 4. 이식 규칙 (SSOT: sceneProps.tsx)
 
-- 부품은 `THREE.Group` 팩토리 함수로 — R3F에선 `<primitive object={...}>` 또는 기존 mats 패턴에 맞춰 JSX로 옮긴다
-- 재질은 `Entryway.tsx`의 `mats` useMemo에 합류 (중복 MeshStandardMaterial 생성 금지)
+- **소품 목록·위치·회전은 `scene/sceneProps.tsx`의 `SCENE_PROPS` 배열이 유일한 자리다.** 렌더러는 같은 파일 `RENDERERS`에 컴포넌트 하나로 추가하고, 배열에 엔트리 한 줄을 더한다. Entryway.tsx에 소품을 직접 넣지 않는다 (Entryway는 구조물 전용)
+- 문폭 연동 소품은 `anchor: 'doorL' | 'doorR'`로 x 오프셋 표현. 현관 바닥 소품은 타일 단차 y=-0.045 동기
+- **위치 조절은 dev 서버 `?edit=1`** — 소품 클릭 → 기즈모(g 이동/r 회전/Esc 해제) → 놓으면 갱신된 배열이 클립보드·콘솔로 나옴 → sceneProps.tsx에 붙여넣기가 저장. 편집기는 `import.meta.env.DEV` 분기라 프로덕션 번들에 코드가 존재하지 않는다(사용자 비노출 — 검증: dist grep 0건)
+- 소품 재질은 sceneProps.tsx의 `pm()` 싱글턴에 합류 (중복 MeshStandardMaterial 생성 금지)
 - **품질 토글 준수**: `quality === 'lite'`면 B급 대신 A급(또는 생략). 12k tri는 소품 1~2개까지만
 - 문이 주인공 — 소품 채도·명도는 배경 팔레트(#f1eae0 계열) 안에서. 텍스처는 `public/textures/`에 추가
 - 완료 게이트: 실렌더 스크린샷 확인 + 모바일(52vh 캔버스) 프레임 확인
