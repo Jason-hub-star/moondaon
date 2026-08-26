@@ -1,0 +1,23 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # 루트: 카드 파이프라인 의존성 (gray-matter·zod)
+      - run: npm ci
+      # 카드 게이트 단독 실행 (Zod + 교차검증 + 썸네일 생성)
+      - run: node scripts/build-cards.mjs
+      - run: npm ci
+        working-directory: apps/web
+      # prebuild가 카드 재생성 → tsc → vite build
+      - run: npm run build
+        working-directory: apps/web

@@ -8,6 +8,7 @@ import { OrbitControls } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { useConfig, sizeZone } from './configurator/store'
+import { PatternChip } from './configurator/PatternChip'
 import {
   COLORS, GLASSES, PATTERNS, HANDLES, PRODUCTS,
   type ColorId, type GlassId, type PatternId, type HandleId, type ProductId,
@@ -239,18 +240,18 @@ export default function App() {
         {!isAbs && (
           <Section title="디자인 / 디바이딩">
             {patternIds.map((id) => (
-              <Chip key={id} active={patternId === id} onClick={() => set({ patternId: id })}>{PATTERNS[id].name}</Chip>
+              <PatternChip key={id} id={id} active={patternId === id} onClick={() => set({ patternId: id })} />
             ))}
           </Section>
         )}
         {!isAbs && fixedIdxs.length > 0 && (
           <Section title="픽스창 패턴 (고정 패널)">
             {patternIds.map((id) => (
-              <Chip key={id} active={(panelPatterns?.[fixedIdxs[0]] ?? patternId) === id} onClick={() => {
+              <PatternChip key={id} id={id} active={(panelPatterns?.[fixedIdxs[0]] ?? patternId) === id} onClick={() => {
                 const arr: (PatternId | null)[] = Array.from({ length: PRODUCTS[productId].panels }, (_, i) => panelPatterns?.[i] ?? null)
                 for (const fi of fixedIdxs) arr[fi] = id
                 set({ panelPatterns: arr })
-              }}>{PATTERNS[id].name}</Chip>
+              }} />
             ))}
           </Section>
         )}
