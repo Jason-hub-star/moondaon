@@ -8,7 +8,7 @@ import { Monstera } from './Monstera'
  * 웜톤 벽 + 실텍스처 바닥(우딘 스와치) + 걸레받이 + 코브 간접등 + 러그·화분·액자·콘솔 소품.
  * ponytail: 소품은 저폴리 프리미티브 근사 — 문이 주인공, 소품은 무드 담당.
  */
-export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; doorH: number; quality?: 'high' | 'lite' }) {
+export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
   const mats = useMemo(() => ({
     wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95,
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
@@ -21,9 +21,6 @@ export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; do
     tile: new THREE.MeshStandardMaterial({ color: '#e6dfd4', map: sheetTexture('/textures/tile-porcelain.jpg', 3),
       normalMap: linearTexture('/textures/tile-porcelain-n.jpg', 3), roughness: 0.35 }),
     rug: new THREE.MeshStandardMaterial({ color: '#dcc9ad', roughness: 1 }),
-    pot: new THREE.MeshStandardMaterial({ color: '#c8b9a4', roughness: 0.9 }),
-    leaf: new THREE.MeshStandardMaterial({ color: '#6d8b5c', roughness: 0.85 }),
-    stem: new THREE.MeshStandardMaterial({ color: '#7a6a4f', roughness: 0.9 }),
     frame: new THREE.MeshStandardMaterial({ color: '#a98d68', roughness: 0.6 }),
     art1: new THREE.MeshStandardMaterial({ color: '#e6d3bd', roughness: 0.95 }),
     art2: new THREE.MeshStandardMaterial({ color: '#c9d2c5', roughness: 0.95 }),
@@ -208,25 +205,8 @@ export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; do
         <mesh material={mats.wallpad}><boxGeometry args={[0.13, 0.2, 0.022]} /></mesh>
         <mesh material={mats.wallpadScreen} position={[0, 0.015, 0.012]}><boxGeometry args={[0.105, 0.13, 0.004]} /></mesh>
       </group>
-      {/* 몬스테라 (B안 slim 포팅) — 좌측 앞, lite에선 기존 저폴리 화분 */}
-      {quality === 'high' && <Monstera position={[-doorW / 2 - 0.55, 0, 0.6]} />}
-      {/* 화분 — 우측 뒤 (+ lite일 때 좌측도 저폴리로) */}
-      {(quality === 'high' ? [[doorW / 2 + 0.72, 0.32]] : [[-doorW / 2 - 0.45, 0.55], [doorW / 2 + 0.72, 0.32]]).map(([x, z], i) => (
-        <group key={i} position={[x, 0, z]}>
-          <mesh material={mats.pot} position={[0, 0.14, 0]} castShadow>
-            <cylinderGeometry args={[0.12, 0.09, 0.28, 18]} />
-          </mesh>
-          <mesh material={mats.stem} position={[0, 0.38, 0]}>
-            <cylinderGeometry args={[0.012, 0.018, 0.24, 8]} />
-          </mesh>
-          <mesh material={mats.leaf} position={[0, 0.58, 0]} castShadow>
-            <icosahedronGeometry args={[0.17, 1]} />
-          </mesh>
-          <mesh material={mats.leaf} position={[0.08, 0.44, 0.04]}>
-            <icosahedronGeometry args={[0.1, 1]} />
-          </mesh>
-        </group>
-      ))}
+      {/* 몬스테라 (B안 slim 포팅, ~3k tri — lite 포함 상시) — 좌측 앞 */}
+      <Monstera position={[-doorW / 2 - 0.55, 0, 0.6]} />
       {/* 액자 2 — 개구부 좌우 벽 */}
       <group position={[-(doorW / 2 + side / 2), 1.55, 0.09]}>
         <mesh material={mats.frame}><boxGeometry args={[0.34, 0.44, 0.02]} /></mesh>
@@ -246,12 +226,6 @@ export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; do
             <boxGeometry args={[0.03, 0.4, 0.03]} />
           </mesh>
         ))}
-        <mesh material={mats.pot} position={[0, 0.49, -0.25]}>
-          <cylinderGeometry args={[0.06, 0.045, 0.1, 14]} />
-        </mesh>
-        <mesh material={mats.leaf} position={[0, 0.6, -0.25]}>
-          <icosahedronGeometry args={[0.08, 1]} />
-        </mesh>
       </group>
     </group>
   )
