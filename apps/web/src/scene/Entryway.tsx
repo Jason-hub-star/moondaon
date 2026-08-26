@@ -29,6 +29,13 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
     console: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/sebiji.jpg', 1.6), roughness: 0.7 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
     down: new THREE.MeshStandardMaterial({ color: '#fff6e6', emissive: '#fff0d0', emissiveIntensity: 2.2 }),
+    cabinet: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/sebiji.jpg', 1.2), roughness: 0.75 }),
+    cabinetEdge: new THREE.MeshStandardMaterial({ color: '#b8a488', roughness: 0.7 }),
+    steel: new THREE.MeshStandardMaterial({ color: '#9a9da1', metalness: 0.55, roughness: 0.45 }),
+    steelDark: new THREE.MeshStandardMaterial({ color: '#4d5054', metalness: 0.7, roughness: 0.35 }),
+    mat: new THREE.MeshStandardMaterial({ color: '#8f8377', roughness: 1 }),
+    shoe: new THREE.MeshStandardMaterial({ color: '#6b5d4e', roughness: 0.85 }),
+    shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
   }), [])
   const WALL_W = 5, WALL_H = 2.7, side = (WALL_W - doorW) / 2
   return (
@@ -90,6 +97,55 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
           <circleGeometry args={[0.07, 20]} />
         </mesh>
       ))}
+      {/* ── 현관 (유리 너머, z ≤ -1.4 — 슬라이딩 개폐 경로와 무충돌) ── */}
+      {/* 신발장(키큰장) — 현관 좌측 */}
+      <group position={[-1.55, 0, -1.72]}>
+        <mesh material={mats.cabinet} position={[0, 1.1, 0]}>
+          <boxGeometry args={[1.0, 2.2, 0.35]} />
+        </mesh>
+        {/* 도어 갈라짐 라인 + 하부 띄움(플로팅 시공) */}
+        <mesh material={mats.cabinetEdge} position={[0, 1.1, 0.176]}>
+          <boxGeometry args={[0.012, 2.2, 0.004]} />
+        </mesh>
+        <mesh material={mats.cabinetEdge} position={[0, 0.62, 0.176]}>
+          <boxGeometry args={[1.0, 0.012, 0.004]} />
+        </mesh>
+      </group>
+      {/* 방화문(현관문) 실루엣 — 뒷벽 우측 + 도어록·손잡이 */}
+      <group position={[1.05, 0, -1.94]}>
+        <mesh material={mats.steel} position={[0, 1.05, 0]}>
+          <boxGeometry args={[0.98, 2.1, 0.05]} />
+        </mesh>
+        <mesh material={mats.steelDark} position={[-0.38, 1.02, 0.035]}>
+          <boxGeometry args={[0.05, 0.34, 0.02]} />
+        </mesh>
+        <mesh material={mats.steelDark} position={[-0.38, 1.28, 0.04]}>
+          <boxGeometry args={[0.06, 0.1, 0.025]} />
+        </mesh>
+        {/* 문틀 */}
+        <mesh material={mats.steelDark} position={[0, 2.13, 0]}>
+          <boxGeometry args={[1.06, 0.06, 0.06]} />
+        </mesh>
+        <mesh material={mats.steelDark} position={[-0.52, 1.05, 0]}>
+          <boxGeometry args={[0.04, 2.1, 0.06]} />
+        </mesh>
+        <mesh material={mats.steelDark} position={[0.52, 1.05, 0]}>
+          <boxGeometry args={[0.04, 2.1, 0.06]} />
+        </mesh>
+      </group>
+      {/* 현관 매트 + 신발 2켤레 (원경 — 단순형) */}
+      <mesh material={mats.mat} rotation={[-Math.PI / 2, 0, 0]} position={[1.05, 0.004, -1.55]}>
+        <planeGeometry args={[0.85, 0.55]} />
+      </mesh>
+      {[[0.78, -1.45, 0.12, mats.shoe], [0.95, -1.42, -0.22, mats.shoe], [1.35, -1.62, 0.35, mats.shoe2], [1.5, -1.6, 0.3, mats.shoe2]].map(([x, z, ry, m], i) => (
+        <mesh key={i} material={m as THREE.Material} position={[x as number, 0.035, z as number]} rotation={[0, ry as number, 0]}>
+          <boxGeometry args={[0.09, 0.07, 0.26]} />
+        </mesh>
+      ))}
+      {/* 현관 센서등 — 등기구 원판 (광원은 기존 pointLight가 담당) */}
+      <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -1.1]}>
+        <circleGeometry args={[0.09, 20]} />
+      </mesh>
       {/* 러그 — 거실 중앙 */}
       <mesh material={mats.rug} rotation={[-Math.PI / 2, 0, 0]} position={[0.3, 0.006, 1.9]} receiveShadow>
         <circleGeometry args={[0.85, 36]} />
