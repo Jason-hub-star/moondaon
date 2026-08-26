@@ -74,7 +74,15 @@ export function Monstera({ position, scale = 0.85 }: { position: [number, number
       g.add(pet)
       const s = 0.60 + 0.4 * (1 - frac)
       const droop = -(0.5 + 0.35 * ((i * 7) % 10) / 10)
-      const leaf = new THREE.Mesh(new THREE.ShapeGeometry(leafShape(s > 0.75 ? 4 : 3, s), 10), mats.leaf)
+      const leafGeo = new THREE.ShapeGeometry(leafShape(s > 0.75 ? 4 : 3, s), 10)
+      // 잎 처짐 곡률 — 끝으로 갈수록 아래로 굽는 셸 (평면 티 제거)
+      const pos = leafGeo.attributes.position
+      for (let v = 0; v < pos.count; v++) {
+        const py = pos.getY(v)
+        pos.setZ(v, -0.55 * py * py)
+      }
+      leafGeo.computeVertexNormals()
+      const leaf = new THREE.Mesh(leafGeo, mats.leaf)
       leaf.position.copy(tip)
       leaf.rotation.set(droop, -az2, 0, 'YXZ')
       leaf.castShadow = true

@@ -151,10 +151,30 @@ export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; do
           <boxGeometry args={[0.09, 0.07, 0.26]} />
         </mesh>
       ))}
+      {/* 우산꽂이 — 방화문 옆 (P-D 생활감) */}
+      <group position={[1.72, 0, -1.8]}>
+        <mesh material={mats.steelDark} position={[0, 0.23, 0]}>
+          <cylinderGeometry args={[0.07, 0.06, 0.46, 14, 1, true]} />
+        </mesh>
+        <mesh material={mats.shoe2} position={[0.02, 0.42, 0]} rotation={[0, 0, 0.18]}>
+          <cylinderGeometry args={[0.012, 0.02, 0.55, 6]} />
+        </mesh>
+      </group>
       {/* 현관 센서등 — 등기구 원판 (광원은 기존 pointLight가 담당) */}
       <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -1.1]}>
         <circleGeometry args={[0.09, 20]} />
       </mesh>
+      {/* 슬리퍼 한 켤레 — 중문 앞 거실측 (P-D 생활감) */}
+      {[[0.32, 0.62, 0.25], [0.5, 0.66, 0.1]].map(([x, z, ry], i) => (
+        <group key={i} position={[x, 0, z]} rotation={[0, ry, 0]}>
+          <mesh material={mats.rug} position={[0, 0.012, 0]}>
+            <boxGeometry args={[0.09, 0.02, 0.24]} />
+          </mesh>
+          <mesh material={mats.shoe} position={[0, 0.035, -0.04]}>
+            <boxGeometry args={[0.088, 0.03, 0.1]} />
+          </mesh>
+        </group>
+      ))}
       {/* 러그 — 거실 중앙 */}
       <mesh material={mats.rug} rotation={[-Math.PI / 2, 0, 0]} position={[0.3, 0.006, 1.9]} receiveShadow>
         <circleGeometry args={[0.85, 36]} />
