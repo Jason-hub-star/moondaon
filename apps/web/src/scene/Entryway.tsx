@@ -1,13 +1,14 @@
 import * as THREE from 'three'
 import { useMemo } from 'react'
 import { sheetTexture, linearTexture } from '../door/materials'
+import { Monstera } from './Monstera'
 
 /**
  * 현관 목업 v2 — 오늘의집st 컷어웨이 방 연출 (레퍼런스: assets/참고자료/오늘의집st-방연출-예시.gif).
  * 웜톤 벽 + 실텍스처 바닥(우딘 스와치) + 걸레받이 + 코브 간접등 + 러그·화분·액자·콘솔 소품.
  * ponytail: 소품은 저폴리 프리미티브 근사 — 문이 주인공, 소품은 무드 담당.
  */
-export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
+export function Entryway({ doorW, doorH, quality = 'high' }: { doorW: number; doorH: number; quality?: 'high' | 'lite' }) {
   const mats = useMemo(() => ({
     wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95,
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
@@ -36,6 +37,14 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
     mat: new THREE.MeshStandardMaterial({ color: '#8f8377', roughness: 1 }),
     shoe: new THREE.MeshStandardMaterial({ color: '#6b5d4e', roughness: 0.85 }),
     shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
+    mirror: new THREE.MeshStandardMaterial({ color: '#dde4ea', metalness: 0, roughness: 0.05 }), // envMap 없이 금속성은 검게 나옴 — 밝은 유전체 근사
+    mirrorFrame: new THREE.MeshStandardMaterial({ color: '#c9b896', roughness: 0.6 }),
+    sheer: new THREE.MeshStandardMaterial({ color: '#fffdf8', transparent: true, opacity: 0.45, roughness: 1, side: THREE.DoubleSide }),
+    daylight: new THREE.MeshStandardMaterial({ color: '#fff8ea', emissive: '#fff3da', emissiveIntensity: 1.4 }),
+    lampShade: new THREE.MeshStandardMaterial({ color: '#f3e6cd', emissive: '#ffdba8', emissiveIntensity: 0.9, side: THREE.DoubleSide }),
+    lampPole: new THREE.MeshStandardMaterial({ color: '#5c534a', metalness: 0.6, roughness: 0.4 }),
+    wallpad: new THREE.MeshStandardMaterial({ color: '#3a3d42', metalness: 0.3, roughness: 0.4 }),
+    wallpadScreen: new THREE.MeshStandardMaterial({ color: '#5a80a8', emissive: '#4a6f9a', emissiveIntensity: 0.5 }),
   }), [])
   const WALL_W = 5, WALL_H = 2.7, side = (WALL_W - doorW) / 2
   return (
@@ -150,8 +159,39 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
       <mesh material={mats.rug} rotation={[-Math.PI / 2, 0, 0]} position={[0.3, 0.006, 1.9]} receiveShadow>
         <circleGeometry args={[0.85, 36]} />
       </mesh>
-      {/* 화분 2 — 개구부 좌측 앞 / 우측 뒤 */}
-      {[[-doorW / 2 - 0.45, 0.55], [doorW / 2 + 0.72, 0.32]].map(([x, z], i) => (
+      {/* ── 거실 소품 (P-C) ── */}
+      {/* 전신거울 — 우측 벽에 기대기 (중문 옆 국룰) */}
+      <group position={[2.15, 0.82, 0.24]} rotation={[-0.06, -0.35, 0]}>
+        <mesh material={mats.mirrorFrame}><boxGeometry args={[0.54, 1.64, 0.03]} /></mesh>
+        <mesh material={mats.mirror} position={[0, 0, 0.017]}><boxGeometry args={[0.46, 1.56, 0.004]} /></mesh>
+      </group>
+      {/* 창문 + 쉬어 커튼 — 거실 좌측벽 (자연광의 이유) */}
+      <group position={[-WALL_W / 2 + 0.06, 1.55, 1.15]} rotation={[0, Math.PI / 2, 0]}>
+        <mesh material={mats.daylight} position={[0, 0, -0.005]}><planeGeometry args={[1.3, 1.25]} /></mesh>
+        {[[0, 0.655, 1.42, 0.06], [0, -0.655, 1.42, 0.06]].map(([x, y, w, h], i) => (
+          <mesh key={i} material={mats.mirrorFrame} position={[x, y, 0]}><boxGeometry args={[w, h, 0.04]} /></mesh>
+        ))}
+        {[[-0.68, 0], [0.68, 0], [0, 0]].map(([x, y], i) => (
+          <mesh key={i} material={mats.mirrorFrame} position={[x, y, 0]}><boxGeometry args={[0.06, 1.36, 0.04]} /></mesh>
+        ))}
+        <mesh material={mats.sheer} position={[-0.35, -0.06, 0.09]}><planeGeometry args={[0.72, 1.5]} /></mesh>
+      </group>
+      {/* 스탠드 조명 — 거실 좌측 뒤 (warm glow) */}
+      <group position={[-1.85, 0, 2.85]}>
+        <mesh material={mats.lampPole} position={[0, 0.02, 0]}><cylinderGeometry args={[0.11, 0.13, 0.04, 18]} /></mesh>
+        <mesh material={mats.lampPole} position={[0, 0.7, 0]}><cylinderGeometry args={[0.012, 0.012, 1.36, 8]} /></mesh>
+        <mesh material={mats.lampShade} position={[0, 1.45, 0]}><cylinderGeometry args={[0.13, 0.17, 0.24, 20, 1, true]} /></mesh>
+        <pointLight position={[0, 1.42, 0]} intensity={2.6} distance={2.6} color="#ffdba8" />
+      </group>
+      {/* 월패드 — 개구부 우측 벽 (한국 아파트 시그니처) */}
+      <group position={[doorW / 2 + 0.32, 1.32, 0.09]}>
+        <mesh material={mats.wallpad}><boxGeometry args={[0.13, 0.2, 0.022]} /></mesh>
+        <mesh material={mats.wallpadScreen} position={[0, 0.015, 0.012]}><boxGeometry args={[0.105, 0.13, 0.004]} /></mesh>
+      </group>
+      {/* 몬스테라 (B안 slim 포팅) — 좌측 앞, lite에선 기존 저폴리 화분 */}
+      {quality === 'high' && <Monstera position={[-doorW / 2 - 0.55, 0, 0.6]} />}
+      {/* 화분 — 우측 뒤 (+ lite일 때 좌측도 저폴리로) */}
+      {(quality === 'high' ? [[doorW / 2 + 0.72, 0.32]] : [[-doorW / 2 - 0.45, 0.55], [doorW / 2 + 0.72, 0.32]]).map(([x, z], i) => (
         <group key={i} position={[x, 0, z]}>
           <mesh material={mats.pot} position={[0, 0.14, 0]} castShadow>
             <cylinderGeometry args={[0.12, 0.09, 0.28, 18]} />
