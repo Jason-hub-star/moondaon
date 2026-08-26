@@ -8,6 +8,8 @@ stileWidthM: 0.019
 stileDepthM: 0.032
 widthRangeM: [1.0, 1.5]
 maxHeightM: 2.3
+glassIds: [clear, bronze, aqua, clear-satin, bronze-satin]  # 팜플렛 5종
+colorCats: [wood-sheet]  # 간살 페이지 컬러 = 우드 주문제 시트만
 phase: P4
 source: 리플렛_텍스트_정리.json
 ---

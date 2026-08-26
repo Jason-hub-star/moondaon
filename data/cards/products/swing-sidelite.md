@@ -10,6 +10,7 @@ widthRangeM: [1.0, 1.6]
 maxHeightM: 2.35
 panelWidthFr: [0.72, 0.28]
 fixedPanels: [1]
+glassIds: [clear, bronze, aqua, clear-satin, bronze-satin]  # 팜플렛 5종 (스윙은 간살 세트와 동일 추정 approx)
 phase: P5
 source: 리플렛 IMG_6281 스윙 디자인/디바이딩 3행 (도어+픽스 조합)
 ---

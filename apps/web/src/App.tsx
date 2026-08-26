@@ -46,6 +46,17 @@ export default function App() {
   const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
   const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
   const isArch = productId === 'custom-arch'
+  type Constrained = { glassIds?: readonly string[]; colorIds?: readonly string[]; colorCats?: readonly string[] }
+  const colorAllowed = (pid: ProductId, id: ColorId) => {
+    const pc = PRODUCTS[pid] as Constrained
+    const cat = COLORS[id].category
+    if (pc.colorIds || pc.colorCats) return (pc.colorIds?.includes(id) ?? false) || (pc.colorCats?.includes(cat) ?? false)
+    return PRODUCTS[pid].motion === 'abs_hinged' ? cat === 'abs' : cat !== 'abs'
+  }
+  const glassAllowed = (pid: ProductId, id: GlassId) => {
+    const pc = PRODUCTS[pid] as Constrained
+    return !pc.glassIds || pc.glassIds.includes(id)
+  }
   const colorGroups = COLOR_GROUPS.filter((g) => (isAbs ? g.category === 'abs' : g.category !== 'abs'))
   const motion = PRODUCTS[productId].motion
   const metaOf = (id: PatternId) => PATTERNS[id] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
@@ -222,10 +233,10 @@ export default function App() {
         <Section title="제품">
           {(Object.keys(PRODUCTS) as ProductId[]).filter((id) => VISIBLE_PHASES.includes(PRODUCTS[id].phase)).map((id) => (
             <ProductChip key={id} id={id} active={productId === id} onClick={() => {
-              const abs = PRODUCTS[id].motion === 'abs_hinged'
               const arch = id === 'custom-arch'
               const patch: Parameters<typeof set>[0] = { productId: id }
-              if (abs !== (COLORS[colorId].category === 'abs')) patch.colorId = abs ? 'abs-white' : 'white'
+              if (!colorAllowed(id, colorId)) patch.colorId = (Object.keys(COLORS) as ColorId[]).find((c) => colorAllowed(id, c)) ?? 'white'
+              if (!glassAllowed(id, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(id, g)) ?? 'clear'
               const cur = PATTERNS[patternId] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
               if (arch && cur.archProfile == null) patch.patternId = 'arch3'
               if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
@@ -235,9 +246,10 @@ export default function App() {
             }} />
           ))}
         </Section>
-        {colorGroups.map(({ label, category }) => (
+        {colorGroups.filter(({ category }) =>
+          (Object.keys(COLORS) as ColorId[]).some((id) => COLORS[id].category === category && colorAllowed(productId, id))).map(({ label, category }) => (
           <Section key={category} title={label}>
-            {(Object.keys(COLORS) as ColorId[]).filter((id) => COLORS[id].category === category).map((id) => (
+            {(Object.keys(COLORS) as ColorId[]).filter((id) => COLORS[id].category === category && colorAllowed(productId, id)).map((id) => (
               <button key={id} onClick={() => set({ colorId: id })} title={COLORS[id].name}
                 style={{ width: 30, height: 30, borderRadius: '50%', background: COLORS[id].hex, cursor: 'pointer',
                   border: colorId === id ? '2px solid #c5a572' : '1px solid #d9d4ca' }} />
@@ -246,7 +258,7 @@ export default function App() {
         ))}
         {!isAbs && (
           <Section title="적용 유리 (5mm)">
-            {(Object.keys(GLASSES) as GlassId[]).map((id) => (
+            {(Object.keys(GLASSES) as GlassId[]).filter((id) => glassAllowed(productId, id)).map((id) => (
               <GlassChip key={id} id={id} active={glassId === id} onClick={() => set({ glassId: id })} />
             ))}
           </Section>

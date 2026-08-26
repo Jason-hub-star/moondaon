@@ -44,6 +44,9 @@ const schemas = {
     widthRangeM: z.tuple([z.number(), z.number()]), maxHeightM: z.number(),
     panelWidthFr: z.array(z.number().min(0).max(1)).optional(),
     fixedPanels: z.array(z.number().int()).optional(),
+    glassIds: z.array(z.string()).optional(),
+    colorIds: z.array(z.string()).optional(),
+    colorCats: z.array(z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs'])).optional(),
     phase: z.string(), source: z.string(),
   }),
 }
@@ -81,7 +84,13 @@ for (const c of out.patterns) {
   }
   if (c.spandrel && c.archProfile == null) xerr.push(`patterns/${c.id}: spandrel은 archProfile 필요`)
 }
+const glassIdSet = new Set(out.glasses.map((g) => g.id))
+const colorIdSet = new Set(out.colors.map((g) => g.id))
 for (const c of out.products) {
+  for (const g of c.glassIds ?? [])
+    if (!glassIdSet.has(g)) xerr.push(`products/${c.id}: glassIds '${g}' — 존재하지 않는 유리 카드`)
+  for (const g of c.colorIds ?? [])
+    if (!colorIdSet.has(g)) xerr.push(`products/${c.id}: colorIds '${g}' — 존재하지 않는 색상 카드`)
   if (c.panelWidthFr) {
     if (c.panelWidthFr.length !== c.panels) xerr.push(`products/${c.id}: panelWidthFr 길이 ${c.panelWidthFr.length} ≠ panels ${c.panels}`)
     const sum = c.panelWidthFr.reduce((a, b) => a + b, 0)

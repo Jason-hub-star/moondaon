@@ -8,6 +8,7 @@ stileWidthM: 0.019
 stileDepthM: 0.035
 widthRangeM: [0.7, 1.0]
 maxHeightM: 2.1
+colorCats: [abs]
 phase: P5
 source: 리플렛_텍스트_정리.json abs_collection
 ---
