@@ -4,6 +4,7 @@ import type { Group } from 'three'
 import { CaptureRig } from './capture/CaptureRig'
 import { useCapture, buildPrompt, CAPTURE_MS, type CameraPath } from './capture/capture'
 import { openAR } from './ar/openAR'
+import { sharePhoto } from './capture/sharePhoto'
 import { OrbitControls } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
@@ -84,6 +85,13 @@ export default function App() {
   const [compare, setCompare] = useState(false)
   const [capMenu, setCapMenu] = useState(false)
   const [capDone, setCapDone] = useState<{ url: string; prompt: string; base: string } | null>(null)
+  const [shareCard, setShareCard] = useState<'idle' | 'busy' | 'fail' | string>('idle')
+  const makeShareCard = async () => {
+    const canvas = canvasRef.current
+    if (!canvas || shareCard === 'busy') return
+    setShareCard('busy')
+    try { setShareCard(await sharePhoto(canvas)) } catch { setShareCard('fail') }
+  }
   const record = async (path: CameraPath) => {
     const canvas = canvasRef.current
     if (!canvas || capActive) return
@@ -307,6 +315,19 @@ export default function App() {
             background: '#f6efe3', color: '#2b2926', fontSize: 13, cursor: 'pointer' }}>
           이 구성 공유 링크 복사
         </button>
+        <button onClick={makeShareCard} disabled={shareCard === 'busy'}
+          style={{ width: '100%', marginTop: 6, padding: '10px 0', borderRadius: 8, border: '1px solid #c5a572',
+            background: '#c5a572', color: '#fff', fontSize: 13, cursor: 'pointer' }}>
+          {shareCard === 'busy' ? '카드 만드는 중…' : '지금 화면으로 공유 카드 만들기'}
+        </button>
+        {shareCard === 'fail' && <p style={{ fontSize: 12, color: '#a33', margin: '6px 0 0' }}>카드 생성 실패 — 잠시 후 다시 시도해주세요.</p>}
+        {shareCard.startsWith('http') && (
+          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+            <input readOnly value={shareCard} onFocus={(e) => e.currentTarget.select()} aria-label="사진 공유 링크"
+              style={{ flex: 1, fontSize: 11, padding: '8px 6px', borderRadius: 8, border: '1px solid #e6e1d8', background: '#fff', color: '#2b2926' }} />
+            <Chip active onClick={() => navigator.clipboard.writeText(shareCard)}>복사</Chip>
+          </div>
+        )}
       </aside>
       )}
     </div>

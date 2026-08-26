@@ -81,3 +81,4 @@ docs/status/SCOUT-LOG.md
 # 카드 파이프라인 산출물 (정본은 data/cards)
 apps/web/src/generated/
 .vercel
+.env.local
