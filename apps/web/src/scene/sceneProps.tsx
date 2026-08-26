@@ -24,10 +24,9 @@ export const SCENE_PROPS: SceneProp[] = [
   // 현관 바닥 소품 y=-0.045: Entryway v3 타일 단차(STEP)와 동기
   // KKARTdoor 실측(2026-08-26): 현관 반폭 VEST=doorW/2+0.28 — 벽 추종 소품은 doorL/doorR 앵커로 표현
   // 신발장: 좌측벽 붙박이(벽 안면 x=-VEST+0.05에 밀착, 깊이 0.35 → 중심 x=-doorW/2-0.055), z ≤ -1.1 (ㄱ자 리턴은 우측만 침범)
-  { id: 'shoe-cabinet', type: 'shoeCabinet', anchor: 'doorL', position: [-0.055, -0.045, -1.5], rotation: [0, Math.PI / 2, 0] },
+  { id: 'shoe-cabinet', type: 'shoeCabinet', anchor: 'doorL', position: [-0.055, -0.045, -1.06], rotation: [0, Math.PI / 2, 0] }, // 에디터 실배치 2026-08-26
   { id: 'fire-door', type: 'fireDoor', position: [0, -0.045, -1.94] }, // 뒷벽 중앙 — 거실→중문→현관문 시선축(복도형 70%)
   { id: 'door-mat', type: 'doorMat', position: [0.1, -0.041, -1.55] },
-  { id: 'entry-shoes', type: 'entryShoes', position: [0.05, -0.045, -1.55] },
   { id: 'umbrella-stand', type: 'umbrellaStand', anchor: 'doorR', position: [0, -0.045, -1.8] },
   { id: 'slipper-l', type: 'slipper', position: [0.32, 0, 0.62], rotation: [0, 0.25, 0] },
   { id: 'slipper-r', type: 'slipper', position: [0.5, 0, 0.66], rotation: [0, 0.1, 0] },
@@ -54,7 +53,6 @@ function makePropMats() {
     steel: new THREE.MeshStandardMaterial({ color: '#9a9da1', metalness: 0.55, roughness: 0.45 }),
     steelDark: new THREE.MeshStandardMaterial({ color: '#4d5054', metalness: 0.7, roughness: 0.35 }),
     mat: new THREE.MeshStandardMaterial({ color: '#8f8377', roughness: 1 }),
-    shoe: new THREE.MeshStandardMaterial({ color: '#6b5d4e', roughness: 0.85 }),
     shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
     rug: new THREE.MeshStandardMaterial({ color: '#dcc9ad', roughness: 1 }),
     mirror: new THREE.MeshStandardMaterial({ color: '#dde4ea', metalness: 0, roughness: 0.05 }), // envMap 없이 금속성은 검게 — 밝은 유전체 근사
@@ -133,15 +131,6 @@ export const RENDERERS = {
   ),
   doorMat: () => (
     <mesh material={pm().mat} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[0.85, 0.55]} /></mesh>
-  ),
-  entryShoes: () => (
-    <>
-      {([[-0.22, 0.05, 0.12, 'shoe'], [-0.05, 0.08, -0.22, 'shoe'], [0.35, -0.12, 0.35, 'shoe2'], [0.5, -0.1, 0.3, 'shoe2']] as const).map(([x, z, ry, m], i) => (
-        <mesh key={i} material={pm()[m]} position={[x, 0.035, z]} rotation={[0, ry, 0]}>
-          <boxGeometry args={[0.09, 0.07, 0.26]} />
-        </mesh>
-      ))}
-    </>
   ),
   umbrellaStand: () => (
     <>
