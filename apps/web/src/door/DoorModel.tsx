@@ -43,7 +43,7 @@ export function specFrom(productId: ProductId, widthM: number): DoorSpec {
     stileWidth: p.stileWidthM,
     stileDepth: p.stileDepthM,
     panels: p.panels,
-    overlap: 0.06,
+    overlap: 0.03, // 겹침폭 — 인접 문짝 테두리 바(19mm)가 포개져 정면에서 한 줄로 보이게 (실측치 없음, approx)
     louver: p.motion === 'louver_sliding' ? { barW: 0.03, gap: 0.035 } : undefined,
     panelWidthFr: p.panelWidthFr ? [...p.panelWidthFr] : undefined,
     fixedPanels: p.fixedPanels ? [...p.fixedPanels] : undefined,
