@@ -34,13 +34,13 @@ export const SCENE_PROPS: SceneProp[] = [
     type: 'shoeCabinet',
     anchor: 'doorL',
     position: [
-      -0.055,
-      -0.045,
+      -0.175,
+      -0.28,
       -1.06
     ],
     rotation: [
       0,
-      1.5707963267948966,
+      1.571,
       0
     ]
   },
@@ -50,16 +50,26 @@ export const SCENE_PROPS: SceneProp[] = [
     position: [
       0,
       -0.045,
-      -1.94
+      -1.83
+    ],
+    rotation: [
+      0,
+      0,
+      0
     ]
   },
   {
     id: 'door-mat',
     type: 'doorMat',
     position: [
-      0.1,
+      0.03,
       -0.041,
-      -1.55
+      -1.47
+    ],
+    rotation: [
+      0,
+      0,
+      0
     ]
   },
   {
@@ -186,7 +196,7 @@ export function resolvePosition(p: SceneProp, doorW: number): [number, number, n
 
 /* ── 벽(구조) 파라미터 — 실측 기반 기본값, ?edit=1 슬라이더로 조절·저장 ── */
 // <wall-params>
-export const WALL_PARAMS = { vestMargin: 0.15, vestDepth: 1.935, wallH: 2.645, step: 0.06 }
+export const WALL_PARAMS = { vestMargin: 0.42, vestDepth: 1.935, wallH: 2.645, step: 0.06 }
 // </wall-params>
 export type WallParams = typeof WALL_PARAMS
 /** 실측 근거 한계 — 슬라이더 범위이자 setWallParams 클램프 */
