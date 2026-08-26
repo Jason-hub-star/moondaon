@@ -58,6 +58,14 @@ export default function App() {
     return !pc.glassIds || pc.glassIds.includes(id)
   }
   const colorGroups = COLOR_GROUPS.filter((g) => (isAbs ? g.category === 'abs' : g.category !== 'abs'))
+  // 공유 링크로 비허용 값이 주입돼도 로드 시 1회 보정 (이후 전환은 onClick 보정이 담당)
+  useEffect(() => {
+    const patch: Parameters<typeof set>[0] = {}
+    if (!colorAllowed(productId, colorId)) patch.colorId = (Object.keys(COLORS) as ColorId[]).find((c) => colorAllowed(productId, c)) ?? 'white'
+    if (!glassAllowed(productId, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(productId, g)) ?? 'clear'
+    if (Object.keys(patch).length) set(patch)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const motion = PRODUCTS[productId].motion
   const metaOf = (id: PatternId) => PATTERNS[id] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
   const patternIds = (Object.keys(PATTERNS) as PatternId[]).filter((id) => {
