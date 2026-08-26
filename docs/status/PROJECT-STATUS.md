@@ -1,18 +1,13 @@
 # PROJECT-STATUS — 문다온 3D 쇼룸
 
-- 갱신: 2026-08-26 (PATTERN-V2 수렴+구현)
+- 갱신: 2026-08-26 (세션 마감 — 배포 완료)
 - 방향: 중문 디지털트윈 — 고객 커스텀 컨피규레이터 + 영상AI 레퍼런스 캡처, Vite+React+r3f
-- 스펙 정본: `docs/archive/GRILL-중문디지털트윈.md` 결정 요약표 (미결 0)
-- 현재 페이즈: **P1~P6 전체 완료** (2026-08-25 페이즈루프 1사이클)
-  - P1 3연동 뼈대+카드 SSOT(킬-실험 1 PASS) / P2 원슬+스윙 / P3 자동+기역자 / P4 간살 / P5 아치7+ABS / P6 캡처+AR+비교뷰
+- 스펙 정본: `docs/archive/GRILL-중문디지털트윈.md` 결정 요약표 + `docs/ref/PATTERN-MAP.md`(패턴 매핑) + `docs/ref/rnd/PATTERN-V2-CONVERGE-LOOP-2026-08-26.md`(v2 수렴)
+- 현재 상태: **P1~P11 완료 · 운영 배포 중** — https://moondaon-showroom.vercel.app (Vercel moondaon-showroom, push마다 CI+자동 배포). 패턴 38종·제품 11종·색상 36종, 게이트 3종(교차검증·CI·SVG 썸네일), 모바일 반응형(QA ?mobile=1). 이력 상세: `STATUS-LOG.md`
 - 블로커: 없음
 - 대기 항목:
-  - **킬-실험 2 (주인님 실행)**: ~/Downloads의 moondaon_*.mp4 + 프롬프트 페어 (캡처가 mp4 단일 배출로 근본수정됨)를 영상AI에 레퍼런스로 투입 → 프롬프트-only 대비 품질·토큰 비교. 결과에 따라 캡처 파이프라인 투자 계속 여부 결정
-  - **아이폰 AR 실기기 테스트**: 같은 와이파이에서 http://192.168.1.72:4180 (LAN 프리뷰 — 세션 종료 시 서버 재기동 필요: `cd apps/web && npm run preview -- --port 4180 --host`) → "실물 크기로 보기" → Quick Look 확인
-  - **사업 확인 (배포 후 잔여)**: 팜플렛 사진·문다온 브랜드 웹 게재 권리 — 주인님 지시로 배포 선행(2026-08-26), 권리 확인은 여전히 필요. 문제 시 프로젝트 비공개 전환으로 즉시 내릴 수 있음
-- PATTERN-V2 완료 (2026-08-26): arc 프리미티브(앵커+반경+invert)·스팬드럴·패널별 패턴(URL v2, v1 호환)·2S 자동 미러·ㄱ자 측면 픽스(실물 확인 반영). 수렴 SSOT: `docs/ref/rnd/PATTERN-V2-CONVERGE-LOOP-2026-08-26.md` — 킬-실험 5/5 PASS. 신규 패턴 10종·제품 2종(swing-sidelite/swing-2s) 등록.
-- 패턴 전수 감사 완료 (2026-08-26): `docs/ref/PATTERN-MAP.md` SSOT — 패턴 38종·제품 11종, 리플렛 실루엣 사실상 전량 이식(잔여: 3연동 문 전체 아치 1~4 = v3 패널 슬라이스 과제). anchor `center` 추가. 신규 에셋: assets/참고자료(카탈로그 4장·방연출 gif)·assets/색상표(우딘 mhtml + 시트 실텍스처 스와치 20장).
-- Entryway v2 완료 (2026-08-26): 오늘의집st 방 연출 — 우딘 실텍스처(문짝 랩핑·바닥 우드·현관 마블) + 웜 조명(코브 간접등·다운라이트) + 소품(러그·화분·액자·콘솔·걸레받이). 신규 색상 카드 7종(우드 4 + 커스텀 마블 3, hexSource: measured — 스와치 평균색). 원격: github.com/Jason-hub-star/moondaon (main).
-- **운영 배포 (2026-08-26)**: https://moondaon-showroom.vercel.app — Vercel 프로젝트 moondaon-showroom, GitHub 연동(이후 push마다 CI+자동 배포). 모바일 반응형(≤820px 세로 스택, QA ?mobile=1) 포함. 운영 검증: index·텍스처·번들 200, 최신 기능 포함 grep 확인, 데스크톱·모바일 실렌더 OK
-- 게이트 3종 완비 (2026-08-26): ①카드 교차검증(그리드 밖 solidCells·invert 위치·panelWidthFr 합 등 — 음성테스트로 차단 확인) ②GitHub Actions CI(cards→tsc→build) ③패턴 SVG 썸네일 자동 생성(빌드 시 카드→미니어처, UI 칩 겸 시각 게이트 — 38종 실렌더 검수 PASS). 우측 패널 전면 그림칩화: 제품 11종 개폐 실루엣(motion별 자동 생성)·유리 10종 tint/망입/샤틴 스와치·손잡이 길이 비례 막대
-- 다음 액션: ① 주문가능성 제약 모델링(제품별 유리 5/10종·색상·치수 제한 — 팜플렛 잔여 정보) ② S127↔S128 나르본오크 코드 문다온 확인 ③ 킬-실험 2 결과 수령 ④ 아이폰 AR 실기기 테스트
+  - **킬-실험 2 (주인님 실행)**: ~/Downloads의 moondaon_*.mp4 + 프롬프트 페어를 영상AI에 레퍼런스 투입 → 프롬프트-only 대비 비교. 결과로 캡처 파이프라인 투자 지속 판정
+  - **아이폰 AR 실기기 테스트**: 이제 운영 URL로 가능 — 아이폰에서 https://moondaon-showroom.vercel.app → "실물 크기로 보기" → Quick Look (텍스처 USDZ 반영도 확인)
+  - **사업 확인 (배포 후 잔여)**: 팜플렛 사진·문다온 브랜드 웹 게재 권리 — 주인님 지시로 배포 선행. 문제 시 Vercel 비공개 전환으로 즉시 내림
+  - **문다온 확인 2건**: S127↔S128 나르본오크 시트코드 · 3연동 겹침폭 실측(현재 30mm approx)
+- 다음 액션: ① 주문가능성 제약 모델링(제품별 유리 5/10종·색상 제한·스윙 1S 950mm 상한 — 팜플렛 잔여 정보) ② 킬-실험 2 결과 수령 → 품질 상향 우선순위 ③ v3 후보(3연동 관통 아치 패널 슬라이스·조합 프리셋) 착수 여부
