@@ -11,9 +11,9 @@ const hex = z.string().regex(/^#[0-9a-f]{6}$/)
 const schemas = {
   colors: z.object({
     id: z.string(), name: z.string(),
-    category: z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'abs']),
+    category: z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs']),
     finish: z.string(), hex, hexSource: z.enum(['approx', 'measured']),
-    sheetCode: z.string().nullable(), source: z.string(),
+    sheetCode: z.string().nullable(), texture: z.string().optional(), source: z.string(),
   }),
   glasses: z.object({
     id: z.string(), name: z.string(), thicknessMm: z.number(),

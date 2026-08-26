@@ -20,6 +20,7 @@ const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['categor
   { label: '기본색상 (기본운영)', category: 'basic-op' },
   { label: '베이직색상 (주문제 시트)', category: 'basic-sheet' },
   { label: '우드색상 (주문제 시트)', category: 'wood-sheet' },
+  { label: '커스텀 마블 (주문제 시트)', category: 'marble-sheet' },
   { label: 'ABS 도어 컬러', category: 'abs' },
 ]
 
@@ -127,10 +128,14 @@ export default function App() {
           gl={{ preserveDrawingBuffer: true }}
           onCreated={({ gl }) => { canvasRef.current = gl.domElement }}>
           <color attach="background" args={['#f4f1ec']} />
-          <ambientLight intensity={0.75} />
-          <directionalLight position={[2.5, 2.6, 3]} intensity={1.6} castShadow />
-          <directionalLight position={[-2, 2.5, -2]} intensity={0.5} />
+          <ambientLight intensity={0.55} color="#fff1e0" />
+          <directionalLight position={[2.5, 2.6, 3]} intensity={1.35} color="#fff3e4" castShadow />
+          <directionalLight position={[-2, 2.5, -2]} intensity={0.4} color="#e9edf7" />
           <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
+          {/* 다운라이트·코브 액센트 (Entryway v2 웜 무드) */}
+          <pointLight position={[-1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
+          <pointLight position={[1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
+          <pointLight position={[-2.2, 2.4, 1.2]} intensity={2.5} distance={3.5} color="#ffd9a0" />
           <Entryway doorW={wallW} doorH={spec.height} />
           <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
