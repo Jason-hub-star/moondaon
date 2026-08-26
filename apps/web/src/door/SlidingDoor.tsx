@@ -8,7 +8,7 @@ interface Props {
   spec: DoorSpec
   colorId: ColorId
   glassId: GlassId
-  pattern: PatternGrid
+  patterns: PatternGrid[]
   handleLengthM: number
   quality: 'high' | 'lite'
   /** 개폐 파라미터 t: 0=닫힘, 1=열림 (자유도 1 — 물리엔진 비채택, R1-10) */
@@ -16,7 +16,7 @@ interface Props {
 }
 
 /** 슬라이딩 도어 범용 — N트랙 순차 겹침 (연동비 i/(N-1)), N=1은 원슬라이딩(전폭 이동) */
-export function SlidingDoor({ spec, colorId, glassId, pattern, handleLengthM, quality, t }: Props) {
+export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, quality, t }: Props) {
   const mats = useMemo(() => ({
     frame: makeFrameMaterial(colorId),
     glass: makeGlassMaterial(glassId, quality),
@@ -50,7 +50,7 @@ export function SlidingDoor({ spec, colorId, glassId, pattern, handleLengthM, qu
         const x = closedX - t * r * maxTravel
         return (
           <group key={i} position={[x, H / 2, trackZ[i]]}>
-            <PanelMesh w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={pattern} handleLen={i === 2 ? handleLengthM : 0} />
+            <PanelMesh w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={patterns[i]} handleLen={i === 2 ? handleLengthM : 0} />
           </group>
         )
       })}

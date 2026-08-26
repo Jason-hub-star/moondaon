@@ -25,6 +25,13 @@ const schemas = {
     vLines: z.array(z.number().min(0).max(1)), hLines: z.array(z.number().min(0).max(1)),
     solidCells: z.array(z.tuple([z.number().int(), z.number().int()])),
     archProfile: z.number().min(0).max(0.6).optional(),
+    spandrel: z.enum(['solid', 'glass']).optional(),
+    arcs: z.array(z.object({
+      anchor: z.enum(['tl', 'tr', 'bl', 'br', 'left', 'right', 'top', 'bottom']),
+      rx: z.number().min(0).max(1), ry: z.number().min(0).max(1),
+      fill: z.enum(['solid', 'glass']), invert: z.boolean().optional(),
+    })).optional(),
+    motions: z.array(z.string()).optional(),
     geometrySource: z.enum(['approx', 'measured']), source: z.string(),
   }),
   handles: z.object({
@@ -35,6 +42,8 @@ const schemas = {
     id: z.string(), name: z.string(), motion: z.string(), panels: z.number().int(),
     frameDepthM: z.number(), stileWidthM: z.number(), stileDepthM: z.number(),
     widthRangeM: z.tuple([z.number(), z.number()]), maxHeightM: z.number(),
+    panelWidthFr: z.array(z.number().min(0).max(1)).optional(),
+    fixedPanels: z.array(z.number().int()).optional(),
     phase: z.string(), source: z.string(),
   }),
 }

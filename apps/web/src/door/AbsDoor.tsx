@@ -7,7 +7,7 @@ interface Props {
   spec: DoorSpec
   colorId: ColorId
   glassId: GlassId
-  pattern: PatternGrid
+  patterns: PatternGrid[]
   handleLengthM: number
   quality: 'high' | 'lite'
   t: number

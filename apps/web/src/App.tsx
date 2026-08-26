@@ -24,17 +24,22 @@ const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['categor
 ]
 
 export default function App() {
-  const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, set } = useConfig()
+  const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM)
-  const pattern = PATTERNS[patternId]
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
   const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
   const isArch = productId === 'custom-arch'
   const colorGroups = COLOR_GROUPS.filter((g) => (isAbs ? g.category === 'abs' : g.category !== 'abs'))
-  const archOf = (id: PatternId) => (PATTERNS[id] as { archProfile?: number }).archProfile
-  const patternIds = (Object.keys(PATTERNS) as PatternId[]).filter((id) =>
-    isArch ? archOf(id) != null || id === 'open' : archOf(id) == null)
+  const motion = PRODUCTS[productId].motion
+  const metaOf = (id: PatternId) => PATTERNS[id] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
+  const patternIds = (Object.keys(PATTERNS) as PatternId[]).filter((id) => {
+    const m = metaOf(id)
+    if (m.motions && !m.motions.includes(motion)) return false
+    if (isArch) return m.archProfile != null || id === 'open'
+    return m.archProfile == null || m.spandrel != null // 통아치 문짝은 커스텀아치 전용
+  })
+  const fixedIdxs = (PRODUCTS[productId] as { fixedPanels?: readonly number[] }).fixedPanels ?? []
   // 자동재생 — 자동중문 감속(ease-out) 연출 (R2-06: 모션만)
   const [playing, setPlaying] = useState(false)
   const raf = useRef(0)
@@ -129,7 +134,7 @@ export default function App() {
           <Entryway doorW={wallW} doorH={spec.height} />
           <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
-            pattern={{ vLines: [...pattern.vLines], hLines: [...pattern.hLines], solidCells: pattern.solidCells.map((c) => [...c] as [number, number]), archProfile: (pattern as { archProfile?: number }).archProfile }}
+            patternId={patternId} panelPatternIds={panelPatterns ?? undefined}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           </group>
           <CaptureRig />
@@ -201,9 +206,11 @@ export default function App() {
               const arch = id === 'custom-arch'
               const patch: Parameters<typeof set>[0] = { productId: id }
               if (abs !== (COLORS[colorId].category === 'abs')) patch.colorId = abs ? 'abs-white' : 'white'
-              const curArch = (PATTERNS[patternId] as { archProfile?: number }).archProfile != null
-              if (arch && !curArch) patch.patternId = 'arch3'
-              if (!arch && curArch) patch.patternId = 'open'
+              const cur = PATTERNS[patternId] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
+              if (arch && cur.archProfile == null) patch.patternId = 'arch3'
+              if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
+              if (cur.motions && !cur.motions.includes(PRODUCTS[id].motion)) patch.patternId = 'open'
+              patch.panelPatterns = undefined
               set(patch)
             }}>{PRODUCTS[id].name}</Chip>
           ))}
@@ -228,6 +235,17 @@ export default function App() {
           <Section title="디자인 / 디바이딩">
             {patternIds.map((id) => (
               <Chip key={id} active={patternId === id} onClick={() => set({ patternId: id })}>{PATTERNS[id].name}</Chip>
+            ))}
+          </Section>
+        )}
+        {!isAbs && fixedIdxs.length > 0 && (
+          <Section title="픽스창 패턴 (고정 패널)">
+            {patternIds.map((id) => (
+              <Chip key={id} active={(panelPatterns?.[fixedIdxs[0]] ?? patternId) === id} onClick={() => {
+                const arr: (PatternId | null)[] = Array.from({ length: PRODUCTS[productId].panels }, (_, i) => panelPatterns?.[i] ?? null)
+                for (const fi of fixedIdxs) arr[fi] = id
+                set({ panelPatterns: arr })
+              }}>{PATTERNS[id].name}</Chip>
             ))}
           </Section>
         )}
