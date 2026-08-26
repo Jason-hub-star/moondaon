@@ -11,6 +11,11 @@ import { Monstera } from './Monstera'
 
 /** anchor: 문폭(doorW)에 따라오는 소품용 — x에 앵커 오프셋이 더해진다 */
 export type PropAnchor = 'abs' | 'doorL' | 'doorR'
+export interface PropOverride {
+  position?: [number, number, number]
+  rotation?: [number, number, number]
+  hidden?: boolean
+}
 export interface SceneProp {
   id: string
   type: keyof typeof RENDERERS
@@ -18,6 +23,8 @@ export interface SceneProp {
   position: [number, number, number]
   rotation?: [number, number, number]
   scale?: number
+  /** 씬 모드별 배치 오버라이드 — 개방형 코너(ㄱ자)는 벽이 달라져 소품 자리도 달라진다 */
+  modes?: { openCorner?: PropOverride }
 }
 
 /*
@@ -66,6 +73,7 @@ export const SCENE_PROPS: SceneProp[] = [
       -0.041,
       -1.47
     ],
+    modes: { openCorner: { position: [-0.18, -0.041, -1.47] } },
     rotation: [
       0,
       0,
@@ -77,7 +85,7 @@ export const SCENE_PROPS: SceneProp[] = [
     type: 'umbrellaStand',
     anchor: 'doorR',
     position: [
-      0,
+      -0.16,
       -0.045,
       -1.8
     ]
@@ -131,7 +139,8 @@ export const SCENE_PROPS: SceneProp[] = [
       -0.06,
       -0.35,
       0
-    ]
+    ],
+    modes: { openCorner: { hidden: true } } // 기대던 우측 벽이 개방형에선 없다
   },
   {
     id: 'window',
@@ -159,9 +168,9 @@ export const SCENE_PROPS: SceneProp[] = [
   {
     id: 'wallpad',
     type: 'wallpad',
-    anchor: 'doorR',
+    anchor: 'doorL',
     position: [
-      0.32,
+      -0.32,
       1.32,
       0.09
     ]
@@ -189,9 +198,15 @@ export const SCENE_PROPS: SceneProp[] = [
 ]
 // </scene-props>
 
-export function resolvePosition(p: SceneProp, doorW: number): [number, number, number] {
+export function resolveProp(p: SceneProp, doorW: number, openCorner: boolean) {
+  const o = openCorner ? p.modes?.openCorner : undefined
+  const base = o?.position ?? p.position
   const dx = p.anchor === 'doorL' ? -doorW / 2 : p.anchor === 'doorR' ? doorW / 2 : 0
-  return [p.position[0] + dx, p.position[1], p.position[2]]
+  return {
+    position: [base[0] + dx, base[1], base[2]] as [number, number, number],
+    rotation: (o?.rotation ?? p.rotation ?? [0, 0, 0]) as [number, number, number],
+    hidden: o?.hidden ?? false,
+  }
 }
 
 /* ── 벽(구조) 파라미터 — 실측 기반 기본값, ?edit=1 슬라이더로 조절·저장 ── */
@@ -370,17 +385,19 @@ export const RENDERERS = {
 // dev 빌드에서만 존재 — 프로덕션 번들에는 분기 제거로 청크 자체가 없다
 const SceneEditor = import.meta.env.DEV ? lazy(() => import('./SceneEditor')) : null
 
-export function SceneProps({ doorW }: { doorW: number }) {
+export function SceneProps({ doorW, openCorner = false }: { doorW: number; openCorner?: boolean }) {
   const [props, setProps] = useState(SCENE_PROPS)
   const [selected, setSelected] = useState<string | null>(null)
   const editing = import.meta.env.DEV && SceneEditor && new URLSearchParams(location.search).has('edit')
   return (
     <>
       {props.map((p) => {
+        const r = resolveProp(p, doorW, openCorner)
+        if (r.hidden) return null
         const Renderer = RENDERERS[p.type]
         return (
-          <group key={p.id} name={`prop:${p.id}`} position={resolvePosition(p, doorW)}
-            rotation={p.rotation ?? [0, 0, 0]} scale={p.scale ?? 1}
+          <group key={p.id} name={`prop:${p.id}`} position={r.position}
+            rotation={r.rotation} scale={p.scale ?? 1}
             onClick={editing ? (e) => { e.stopPropagation(); setSelected(p.id) } : undefined}>
             <Renderer />
           </group>
@@ -388,7 +405,7 @@ export function SceneProps({ doorW }: { doorW: number }) {
       })}
       {editing && SceneEditor && (
         <Suspense fallback={null}>
-          <SceneEditor props={props} setProps={setProps} selected={selected} setSelected={setSelected} doorW={doorW} />
+          <SceneEditor props={props} setProps={setProps} selected={selected} setSelected={setSelected} doorW={doorW} openCorner={openCorner} />
         </Suspense>
       )}
     </>

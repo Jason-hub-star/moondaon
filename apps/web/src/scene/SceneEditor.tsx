@@ -26,12 +26,13 @@ function serializeWalls(wp: WallParams) {
 }
 const r3 = (v: number) => Math.round(v * 1000) / 1000
 
-export default function SceneEditor({ props, setProps, selected, setSelected, doorW }: {
+export default function SceneEditor({ props, setProps, selected, setSelected, doorW, openCorner = false }: {
   props: SceneProp[]
   setProps: (p: SceneProp[]) => void
   selected: string | null
   setSelected: (id: string | null) => void
   doorW: number
+  openCorner?: boolean
 }) {
   const scene = useThree((s) => s.scene)
   const [mode, setMode] = useState<'translate' | 'rotate'>('translate')
@@ -160,11 +161,11 @@ export default function SceneEditor({ props, setProps, selected, setSelected, do
       const dr = Math.abs(target.rotation.x - s.r[0]) + Math.abs(target.rotation.y - s.r[1]) + Math.abs(target.rotation.z - s.r[2])
       if (dp < 0.005 && dr < 0.005) return
     }
-    mutateProps(props.map((p) => p.id !== selected ? p : {
-      ...p,
-      position: [r3(target.position.x - dx), r3(target.position.y), r3(target.position.z)] as [number, number, number],
-      rotation: [r3(target.rotation.x), r3(target.rotation.y), r3(target.rotation.z)] as [number, number, number],
-    }), `${selected} 저장됨`)
+    const position = [r3(target.position.x - dx), r3(target.position.y), r3(target.position.z)] as [number, number, number]
+    const rotation = [r3(target.rotation.x), r3(target.rotation.y), r3(target.rotation.z)] as [number, number, number]
+    mutateProps(props.map((p) => p.id !== selected ? p : openCorner
+      ? { ...p, modes: { ...p.modes, openCorner: { ...p.modes?.openCorner, position, rotation } } }
+      : { ...p, position, rotation }), openCorner ? `${selected} ㄱ자 배치 저장됨` : `${selected} 저장됨`)
   }
 
   const onWall = (k: keyof WallParams, v: number) => {
@@ -201,7 +202,7 @@ export default function SceneEditor({ props, setProps, selected, setSelected, do
           maxHeight: '78vh', overflowY: 'auto', background: 'rgba(20,22,26,0.92)', color: '#ddd',
           borderRadius: 10, padding: '10px 10px 12px', font: '12px/1.5 system-ui, sans-serif',
         }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>씬 편집 (dev)</div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>씬 편집 (dev){openCorner ? ' — ㄱ자 모드 배치' : ''}</div>
           <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
             <button style={{ ...chip(), color: histLen[0] ? '#ddd' : '#666' }} onClick={undo}>↩ 되돌리기{histLen[0] ? ` ${histLen[0]}` : ''}</button>
             <button style={{ ...chip(), color: histLen[1] ? '#ddd' : '#666' }} onClick={redo}>↪ 다시{histLen[1] ? ` ${histLen[1]}` : ''}</button>

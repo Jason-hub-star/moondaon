@@ -12,9 +12,13 @@ function sceneSave(): Plugin {
   return {
     name: 'scene-save',
     apply: 'serve',
-    // 편집기 저장 직후의 HMR은 무효화한다 — 클라이언트 상태가 이미 파일과 같아서 리로드는 편집만 끊는다
+    // 편집기 저장 직후의 HMR 푸시만 막는다 — 단 모듈 캐시는 무효화해서 다음 로드가 새 코드를 받게 한다
+    // (invalidate 없이 []만 반환하면 vite가 옛 transform을 계속 서빙해 새로고침도 stale — 실측 2026-08-27)
     handleHotUpdate(ctx) {
-      if (ctx.file.endsWith('scene/sceneProps.tsx') && Date.now() - justSaved < 2000) return []
+      if (ctx.file.endsWith('scene/sceneProps.tsx') && Date.now() - justSaved < 2000) {
+        ctx.modules.forEach((m) => ctx.server.moduleGraph.invalidateModule(m))
+        return []
+      }
     },
     configureServer(server) {
       server.middlewares.use('/__scene-save', (req, res) => {

@@ -9,7 +9,7 @@ import { SceneProps, useWallParams } from './sceneProps'
  * 신발장 천장까지 붙박이(하부 띄움+간접등), 현관 타일 단차 -45mm. 개구 실측 중앙값 1214mm.
  * ponytail: 소품은 저폴리 프리미티브 근사 — 문이 주인공, 소품은 무드 담당.
  */
-export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
+export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; doorH: number; openCorner?: boolean }) {
   const mats = useMemo(() => ({
     wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95,
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
@@ -26,32 +26,47 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
     art2: new THREE.MeshStandardMaterial({ color: '#c9d2c5', roughness: 0.95 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
     down: new THREE.MeshStandardMaterial({ color: '#fff6e6', emissive: '#fff0d0', emissiveIntensity: 2.2 }),
+    boothGlass: new THREE.MeshStandardMaterial({ color: '#b9a08a', transparent: true, opacity: 0.28, roughness: 0.05, side: THREE.DoubleSide }),
   }), [])
   const WP = useWallParams() // 실측 기본값 + ?edit=1 슬라이더 (sceneProps.tsx <wall-params>)
   const WALL_W = 5, WALL_H = WP.wallH, side = (WALL_W - doorW) / 2
   const VEST = doorW / 2 + WP.vestMargin // 현관(유리 너머) 반폭 — 실측 복도폭(개구+0.5~0.6m) 재현
   const STEP = WP.step // 현관 타일 단차(실측 40~50mm)
   const DEPTH = WP.vestDepth // 현관 깊이(중문→뒷벽)
+  // 개방형 코너(ㄱ자) — 목 없는 현관에 전실을 신설하는 부스: 우측은 벽 대신 하프월 가벽+고정유리 (레퍼런스: 아이지도어 ㄱ자 파티션, 실측 하프월 ≈1.05m)
+  const SIDE_W = doorW / 2 // LShapeDoor 측면 리턴 깊이와 동일 (frontW의 1/2) — 레퍼런스 실측 리턴 ≈650mm과 부합
+  const HALF_H = 0.92 // 하프월 높이 — 아이지도어 레퍼런스 실측 0.40×H(2300) ≈ 920mm
+  const boothR = doorW / 2 // 부스 우측 면(도어 리턴 평면)
+  const tileW = openCorner ? VEST + boothR : VEST * 2
+  const tileCX = openCorner ? (boothR - VEST) / 2 : 0
   return (
     <group>
       {/* 거실 바닥(우드 실텍스처) / 현관 바닥(마블 타일, 문 뒤쪽) */}
       <mesh material={mats.wood} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 1.75]} receiveShadow>
         <planeGeometry args={[WALL_W, 3.5]} />
       </mesh>
-      <mesh material={mats.tile} rotation={[-Math.PI / 2, 0, 0]} position={[0, -STEP, -DEPTH / 2]} receiveShadow>
-        <planeGeometry args={[WALL_W, DEPTH]} />
+      <mesh material={mats.tile} rotation={[-Math.PI / 2, 0, 0]} position={[tileCX, -STEP, -DEPTH / 2]} receiveShadow>
+        <planeGeometry args={[openCorner ? tileW : WALL_W, DEPTH]} />
       </mesh>
+      {/* 개방형: 부스 우측 바깥은 거실 마루가 이어진다 */}
+      {openCorner && (
+        <mesh material={mats.wood} rotation={[-Math.PI / 2, 0, 0]} position={[(boothR + WALL_W / 2) / 2, 0, -DEPTH / 2]} receiveShadow>
+          <planeGeometry args={[WALL_W / 2 - boothR, DEPTH]} />
+        </mesh>
+      )}
       {/* 단차면(마루 마구리) — 중문 바로 뒤, 현관 타일로 45mm 내려섬 */}
-      <mesh material={mats.wood} position={[0, -STEP / 2, -0.02]}>
-        <boxGeometry args={[VEST * 2, STEP, 0.016]} />
+      <mesh material={mats.wood} position={[tileCX, -STEP / 2, -0.02]}>
+        <boxGeometry args={[tileW, STEP, 0.016]} />
       </mesh>
       {/* 개구부를 낀 벽 — 좌/우/상 */}
       <mesh material={mats.wall} position={[-(doorW / 2 + side / 2 + 0.04), WALL_H / 2, 0]}>
         <boxGeometry args={[side - 0.08, WALL_H, 0.15]} />
       </mesh>
-      <mesh material={mats.wall} position={[doorW / 2 + side / 2 + 0.04, WALL_H / 2, 0]}>
-        <boxGeometry args={[side - 0.08, WALL_H, 0.15]} />
-      </mesh>
+      {!openCorner && (
+        <mesh material={mats.wall} position={[doorW / 2 + side / 2 + 0.04, WALL_H / 2, 0]}>
+          <boxGeometry args={[side - 0.08, WALL_H, 0.15]} />
+        </mesh>
+      )}
       <mesh material={mats.wall} position={[0, doorH + 0.08 + (WALL_H - doorH) / 2, 0]}>
         <boxGeometry args={[doorW + 0.3, WALL_H - doorH, 0.15]} />
       </mesh>
@@ -59,9 +74,11 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
       <mesh material={mats.base} position={[-(doorW / 2 + side / 2 + 0.04), 0.045, 0.082]}>
         <boxGeometry args={[side - 0.08, 0.09, 0.012]} />
       </mesh>
-      <mesh material={mats.base} position={[doorW / 2 + side / 2 + 0.04, 0.045, 0.082]}>
-        <boxGeometry args={[side - 0.08, 0.09, 0.012]} />
-      </mesh>
+      {!openCorner && (
+        <mesh material={mats.base} position={[doorW / 2 + side / 2 + 0.04, 0.045, 0.082]}>
+          <boxGeometry args={[side - 0.08, 0.09, 0.012]} />
+        </mesh>
+      )}
       <mesh material={mats.base} position={[-WALL_W / 2 + 0.056, 0.045, 1.2]}>
         <boxGeometry args={[0.012, 0.09, 4]} />
       </mesh>
@@ -76,9 +93,29 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
       <mesh material={mats.wall} position={[-VEST, WALL_H / 2, -DEPTH / 2]}>
         <boxGeometry args={[0.1, WALL_H, DEPTH]} />
       </mesh>
-      <mesh material={mats.wall} position={[VEST, WALL_H / 2, -DEPTH / 2]}>
-        <boxGeometry args={[0.1, WALL_H, DEPTH]} />
-      </mesh>
+      {!openCorner && (
+        <mesh material={mats.wall} position={[VEST, WALL_H / 2, -DEPTH / 2]}>
+          <boxGeometry args={[0.1, WALL_H, DEPTH]} />
+        </mesh>
+      )}
+      {/* 개방형: 도어 리턴(z 0~-SIDE_W) 뒤를 잇는 하프월 가벽 + 브론즈 고정유리 + 상부 마감 */}
+      {openCorner && (() => {
+        const z0 = SIDE_W - 0.1 // 도어 리턴 끝 기둥과 100mm 겹쳐 이음새 틈 제거
+        const len = DEPTH - z0, cz = -(z0 + DEPTH) / 2
+        return (
+          <group position={[boothR + 0.04, 0, 0]}>
+            <mesh material={mats.wall} position={[0, HALF_H / 2, cz]}>
+              <boxGeometry args={[0.08, HALF_H, len]} />
+            </mesh>
+            <mesh material={mats.boothGlass} position={[0, HALF_H + (doorH - HALF_H) / 2, cz]}>
+              <boxGeometry args={[0.02, doorH - HALF_H, len]} />
+            </mesh>
+            <mesh material={mats.wall} position={[0, doorH + (WALL_H - doorH) / 2, cz]}>
+              <boxGeometry args={[0.08, WALL_H - doorH, len]} />
+            </mesh>
+          </group>
+        )
+      })()}
       <mesh material={mats.wall} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H, (3.5 - DEPTH) / 2]}>
         <planeGeometry args={[WALL_W, DEPTH + 3.5]} />
       </mesh>
@@ -86,8 +123,8 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
       <mesh material={mats.cove} position={[-WALL_W / 2 + 0.08, WALL_H - 0.12, 1.2]}>
         <boxGeometry args={[0.03, 0.03, 3.6]} />
       </mesh>
-      <mesh material={mats.cove} position={[0, 0.12 - STEP, -DEPTH + 0.07]}>
-        <boxGeometry args={[VEST * 2 - 0.3, 0.025, 0.025]} />
+      <mesh material={mats.cove} position={[tileCX, 0.12 - STEP, -DEPTH + 0.07]}>
+        <boxGeometry args={[tileW - 0.3, 0.025, 0.025]} />
       </mesh>
       {/* 천장 다운라이트 2개 (발광 디스크) */}
       {[[-1.1, 1.6], [1.1, 1.6]].map(([x, z], i) => (
@@ -96,7 +133,7 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
         </mesh>
       ))}
       {/* 소품 일체 — sceneProps.tsx SSOT (dev ?edit=1 기즈모로 배치) */}
-      <SceneProps doorW={doorW} />
+      <SceneProps doorW={doorW} openCorner={openCorner} />
       {/* 현관 센서등 — 등기구 원판 (광원은 기존 pointLight가 담당) */}
       <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -DEPTH * 0.55]}>
         <circleGeometry args={[0.09, 20]} />
@@ -106,10 +143,12 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
         <mesh material={mats.frame}><boxGeometry args={[0.34, 0.44, 0.02]} /></mesh>
         <mesh material={mats.art1} position={[0, 0, 0.011]}><boxGeometry args={[0.28, 0.38, 0.004]} /></mesh>
       </group>
-      <group position={[doorW / 2 + side / 2, 1.42, 0.09]}>
-        <mesh material={mats.frame}><boxGeometry args={[0.28, 0.36, 0.02]} /></mesh>
-        <mesh material={mats.art2} position={[0, 0, 0.011]}><boxGeometry args={[0.22, 0.3, 0.004]} /></mesh>
-      </group>
+      {!openCorner && (
+        <group position={[doorW / 2 + side / 2, 1.42, 0.09]}>
+          <mesh material={mats.frame}><boxGeometry args={[0.28, 0.36, 0.02]} /></mesh>
+          <mesh material={mats.art2} position={[0, 0, 0.011]}><boxGeometry args={[0.22, 0.3, 0.004]} /></mesh>
+        </group>
+      )}
     </group>
   )
 }

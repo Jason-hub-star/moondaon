@@ -178,7 +178,7 @@ export default function App() {
           <pointLight position={[-1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
           <pointLight position={[1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
           <pointLight position={[-2.2, 2.4, 1.2]} intensity={2.5} distance={3.5} color="#ffd9a0" />
-          <Entryway doorW={wallW} doorH={spec.height} />
+          <Entryway doorW={wallW} doorH={spec.height} openCorner={PRODUCTS[productId].motion === 'sliding_multi_panel_corner'} />
           {/* 접지 그림자 — 가구·문 하단의 은은한 앰비언트 접지감 (정적 1프레임: 개폐 동적 그림자는 directional이 담당) */}
           <ContactShadows position={[0, 0.012, 1.3]} scale={[5.5, 4.5]} opacity={0.3} blur={2.6} far={2.2} resolution={512} frames={1} />
           <group ref={doorRef}>
