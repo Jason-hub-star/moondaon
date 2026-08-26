@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useMemo } from 'react'
 import { sheetTexture, linearTexture } from '../door/materials'
-import { SceneProps } from './sceneProps'
+import { SceneProps, useWallParams } from './sceneProps'
 
 /**
  * 현관 목업 v3 — 오늘의집st 컷어웨이 + KKARTdoor 쇼츠 64편 실측 패턴(2026-08-26, scratchpad/kkart/census.json).
@@ -27,17 +27,19 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
     down: new THREE.MeshStandardMaterial({ color: '#fff6e6', emissive: '#fff0d0', emissiveIntensity: 2.2 }),
   }), [])
-  const WALL_W = 5, WALL_H = 2.7, side = (WALL_W - doorW) / 2
-  const VEST = doorW / 2 + 0.28 // 현관(유리 너머) 반폭 — 실측 복도폭(개구+0.5~0.6m) 재현
-  const STEP = 0.045 // 현관 타일 단차(실측 40~50mm)
+  const WP = useWallParams() // 실측 기본값 + ?edit=1 슬라이더 (sceneProps.tsx <wall-params>)
+  const WALL_W = 5, WALL_H = WP.wallH, side = (WALL_W - doorW) / 2
+  const VEST = doorW / 2 + WP.vestMargin // 현관(유리 너머) 반폭 — 실측 복도폭(개구+0.5~0.6m) 재현
+  const STEP = WP.step // 현관 타일 단차(실측 40~50mm)
+  const DEPTH = WP.vestDepth // 현관 깊이(중문→뒷벽)
   return (
     <group>
       {/* 거실 바닥(우드 실텍스처) / 현관 바닥(마블 타일, 문 뒤쪽) */}
       <mesh material={mats.wood} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 1.75]} receiveShadow>
         <planeGeometry args={[WALL_W, 3.5]} />
       </mesh>
-      <mesh material={mats.tile} rotation={[-Math.PI / 2, 0, 0]} position={[0, -STEP, -1]} receiveShadow>
-        <planeGeometry args={[WALL_W, 2]} />
+      <mesh material={mats.tile} rotation={[-Math.PI / 2, 0, 0]} position={[0, -STEP, -DEPTH / 2]} receiveShadow>
+        <planeGeometry args={[WALL_W, DEPTH]} />
       </mesh>
       {/* 단차면(마루 마구리) — 중문 바로 뒤, 현관 타일로 45mm 내려섬 */}
       <mesh material={mats.wood} position={[0, -STEP / 2, -0.02]}>
@@ -68,23 +70,23 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
         <boxGeometry args={[0.1, WALL_H, 4]} />
       </mesh>
       {/* 현관 — 뒷벽·측벽·천장 */}
-      <mesh material={mats.wallBack} position={[0, WALL_H / 2, -2]}>
+      <mesh material={mats.wallBack} position={[0, WALL_H / 2, -DEPTH]}>
         <boxGeometry args={[WALL_W, WALL_H, 0.1]} />
       </mesh>
-      <mesh material={mats.wall} position={[-VEST, WALL_H / 2, -1]}>
-        <boxGeometry args={[0.1, WALL_H, 2]} />
+      <mesh material={mats.wall} position={[-VEST, WALL_H / 2, -DEPTH / 2]}>
+        <boxGeometry args={[0.1, WALL_H, DEPTH]} />
       </mesh>
-      <mesh material={mats.wall} position={[VEST, WALL_H / 2, -1]}>
-        <boxGeometry args={[0.1, WALL_H, 2]} />
+      <mesh material={mats.wall} position={[VEST, WALL_H / 2, -DEPTH / 2]}>
+        <boxGeometry args={[0.1, WALL_H, DEPTH]} />
       </mesh>
-      <mesh material={mats.wall} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H, 0.75]}>
-        <planeGeometry args={[WALL_W, 5.5]} />
+      <mesh material={mats.wall} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H, (3.5 - DEPTH) / 2]}>
+        <planeGeometry args={[WALL_W, DEPTH + 3.5]} />
       </mesh>
       {/* 코브 간접등 — 거실 측벽 상단 + 현관 뒷벽 하단(무드등) */}
       <mesh material={mats.cove} position={[-WALL_W / 2 + 0.08, WALL_H - 0.12, 1.2]}>
         <boxGeometry args={[0.03, 0.03, 3.6]} />
       </mesh>
-      <mesh material={mats.cove} position={[0, 0.12 - STEP, -1.93]}>
+      <mesh material={mats.cove} position={[0, 0.12 - STEP, -DEPTH + 0.07]}>
         <boxGeometry args={[VEST * 2 - 0.3, 0.025, 0.025]} />
       </mesh>
       {/* 천장 다운라이트 2개 (발광 디스크) */}
@@ -96,7 +98,7 @@ export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
       {/* 소품 일체 — sceneProps.tsx SSOT (dev ?edit=1 기즈모로 배치) */}
       <SceneProps doorW={doorW} />
       {/* 현관 센서등 — 등기구 원판 (광원은 기존 pointLight가 담당) */}
-      <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -1.1]}>
+      <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -DEPTH * 0.55]}>
         <circleGeometry args={[0.09, 20]} />
       </mesh>
 {/* 액자 2 — 개구부 좌우 벽 */}

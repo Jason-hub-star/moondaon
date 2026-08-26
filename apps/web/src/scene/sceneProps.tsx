@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useSyncExternalStore } from 'react'
 import { sheetTexture } from '../door/materials'
 import { Monstera } from './Monstera'
 
@@ -20,28 +20,193 @@ export interface SceneProp {
   scale?: number
 }
 
+/*
+ * 배치 근거(KKARTdoor 실측 + 에디터 실배치 2026-08-26 — 아래 블록은 저장 시 재작성되므로 주석은 여기에):
+ * - 현관 바닥 소품 y=-0.045: Entryway v3 타일 단차(step)와 동기
+ * - 현관 반폭 VEST=doorW/2+vestMargin — 벽 추종 소품은 doorL/doorR 앵커로 표현
+ * - shoe-cabinet: 좌측벽 붙박이(깊이 0.35 → 중심 x=-doorW/2-0.055). ㄱ자 리턴은 우측만 침범, 스윙은 +z로 열림
+ * - fire-door: 뒷벽 중앙 — 거실→중문→현관문 시선축(복도형 70%)
+ */
+// <scene-props>
 export const SCENE_PROPS: SceneProp[] = [
-  // 현관 바닥 소품 y=-0.045: Entryway v3 타일 단차(STEP)와 동기
-  // KKARTdoor 실측(2026-08-26): 현관 반폭 VEST=doorW/2+0.28 — 벽 추종 소품은 doorL/doorR 앵커로 표현
-  // 신발장: 좌측벽 붙박이(벽 안면 x=-VEST+0.05에 밀착, 깊이 0.35 → 중심 x=-doorW/2-0.055), z ≤ -1.1 (ㄱ자 리턴은 우측만 침범)
-  { id: 'shoe-cabinet', type: 'shoeCabinet', anchor: 'doorL', position: [-0.055, -0.045, -1.06], rotation: [0, Math.PI / 2, 0] }, // 에디터 실배치 2026-08-26
-  { id: 'fire-door', type: 'fireDoor', position: [0, -0.045, -1.94] }, // 뒷벽 중앙 — 거실→중문→현관문 시선축(복도형 70%)
-  { id: 'door-mat', type: 'doorMat', position: [0.1, -0.041, -1.55] },
-  { id: 'umbrella-stand', type: 'umbrellaStand', anchor: 'doorR', position: [0, -0.045, -1.8] },
-  { id: 'slipper-l', type: 'slipper', position: [0.32, 0, 0.62], rotation: [0, 0.25, 0] },
-  { id: 'slipper-r', type: 'slipper', position: [0.5, 0, 0.66], rotation: [0, 0.1, 0] },
-  { id: 'rug', type: 'rug', position: [0.3, 0.006, 1.9] },
-  { id: 'mirror', type: 'mirror', position: [2.15, 0.82, 0.24], rotation: [-0.06, -0.35, 0] },
-  { id: 'window', type: 'windowSheer', position: [-2.44, 1.55, 1.15], rotation: [0, Math.PI / 2, 0] },
-  { id: 'floor-lamp', type: 'floorLamp', position: [-1.85, 0, 2.85] },
-  { id: 'wallpad', type: 'wallpad', anchor: 'doorR', position: [0.32, 1.32, 0.09] },
-  { id: 'monstera', type: 'monstera', anchor: 'doorL', position: [-0.55, 0, 0.6], scale: 0.85 },
-  { id: 'console', type: 'console', position: [-2.22, 0, 2.2] },
+  {
+    id: 'shoe-cabinet',
+    type: 'shoeCabinet',
+    anchor: 'doorL',
+    position: [
+      -0.055,
+      -0.045,
+      -1.06
+    ],
+    rotation: [
+      0,
+      1.5707963267948966,
+      0
+    ]
+  },
+  {
+    id: 'fire-door',
+    type: 'fireDoor',
+    position: [
+      0,
+      -0.045,
+      -1.94
+    ]
+  },
+  {
+    id: 'door-mat',
+    type: 'doorMat',
+    position: [
+      0.1,
+      -0.041,
+      -1.55
+    ]
+  },
+  {
+    id: 'umbrella-stand',
+    type: 'umbrellaStand',
+    anchor: 'doorR',
+    position: [
+      0,
+      -0.045,
+      -1.8
+    ]
+  },
+  {
+    id: 'slipper-l',
+    type: 'slipper',
+    position: [
+      0.32,
+      0,
+      0.62
+    ],
+    rotation: [
+      0,
+      0.25,
+      0
+    ]
+  },
+  {
+    id: 'slipper-r',
+    type: 'slipper',
+    position: [
+      0.5,
+      0,
+      0.66
+    ],
+    rotation: [
+      0,
+      0.1,
+      0
+    ]
+  },
+  {
+    id: 'rug',
+    type: 'rug',
+    position: [
+      0.3,
+      0.006,
+      1.9
+    ]
+  },
+  {
+    id: 'mirror',
+    type: 'mirror',
+    position: [
+      2.15,
+      0.82,
+      0.24
+    ],
+    rotation: [
+      -0.06,
+      -0.35,
+      0
+    ]
+  },
+  {
+    id: 'window',
+    type: 'windowSheer',
+    position: [
+      -2.44,
+      1.55,
+      1.15
+    ],
+    rotation: [
+      0,
+      1.5707963267948966,
+      0
+    ]
+  },
+  {
+    id: 'floor-lamp',
+    type: 'floorLamp',
+    position: [
+      -1.85,
+      0,
+      2.85
+    ]
+  },
+  {
+    id: 'wallpad',
+    type: 'wallpad',
+    anchor: 'doorR',
+    position: [
+      0.32,
+      1.32,
+      0.09
+    ]
+  },
+  {
+    id: 'monstera',
+    type: 'monstera',
+    anchor: 'doorL',
+    position: [
+      -0.55,
+      0,
+      0.6
+    ],
+    scale: 0.85
+  },
+  {
+    id: 'console',
+    type: 'console',
+    position: [
+      -2.22,
+      0,
+      2.2
+    ]
+  }
 ]
+// </scene-props>
 
 export function resolvePosition(p: SceneProp, doorW: number): [number, number, number] {
   const dx = p.anchor === 'doorL' ? -doorW / 2 : p.anchor === 'doorR' ? doorW / 2 : 0
   return [p.position[0] + dx, p.position[1], p.position[2]]
+}
+
+/* ── 벽(구조) 파라미터 — 실측 기반 기본값, ?edit=1 슬라이더로 조절·저장 ── */
+// <wall-params>
+export const WALL_PARAMS = { vestMargin: 0.15, vestDepth: 1.935, wallH: 2.645, step: 0.06 }
+// </wall-params>
+export type WallParams = typeof WALL_PARAMS
+/** 실측 근거 한계 — 슬라이더 범위이자 setWallParams 클램프 */
+export const WALL_LIMITS: Record<keyof WallParams, [number, number]> = {
+  vestMargin: [0.15, 0.6], vestDepth: [1.2, 2.2], wallH: [2.3, 2.9], step: [0, 0.08],
+}
+
+let _wp: WallParams = { ...WALL_PARAMS }
+const _wpSubs = new Set<() => void>()
+export function useWallParams(): WallParams {
+  return useSyncExternalStore((cb) => { _wpSubs.add(cb); return () => _wpSubs.delete(cb) }, () => _wp)
+}
+export function setWallParams(patch: Partial<WallParams>) {
+  const next = { ..._wp }
+  for (const [k, v] of Object.entries(patch) as [keyof WallParams, number][]) {
+    const [lo, hi] = WALL_LIMITS[k]
+    next[k] = Math.min(hi, Math.max(lo, v))
+  }
+  _wp = next
+  _wpSubs.forEach((cb) => cb())
 }
 
 /* ── 소품 재질 (모듈 싱글턴 — 소품 전용, 구조 재질은 Entryway가 보유) ── */
