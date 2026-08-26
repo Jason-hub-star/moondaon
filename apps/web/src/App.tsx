@@ -25,7 +25,21 @@ const COLOR_GROUPS: { label: string; category: (typeof COLORS)[ColorId]['categor
   { label: 'ABS 도어 컬러', category: 'abs' },
 ]
 
+/** 모바일 판정 — matchMedia + QA 강제(?mobile=1) */
+function useIsMobile() {
+  const probe = () => window.matchMedia('(max-width: 820px)').matches || location.search.includes('mobile=1')
+  const [m, setM] = useState(probe)
+  useEffect(() => {
+    const q = window.matchMedia('(max-width: 820px)')
+    const fn = () => setM(probe())
+    q.addEventListener('change', fn)
+    return () => q.removeEventListener('change', fn)
+  }, [])
+  return m
+}
+
 export default function App() {
+  const isMobile = useIsMobile()
   const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
@@ -123,8 +137,8 @@ export default function App() {
     return () => cancelAnimationFrame(raf.current)
   }, [playing])
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ flex: 1, position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
+      <div style={isMobile ? { height: '52vh', position: 'relative' } : { flex: 1, position: 'relative' }}>
         <Canvas shadows camera={{ position: [1.8, 1.5, 3.4], fov: 45 }}
           gl={{ preserveDrawingBuffer: true }}
           onCreated={({ gl }) => { canvasRef.current = gl.domElement }}>
@@ -146,7 +160,7 @@ export default function App() {
           <CaptureRig />
           <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
         </Canvas>
-        <div style={{ position: 'absolute', top: 16, left: 24, display: 'flex', gap: 8 }}>
+        <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
           <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current) }}>실물 크기로 보기 (AR)</TopBtn>
           <TopBtn onClick={() => { setCompare((c) => !c); if (!compare) useCapture.getState().firePreset() }}>
             {compare ? '커스텀으로 돌아가기' : '제작사례와 비교'}</TopBtn>
@@ -163,7 +177,7 @@ export default function App() {
             )}
           </div>
         </div>
-        <div style={{ position: 'absolute', left: 24, right: 24, bottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ position: 'absolute', left: isMobile ? 12 : 24, right: isMobile ? 12 : 24, bottom: isMobile ? 10 : 20, display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12 }}>
           <span style={{ fontSize: 13 }}>닫힘</span>
           <input type="range" min={0} max={1} step={0.01} value={t} aria-label="개폐"
             onChange={(e) => set({ t: Number(e.target.value) })} style={{ flex: 1, accentColor: '#c5a572' }} />
@@ -194,7 +208,7 @@ export default function App() {
         </div>
       )}
       {compare ? (
-        <aside style={{ width: 380, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
+        <aside style={{ width: isMobile ? 'auto' : 380, flex: isMobile ? 1 : undefined, padding: '20px 18px', borderLeft: isMobile ? 'none' : '1px solid #e6e1d8', borderTop: isMobile ? '1px solid #e6e1d8' : 'none', overflowY: 'auto' }}>
           <h1 style={{ fontSize: 16, margin: '0 0 6px' }}>제작사례 (리플렛 실사진)</h1>
           <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 12px' }}>
             왼쪽 3D를 같은 앵글(정면)에 두고 색·패턴을 맞춰보세요. 이 비교가 신규 패턴 등록의 검수 도구입니다 (R1-09).</p>
@@ -202,7 +216,7 @@ export default function App() {
           <img src="/cases/cases-louver.jpg" alt="간살 제작사례" style={{ width: '100%', borderRadius: 8 }} />
         </aside>
       ) : (
-      <aside style={{ width: 300, padding: '20px 18px', borderLeft: '1px solid #e6e1d8', overflowY: 'auto' }}>
+      <aside style={{ width: isMobile ? 'auto' : 300, flex: isMobile ? 1 : undefined, padding: isMobile ? '14px 14px 28px' : '20px 18px', borderLeft: isMobile ? 'none' : '1px solid #e6e1d8', borderTop: isMobile ? '1px solid #e6e1d8' : 'none', overflowY: 'auto' }}>
         <h1 style={{ fontSize: 18, margin: '0 0 4px', letterSpacing: '0.06em' }}>문다온</h1>
         <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
         <Section title="제품">

@@ -1,0 +1,8 @@
+assets
+docs
+backend
+ai-context
+.claude
+.codex
+.github
+*.mhtml
