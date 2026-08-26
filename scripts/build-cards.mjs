@@ -156,6 +156,68 @@ function thumbSVG(p) {
 }
 const thumbs = Object.fromEntries(out.patterns.map((c) => [c.id, thumbSVG(c)]))
 
+// ---- 제품 썸네일 SVG — motion·panels·panelWidthFr·fixedPanels에서 실루엣 자동 생성 ----
+function productThumbSVG(p) {
+  const W = 84, H = 100, m = 4
+  const LINE = '#9a938a', DARK = '#4a453e', BG = '#ffffff'
+  const el = []
+  const dw = W - 2 * m, dh = H - 2 * m - 12 // 하단 12px는 개폐 화살표 영역
+  const y0 = m, y1 = m + dh
+  const panelRect = (x, w, opts = {}) =>
+    `<rect x="${x.toFixed(1)}" y="${(opts.y ?? y0).toFixed(1)}" width="${w.toFixed(1)}" height="${(opts.h ?? dh).toFixed(1)}" fill="${opts.fill ?? BG}" stroke="${LINE}" stroke-width="1.5"/>`
+  const chev = (x, y, dir) => `<path d="M${x},${y - 4} L${x + 5 * dir},${y} L${x},${y + 4}" fill="none" stroke="${DARK}" stroke-width="1.6"/>`
+  const ay = y1 + 7 // 화살표 y
+  const fr = p.panelWidthFr && p.panelWidthFr.length === p.panels ? p.panelWidthFr : Array.from({ length: p.panels }, () => 1 / p.panels)
+  const fixed = new Set(p.fixedPanels ?? [])
+  if (p.motion === 'sliding_multi_panel' || p.motion === 'automatic_sliding' || p.motion === 'louver_sliding') {
+    // N트랙 순차 겹침 — 패널마다 살짝 겹치고 z단차
+    const overlap = 6
+    const pw = (dw + (p.panels - 1) * overlap) / p.panels
+    for (let i = p.panels - 1; i >= 0; i--) {
+      const x = m + i * (pw - overlap)
+      el.push(panelRect(x, pw))
+      if (p.motion === 'louver_sliding') for (let k = 1; k <= 3; k++)
+        el.push(`<line x1="${(x + (pw * k) / 4).toFixed(1)}" y1="${y0 + 3}" x2="${(x + (pw * k) / 4).toFixed(1)}" y2="${y1 - 3}" stroke="${LINE}" stroke-width="1"/>`)
+    }
+    if (p.id === 'custom-arch') el.push(`<path d="M${m},${y0 + 16} Q${m + dw / 2},${y0 - 10} ${m + dw},${y0 + 16}" fill="none" stroke="${DARK}" stroke-width="1.5"/>`)
+    if (p.motion === 'automatic_sliding') el.push(`<circle cx="${m + dw / 2}" cy="${y0 + 6}" r="2.5" fill="${DARK}"/>`)
+    el.push(chev(m + dw / 2 - 8, ay, -1), chev(m + dw / 2 + 8, ay, -1))
+  } else if (p.motion === 'sliding_single_panel') {
+    el.push(panelRect(m + 4, dw - 8))
+    el.push(chev(m + dw / 2 - 8, ay, -1), chev(m + dw / 2 + 8, ay, -1))
+  } else if (p.motion === 'sliding_multi_panel_corner') {
+    // ㄱ자 — 정면 2장 + 측면 원근 평행사변형(고정 픽스)
+    const fw = dw * 0.66, pw2 = fw / 2 + 3
+    el.push(panelRect(m + pw2 - 3, pw2))
+    el.push(panelRect(m, pw2))
+    const sx = m + fw + 2
+    el.push(`<path d="M${sx},${y0 + 5} L${m + dw},${y0 + 12} L${m + dw},${y1 - 12} L${sx},${y1 - 5} Z" fill="#f3efe9" stroke="${LINE}" stroke-width="1.3"/>`)
+    el.push(chev(m + fw / 2 - 6, ay, -1), chev(m + fw / 2 + 6, ay, -1))
+  } else if (p.motion === 'swing_bi_directional') {
+    let acc = m
+    fr.forEach((f, i) => {
+      const w = f * dw
+      el.push(panelRect(acc, w, { fill: fixed.has(i) ? '#f3efe9' : BG }))
+      if (!fixed.has(i)) {
+        // 양방향 스윙 — 문짝 하단에 좌우 화살표
+        const cx2 = acc + w / 2
+        el.push(chev(cx2 - 7, ay, -1), chev(cx2 + 7, ay, 1))
+      }
+      acc += w
+    })
+  } else if (p.motion === 'abs_hinged') {
+    el.push(panelRect(m + 8, dw - 16, { fill: '#f3efe9' }))
+    for (const k of [0.3, 0.5, 0.7])
+      el.push(`<line x1="${m + 14}" y1="${(y0 + dh * k).toFixed(1)}" x2="${m + dw - 14}" y2="${(y0 + dh * k).toFixed(1)}" stroke="${LINE}" stroke-width="1"/>`)
+    el.push(`<circle cx="${m + dw - 13}" cy="${(y0 + dh / 2).toFixed(1)}" r="2" fill="${DARK}"/>`)
+    el.push(chev(m + dw / 2 + 4, ay, 1))
+  } else {
+    el.push(panelRect(m, dw))
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">${el.join('')}</svg>`
+}
+const productThumbs = Object.fromEntries(out.products.map((c) => [c.id, productThumbSVG(c)]))
+
 const ids = (k) => out[k].map((c) => `'${c.id}'`).join(' | ')
 const ts = `// 자동 생성 — 편집 금지. 정본은 data/cards/*.md (scripts/build-cards.mjs)
 export type ColorId = ${ids('colors')}
@@ -165,6 +227,7 @@ export type HandleId = ${ids('handles')}
 export type ProductId = ${ids('products')}
 ${Object.entries(out).map(([k, v]) => `export const ${k.toUpperCase()} = ${JSON.stringify(Object.fromEntries(v.map((c) => [c.id, c])), null, 1)} as const`).join('\n')}
 export const PATTERN_THUMBS: Record<PatternId, string> = ${JSON.stringify(thumbs, null, 0)}
+export const PRODUCT_THUMBS: Record<ProductId, string> = ${JSON.stringify(productThumbs, null, 0)}
 `
 mkdirSync(join(root, 'apps/web/src/generated'), { recursive: true })
 writeFileSync(join(root, 'apps/web/src/generated/cards.ts'), ts)

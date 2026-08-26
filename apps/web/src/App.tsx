@@ -8,7 +8,7 @@ import { OrbitControls } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { useConfig, sizeZone } from './configurator/store'
-import { PatternChip } from './configurator/PatternChip'
+import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
   COLORS, GLASSES, PATTERNS, HANDLES, PRODUCTS,
   type ColorId, type GlassId, type PatternId, type HandleId, type ProductId,
@@ -207,7 +207,7 @@ export default function App() {
         <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
         <Section title="제품">
           {(Object.keys(PRODUCTS) as ProductId[]).filter((id) => VISIBLE_PHASES.includes(PRODUCTS[id].phase)).map((id) => (
-            <Chip key={id} active={productId === id} onClick={() => {
+            <ProductChip key={id} id={id} active={productId === id} onClick={() => {
               const abs = PRODUCTS[id].motion === 'abs_hinged'
               const arch = id === 'custom-arch'
               const patch: Parameters<typeof set>[0] = { productId: id }
@@ -218,7 +218,7 @@ export default function App() {
               if (cur.motions && !cur.motions.includes(PRODUCTS[id].motion)) patch.patternId = 'open'
               patch.panelPatterns = undefined
               set(patch)
-            }}>{PRODUCTS[id].name}</Chip>
+            }} />
           ))}
         </Section>
         {colorGroups.map(({ label, category }) => (
@@ -233,7 +233,7 @@ export default function App() {
         {!isAbs && (
           <Section title="적용 유리 (5mm)">
             {(Object.keys(GLASSES) as GlassId[]).map((id) => (
-              <Chip key={id} active={glassId === id} onClick={() => set({ glassId: id })}>{GLASSES[id].name}</Chip>
+              <GlassChip key={id} id={id} active={glassId === id} onClick={() => set({ glassId: id })} />
             ))}
           </Section>
         )}
@@ -257,7 +257,7 @@ export default function App() {
         )}
         <Section title="손잡이">
           {(Object.keys(HANDLES) as HandleId[]).map((id) => (
-            <Chip key={id} active={handleId === id} onClick={() => set({ handleId: id })}>{HANDLES[id].name}</Chip>
+            <HandleChip key={id} id={id} active={handleId === id} onClick={() => set({ handleId: id })} />
           ))}
         </Section>
         <Section title={`치수 — ${Math.round(spec.width * 1000)}mm${PRODUCTS[productId].motion === 'sliding_multi_panel' ? ' · ' + sizeZone(spec.width) : ''}`}>
