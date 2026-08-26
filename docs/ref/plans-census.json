@@ -1,0 +1,98 @@
+[
+ [
+  "lottecastle-기본형",
+  "2020s",
+  "tower",
+  "diagonal",
+  "양측벽",
+  "대각 코너 현관"
+ ],
+ [
+  "중앙일보-판상84",
+  "-",
+  "slab",
+  "straight",
+  "측벽",
+  "일자 진입, 욕실 인접"
+ ],
+ [
+  "sinbanpo-59",
+  "2020",
+  "slab",
+  "straight",
+  "측벽",
+  "짧은 목 후 거실 직결"
+ ],
+ [
+  "sinbanpo-84A",
+  "2020",
+  "slab",
+  "straight",
+  "측벽",
+  ""
+ ],
+ [
+  "sinbanpo-84B",
+  "2020",
+  "slab",
+  "turn",
+  "측벽",
+  "진입 후 좌꺾임"
+ ],
+ [
+  "changwon-59B",
+  "2022",
+  "slab",
+  "straight",
+  "양측벽",
+  "전실 alcove"
+ ],
+ [
+  "changwon-84A",
+  "2022",
+  "slab",
+  "straight",
+  "양측벽",
+  "전실 alcove, 알파룸"
+ ],
+ [
+  "changwon-84B",
+  "2022",
+  "slab",
+  "straight",
+  "양측벽",
+  "전실 alcove"
+ ],
+ [
+  "osan-59A",
+  "2024",
+  "slab4bay",
+  "turn",
+  "측벽",
+  "현관 펜트리"
+ ],
+ [
+  "osan-59B",
+  "2024",
+  "slab4bay",
+  "turn",
+  "측벽",
+  "현관 펜트리"
+ ],
+ [
+  "osan-84A",
+  "2024",
+  "slab4bay",
+  "turn",
+  "측벽",
+  "현관+주방 펜트리, 알파룸"
+ ],
+ [
+  "osan-84B",
+  "2024",
+  "tower",
+  "turn",
+  "측벽",
+  "타워형, 현관 펜트리"
+ ]
+]
