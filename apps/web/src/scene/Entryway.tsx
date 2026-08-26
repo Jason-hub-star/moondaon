@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { useMemo } from 'react'
-import { sheetTexture } from '../door/materials'
+import { sheetTexture, linearTexture } from '../door/materials'
 
 /**
  * 현관 목업 v2 — 오늘의집st 컷어웨이 방 연출 (레퍼런스: assets/참고자료/오늘의집st-방연출-예시.gif).
@@ -9,11 +9,16 @@ import { sheetTexture } from '../door/materials'
  */
 export function Entryway({ doorW, doorH }: { doorW: number; doorH: number }) {
   const mats = useMemo(() => ({
-    wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95 }),
-    wallBack: new THREE.MeshStandardMaterial({ color: '#ece2d4', roughness: 0.95 }),
+    wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95,
+      normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
+    wallBack: new THREE.MeshStandardMaterial({ color: '#ece2d4', roughness: 0.95,
+      normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
     base: new THREE.MeshStandardMaterial({ color: '#cbb499', roughness: 0.8 }),
-    wood: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/hazelnut-oak.jpg', 2.6), roughness: 0.65 }),
-    tile: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/moonstone-greige.jpg', 2.2), roughness: 0.45 }),
+    wood: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/floor-oak.jpg', 2.4),
+      normalMap: linearTexture('/textures/floor-oak-n.jpg', 2.4), normalScale: new THREE.Vector2(0.6, 0.6),
+      roughnessMap: linearTexture('/textures/floor-oak-r.jpg', 2.4), roughness: 1 }),
+    tile: new THREE.MeshStandardMaterial({ color: '#e6dfd4', map: sheetTexture('/textures/tile-porcelain.jpg', 3),
+      normalMap: linearTexture('/textures/tile-porcelain-n.jpg', 3), roughness: 0.35 }),
     rug: new THREE.MeshStandardMaterial({ color: '#dcc9ad', roughness: 1 }),
     pot: new THREE.MeshStandardMaterial({ color: '#c8b9a4', roughness: 0.9 }),
     leaf: new THREE.MeshStandardMaterial({ color: '#6d8b5c', roughness: 0.85 }),

@@ -16,6 +16,20 @@ export function sheetTexture(url: string, repeat = 1.4): THREE.Texture {
   return t
 }
 
+/** 노멀·러프니스 맵용 — 색공간 변환 없이 로드 (SRGB로 읽으면 법선이 왜곡됨) */
+export function linearTexture(url: string, repeat = 1.4): THREE.Texture {
+  const key = `${url}@lin@${repeat}`
+  let t = texCache.get(key)
+  if (!t) {
+    t = new THREE.TextureLoader().load(url)
+    t.wrapS = t.wrapT = THREE.RepeatWrapping
+    t.colorSpace = THREE.NoColorSpace
+    t.repeat.set(repeat, repeat)
+    texCache.set(key, t)
+  }
+  return t
+}
+
 function texOf(colorId: ColorId): THREE.Texture | null {
   const c = COLORS[colorId] as { texture?: string }
   return c.texture ? sheetTexture(c.texture) : null

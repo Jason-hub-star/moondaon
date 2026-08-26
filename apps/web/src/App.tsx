@@ -5,7 +5,7 @@ import { CaptureRig } from './capture/CaptureRig'
 import { useCapture, buildPrompt, CAPTURE_MS, type CameraPath } from './capture/capture'
 import { openAR } from './ar/openAR'
 import { sharePhoto } from './capture/sharePhoto'
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { useConfig, sizeZone } from './configurator/store'
@@ -179,6 +179,8 @@ export default function App() {
           <pointLight position={[1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
           <pointLight position={[-2.2, 2.4, 1.2]} intensity={2.5} distance={3.5} color="#ffd9a0" />
           <Entryway doorW={wallW} doorH={spec.height} />
+          {/* 접지 그림자 — 가구·문 하단의 은은한 앰비언트 접지감 (정적 1프레임: 개폐 동적 그림자는 directional이 담당) */}
+          <ContactShadows position={[0, 0.012, 1.3]} scale={[5.5, 4.5]} opacity={0.3} blur={2.6} far={2.2} resolution={512} frames={1} />
           <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
             patternId={patternId} panelPatternIds={panelPatterns ?? undefined}
