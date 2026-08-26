@@ -65,11 +65,50 @@ function makePropMats() {
     lampPole: new THREE.MeshStandardMaterial({ color: '#5c534a', metalness: 0.6, roughness: 0.4 }),
     wallpad: new THREE.MeshStandardMaterial({ color: '#3a3d42', metalness: 0.3, roughness: 0.4 }),
     wallpadScreen: new THREE.MeshStandardMaterial({ color: '#5a80a8', emissive: '#4a6f9a', emissiveIntensity: 0.5 }),
+    slipperSole: new THREE.MeshStandardMaterial({ color: '#ece4d8', roughness: 0.65 }),
+    slipperIn: new THREE.MeshStandardMaterial({ color: '#d9ccb8', roughness: 0.9, side: THREE.DoubleSide }),
+    slipperBand: new THREE.MeshStandardMaterial({ color: '#b8aa99', roughness: 0.95, side: THREE.DoubleSide }),
     console: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/sebiji.jpg', 1.6), roughness: 0.7 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
   }
 }
 function pm() { return (_pm ??= makePropMats()) }
+
+/* 슬리퍼 지오메트리 싱글턴 — 두 짝이 공유. 발 윤곽 베지어 + 라운드 베벨 + 앞코 들림 */
+let _slip: { sole: THREE.BufferGeometry; insole: THREE.BufferGeometry; band: THREE.BufferGeometry } | null = null
+function slipperGeos() {
+  if (_slip) return _slip
+  const foot = new THREE.Shape() // +y = 앞코(넓음), -y = 뒤꿈치(좁음)
+  foot.moveTo(0, 0.13)
+  foot.bezierCurveTo(0.036, 0.128, 0.05, 0.105, 0.05, 0.07)
+  foot.bezierCurveTo(0.05, 0.03, 0.042, -0.01, 0.04, -0.05)
+  foot.bezierCurveTo(0.039, -0.095, 0.032, -0.128, 0, -0.13)
+  foot.bezierCurveTo(-0.032, -0.128, -0.039, -0.095, -0.04, -0.05)
+  foot.bezierCurveTo(-0.042, -0.01, -0.05, 0.03, -0.05, 0.07)
+  foot.bezierCurveTo(-0.05, 0.105, -0.036, 0.128, 0, 0.13)
+  const bendToe = (g: THREE.BufferGeometry) => {
+    const p = g.attributes.position
+    for (let i = 0; i < p.count; i++) {
+      const z = p.getZ(i)
+      if (z < -0.06) p.setY(i, p.getY(i) + 1.6 * (z + 0.06) ** 2)
+    }
+    g.computeVertexNormals()
+    return g
+  }
+  const sole = new THREE.ExtrudeGeometry(foot, { depth: 0.016, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.005, bevelSegments: 3, curveSegments: 14 })
+  sole.rotateX(-Math.PI / 2) // 두께 +y, 앞코 -z
+  bendToe(sole)
+  const insole = new THREE.ShapeGeometry(foot, 14)
+  insole.scale(0.86, 0.92, 1)
+  insole.rotateX(-Math.PI / 2)
+  bendToe(insole)
+  const arch = new THREE.Shape()
+  arch.absarc(0, 0, 0.054, 0, Math.PI, false)
+  arch.absarc(0, 0, 0.043, Math.PI, 0, true)
+  const band = new THREE.ExtrudeGeometry(arch, { depth: 0.085, bevelEnabled: false, curveSegments: 18 })
+  _slip = { sole, insole, band }
+  return _slip
+}
 
 /* ── 렌더러 레지스트리 — 소품 하나 = 컴포넌트 하나, 로컬 좌표는 소품 원점 기준 ── */
 export const RENDERERS = {
@@ -112,8 +151,10 @@ export const RENDERERS = {
   ),
   slipper: () => (
     <>
-      <mesh material={pm().rug} position={[0, 0.012, 0]}><boxGeometry args={[0.09, 0.02, 0.24]} /></mesh>
-      <mesh material={pm().shoe} position={[0, 0.035, -0.04]}><boxGeometry args={[0.088, 0.03, 0.1]} /></mesh>
+      <mesh geometry={slipperGeos().sole} material={pm().slipperSole} position={[0, 0.006, 0]} castShadow />
+      <mesh geometry={slipperGeos().insole} material={pm().slipperIn} position={[0, 0.0305, 0]} />
+      <mesh geometry={slipperGeos().band} material={pm().slipperBand} position={[0, 0.024, -0.125]}
+        rotation={[-0.15, 0, 0]} scale={[1, 0.72, 1]} castShadow />
     </>
   ),
   rug: () => (
