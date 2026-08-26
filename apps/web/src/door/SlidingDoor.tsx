@@ -44,6 +44,8 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
       <mesh material={mats.frame} position={[W / 2 + jamb / 2, H / 2, 0]}><boxGeometry args={[jamb, H + jamb, fd]} /></mesh>
       {/* 하부 레일 7mm */}
       <mesh material={mats.frame} position={[0, 0.0035, 0]}><boxGeometry args={[W, 0.007, fd]} /></mesh>
+      {/* 상부 트랙 커버 — 실물 문틀이 패널 상단 틈·트랙을 가림 (닫힘 시 슬릿 방지) */}
+      <mesh material={mats.frame} position={[0, H - 0.014, 0]}><boxGeometry args={[W, 0.032, fd + 0.004]} /></mesh>
       {/* 패널 3장 — 닫힘: 좌/중/우 배치, 열림: 왼쪽으로 순차 겹침 */}
       {ratio.map((r, i) => {
         const closedX = -W / 2 + pw / 2 + i * stride

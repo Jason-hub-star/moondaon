@@ -40,10 +40,12 @@ export function LShapeDoor({ spec, colorId, glassId, patterns, handleLengthM, qu
       <mesh material={mats.frame} position={[0, H + jamb / 2, 0]}><boxGeometry args={[frontW + jamb, jamb, fd]} /></mesh>
       <mesh material={mats.frame} position={[-frontW / 2 - jamb / 2, H / 2, 0]}><boxGeometry args={[jamb, H + jamb, fd]} /></mesh>
       <mesh material={mats.frame} position={[0, 0.0035, 0]}><boxGeometry args={[frontW, 0.007, fd]} /></mesh>
+      <mesh material={mats.frame} position={[0, H - 0.014, 0]}><boxGeometry args={[frontW, 0.032, fd + 0.004]} /></mesh>
       {/* 측면 문틀 (상) — 코너에서 90° */}
       <group position={[frontW / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <mesh material={mats.frame} position={[-sideW / 2, H + jamb / 2, 0]}><boxGeometry args={[sideW + jamb, jamb, fd]} /></mesh>
         <mesh material={mats.frame} position={[-sideW / 2, 0.0035, 0]}><boxGeometry args={[sideW, 0.007, fd]} /></mesh>
+        <mesh material={mats.frame} position={[-sideW / 2, H - 0.014, 0]}><boxGeometry args={[sideW, 0.032, fd + 0.004]} /></mesh>
       </group>
       {/* 정면 패널 2장 — 왼쪽으로 순차 겹침 (손잡이는 이동 패널에) */}
       {[0, 1].map((i) => {
