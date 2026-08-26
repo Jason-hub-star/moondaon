@@ -1,0 +1,10 @@
+---
+id: mondrian-c
+name: 비대칭 격자 C
+vLines: [0.35]
+hLines: [0.5, 0.8]
+solidCells: []
+motions: [sliding_multi_panel]
+geometrySource: approx
+source: 리플렛 IMG_6279 디자인/디바이딩 7번
+---

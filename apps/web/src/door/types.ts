@@ -22,7 +22,7 @@ export interface DoorSpec {
 
 /** arc 프리미티브 — 문짝 내부 정규화 좌표, 코너/변 앵커 (수렴 PATTERN-V2) */
 export interface PatternArc {
-  anchor: 'tl' | 'tr' | 'bl' | 'br' | 'left' | 'right' | 'top' | 'bottom'
+  anchor: 'tl' | 'tr' | 'bl' | 'br' | 'left' | 'right' | 'top' | 'bottom' | 'center'
   /** 앵커 기준 가로/세로 반경 (문짝 내부폭·높이 대비 0~1) */
   rx: number
   ry: number

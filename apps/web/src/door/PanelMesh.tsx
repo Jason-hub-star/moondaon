@@ -55,6 +55,10 @@ function arcRegionShape(a: PatternArc, iw: number, ih: number): THREE.Shape {
   const RX = a.rx * iw
   const RY = a.ry * ih
   const sh = new THREE.Shape()
+  if (a.anchor === 'center') {
+    sh.absellipse(0, 0, RX, RY, 0, Math.PI * 2, false, 0)
+    return sh
+  }
   if (a.anchor === 'left' || a.anchor === 'right' || a.anchor === 'top' || a.anchor === 'bottom') {
     // 변 앵커 — 평변이 해당 변에 붙는 반타원 (invert는 변에선 미지원 — 리플렛 수요 없음)
     if (a.anchor === 'right') {
@@ -69,7 +73,8 @@ function arcRegionShape(a: PatternArc, iw: number, ih: number): THREE.Shape {
     sh.closePath()
     return sh
   }
-  const { sx, sy } = CORNERS[a.anchor]
+  const corner = a.anchor as keyof typeof CORNERS // center/변은 위에서 분기 완료
+  const { sx, sy } = CORNERS[corner]
   const cx = (-sx * iw) / 2
   const cy = (-sy * ih) / 2
   if (a.invert) {
@@ -78,7 +83,7 @@ function arcRegionShape(a: PatternArc, iw: number, ih: number): THREE.Shape {
     const oy = cy + sy * RY
     const a0 = sy < 0 ? Math.PI / 2 : -Math.PI / 2
     const a1 = sx > 0 ? Math.PI : 0
-    const cw = a.anchor === 'tr' || a.anchor === 'bl'
+    const cw = corner === 'tr' || corner === 'bl'
     sh.moveTo(cx, cy)
     sh.lineTo(ox, cy)
     sh.absellipse(ox, oy, RX, RY, a0, a1, cw, 0)
@@ -92,7 +97,7 @@ function arcRegionShape(a: PatternArc, iw: number, ih: number): THREE.Shape {
     tr: { a0: Math.PI, a1: 1.5 * Math.PI, cw: false },
     bl: { a0: 0, a1: 0.5 * Math.PI, cw: false },
     br: { a0: Math.PI, a1: 0.5 * Math.PI, cw: true },
-  }[a.anchor]
+  }[corner]
   sh.moveTo(cx, cy)
   sh.lineTo(cx + RX * Math.cos(table.a0), cy + RY * Math.sin(table.a0))
   sh.absellipse(cx, cy, RX, RY, table.a0, table.a1, table.cw, 0)
@@ -106,18 +111,28 @@ function arcSweep(a: PatternArc, iw: number, ih: number) {
   if (a.anchor === 'left') return { ox: -iw / 2, oy: 0, a0: Math.PI / 2, a1: -Math.PI / 2, cw: true }
   if (a.anchor === 'top') return { ox: 0, oy: ih / 2, a0: Math.PI, a1: 0, cw: true }
   if (a.anchor === 'bottom') return { ox: 0, oy: -ih / 2, a0: Math.PI, a1: 0, cw: false }
-  const { sx, sy } = CORNERS[a.anchor]
+  const corner = a.anchor as keyof typeof CORNERS // center는 위에서 분기 완료
+  const { sx, sy } = CORNERS[corner]
   const t = {
     tl: { a0: 0, a1: 1.5 * Math.PI, cw: true },
     tr: { a0: Math.PI, a1: 1.5 * Math.PI, cw: false },
     bl: { a0: 0, a1: 0.5 * Math.PI, cw: false },
     br: { a0: Math.PI, a1: 0.5 * Math.PI, cw: true },
-  }[a.anchor]
+  }[corner]
   return { ox: (-sx * iw) / 2, oy: (-sy * ih) / 2, ...t }
 }
 
 /** arc 경계 바 — 바깥/안쪽 타원 호 사이 환형 섹터 (홀 없음) */
 function arcRing(a: PatternArc, iw: number, ih: number, s: number): THREE.Shape {
+  if (a.anchor === 'center') {
+    // 중심 타원 링 — 내부 홀은 외곽선과 접촉하지 않아 안전
+    const sh = new THREE.Shape()
+    sh.absellipse(0, 0, a.rx * iw, a.ry * ih, 0, Math.PI * 2, false, 0)
+    const hole = new THREE.Path()
+    hole.absellipse(0, 0, Math.max(0.005, a.rx * iw - s), Math.max(0.005, a.ry * ih - s), 0, Math.PI * 2, true, 0)
+    sh.holes.push(hole)
+    return sh
+  }
   const { ox, oy, a0, a1, cw } = arcSweep(a, iw, ih)
   const RX = a.rx * iw
   const RY = a.ry * ih
@@ -136,7 +151,7 @@ function arcRing(a: PatternArc, iw: number, ih: number, s: number): THREE.Shape 
 export function mirrorPattern(p: PatternGrid): PatternGrid {
   const nCols = p.vLines.length + 1
   const flip: Record<PatternArc['anchor'], PatternArc['anchor']> = {
-    tl: 'tr', tr: 'tl', bl: 'br', br: 'bl', left: 'right', right: 'left', top: 'top', bottom: 'bottom',
+    tl: 'tr', tr: 'tl', bl: 'br', br: 'bl', left: 'right', right: 'left', top: 'top', bottom: 'bottom', center: 'center',
   }
   return {
     ...p,

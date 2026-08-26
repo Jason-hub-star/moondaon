@@ -27,7 +27,7 @@ const schemas = {
     archProfile: z.number().min(0).max(0.6).optional(),
     spandrel: z.enum(['solid', 'glass']).optional(),
     arcs: z.array(z.object({
-      anchor: z.enum(['tl', 'tr', 'bl', 'br', 'left', 'right', 'top', 'bottom']),
+      anchor: z.enum(['tl', 'tr', 'bl', 'br', 'left', 'right', 'top', 'bottom', 'center']),
       rx: z.number().min(0).max(1), ry: z.number().min(0).max(1),
       fill: z.enum(['solid', 'glass']), invert: z.boolean().optional(),
     })).optional(),
