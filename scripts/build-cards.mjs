@@ -25,7 +25,7 @@ const provenance = {
 
 /** 실측 교체 대상이 되는 수치 필드 (집계 분모) */
 const NUMERIC_FIELDS = {
-  products: ['panels', 'frameDepthM', 'stileWidthM', 'stileDepthM', 'widthRangeM', 'maxHeightM', 'panelWidthFr', 'jambM', 'overlapM', 'louverBarM', 'louverGapM', 'sizeZonesMm'],
+  products: ['panels', 'frameDepthM', 'stileWidthM', 'stileDepthM', 'widthRangeM', 'maxHeightM', 'panelWidthFr', 'jambM', 'overlapM', 'louverBarM', 'louverGapM', 'sizeZonesMm', 'trackPitchM', 'panelThicknessM'],
   handles: ['lengthM'],
   rails: ['heightMm', 'widthMm'],
   patterns: ['archProfile'],
@@ -36,7 +36,8 @@ const schemas = {
     id: z.string(), name: z.string(),
     category: z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs']),
     finish: z.string(), hex, hexSource: z.enum(['approx', 'measured']),
-    sheetCode: z.string().nullable(), texture: z.string().optional(), source: z.string(),
+    sheetCode: z.string().nullable(), texture: z.string().optional(),
+    confirmWith: provenance.confirmWith, source: z.string(),
   }),
   glasses: z.object({
     id: z.string(), name: z.string(), thicknessMm: z.number(),
@@ -44,6 +45,7 @@ const schemas = {
     mesh: z.boolean(),
     /** 팜플렛 p2: 모루·굴곡유리 선택 시 기본 일체형 손잡이 적용 */
     requiresIntegratedHandle: z.boolean().optional(),
+    confirmWith: provenance.confirmWith,
     renderSource: z.enum(['approx', 'measured']), source: z.string(),
   }),
   patterns: z.object({
@@ -93,6 +95,10 @@ const schemas = {
     sizeZonesMm: z.array(z.tuple([z.number().int(), z.number().int()])).optional(),
     /** 문틀 정면폭 (m) — 팜플렛 미표기. 렌더가 이 값으로 문틀 3면을 그린다 */
     jambM: z.number(),
+    /** 연동 트랙 간 간격 (m) — 문틀 깊이 안에 N트랙이 들어가는 하드웨어 피치 */
+    trackPitchM: z.number().optional(),
+    /** 문짝 두께 (m) — 여닫이(ABS)만. 슬라이딩·스윙은 stileDepthM이 대신한다 */
+    panelThicknessM: z.number().optional(),
     /** 인접 문짝 겹침폭 (m) — 연동 슬라이딩만. 없으면 겹침 0 */
     overlapM: z.number().optional(),
     /** 간살 바 폭·간격 (m) — 간살 도어만 (팜플렛 "기본간격 30~40미리") */
@@ -169,6 +175,10 @@ for (const c of out.products) {
   if (isLouver && !(c.louverBarM != null && c.louverGapM != null))
     xerr.push(`products/${c.id}: 간살 도어인데 louverBarM/louverGapM이 없다`)
   if (!isLouver && hasLouver) xerr.push(`products/${c.id}: 간살이 아닌데 louver 수치가 있다`)
+  if (c.motion === 'abs_hinged' && c.panelThicknessM == null)
+    xerr.push(`products/${c.id}: 여닫이인데 panelThicknessM이 없다 — 문짝 두께를 렌더가 못 정한다`)
+  if (c.panels > 1 && c.overlapM != null && c.trackPitchM == null)
+    xerr.push(`products/${c.id}: 연동인데 trackPitchM이 없다 — 트랙이 겹쳐 Z-파이팅이 난다`)
   if (c.panels > 1 && c.motion.startsWith('sliding') && c.overlapM == null)
     xerr.push(`products/${c.id}: 연동 슬라이딩인데 overlapM이 없다 — 겹침 0으로 렌더된다`)
   if (c.sizeZonesMm) {
@@ -214,7 +224,22 @@ for (const [kind, fields] of Object.entries(NUMERIC_FIELDS)) {
       if (c[f] != null && !measured.has(f)) pending.push([`${kind}/${c.id}`, f])
   }
 }
-// 값이 하나뿐인 카드는 기존 카드 단위 등급이 같은 일을 한다 — 분모만 합친다
+// 색상·유리는 measured 대신 카드 단위 등급을 쓴다 — 그 등급과 confirmWith가 어긋나면 잡는다
+for (const [kind, gradeKey, valueKey] of [['colors', 'hexSource', 'hex'], ['glasses', 'renderSource', 'tint']]) {
+  const known = new Set(Object.keys(schemas[kind].shape))
+  for (const c of out[kind]) {
+    for (const [f, why] of Object.entries(c.confirmWith ?? {})) {
+      if (!known.has(f)) xerr.push(`${kind}/${c.id}: confirmWith '${f}' — 스키마에 없는 필드명`)
+      if (!why.trim()) xerr.push(`${kind}/${c.id}: confirmWith.${f} — 물어볼 내용이 비었다`)
+      if (f === valueKey && c[gradeKey] === 'measured')
+        xerr.push(`${kind}/${c.id}: ${gradeKey}가 measured인데 confirmWith.${f}가 남아 있다`)
+      asks.push([`${kind}/${c.id}`, f, why])
+    }
+  }
+}
+
+// 패턴 실루엣은 분할선 좌표 뭉치라 필드로 못 센다 — 카드 단위로 센다
+
 const approxCards = out.colors.filter((c) => c.hexSource === 'approx').length
   + out.glasses.filter((c) => c.renderSource === 'approx').length
   + out.patterns.filter((c) => c.geometrySource === 'approx').length

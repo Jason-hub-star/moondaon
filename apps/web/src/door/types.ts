@@ -14,6 +14,10 @@ export interface DoorSpec {
   overlap: number
   /** 문틀 정면폭 (m) — 카드 `jambM` */
   jamb: number
+  /** 연동 트랙 간 간격 (m) — 카드 `trackPitchM`. 단일 트랙이면 0 */
+  trackPitch: number
+  /** 문짝 두께 (m) — 여닫이만. 카드 `panelThicknessM` */
+  panelThickness?: number
   /** 간살 도어 — 세로 간살 (팜플렛: 기본간격 30~40mm) */
   louver?: { barW: number; gap: number }
   /** 하부레일 높이 (m) — 0이면 무레일(레일 메시를 그리지 않는다). 레일이 없는 제품은 undefined */
@@ -65,5 +69,6 @@ export const SLIM_3TRACK: DoorSpec = {
   panels: 3,
   overlap: 0.06,
   jamb: 0.04,
+  trackPitch: 0.033,
 }
 

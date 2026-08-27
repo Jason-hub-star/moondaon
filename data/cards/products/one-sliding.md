@@ -14,6 +14,7 @@ colorIds: [white, black, champagne-gold]  # 도장 기본운영 3색
 colorCats: [wood-sheet]
 measured: [frameDepthM, stileWidthM, stileDepthM]
 confirmWith:
+  railIds: '수동 원슬에 무레일 운영이 있는가 — 자동 원슬만 "6MM / 무레일"로 적혀 있다'
   panels: '원슬 1SD/2SD/4SD 패널 수 — 현재 1짝 고정으로 단순화'
   widthRangeM: '원슬 구간별 사이즈 — 팜플렛에 표가 없다'
   maxHeightM: '원슬 최대높이 — 팜플렛 미표기'

@@ -32,7 +32,7 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
   const pw = N > 1 ? (W + (N - 1) * spec.overlap) / N : W
   const stride = pw - spec.overlap // 인접 트랙 이동 거리
   // 트랙 z 오프셋 — 문틀 깊이 안에 N트랙, Z-파이팅 방지
-  const trackZ = Array.from({ length: N }, (_, i) => (i - (N - 1) / 2) * 0.033)
+  const trackZ = Array.from({ length: N }, (_, i) => (i - (N - 1) / 2) * spec.trackPitch)
   // 연동 비율: i/(N-1). 원슬라이딩(N=1)은 1 — 벽면 앞으로 전폭 이동
   const ratio = Array.from({ length: N }, (_, i) => (N > 1 ? i / (N - 1) : 1))
   const maxTravel = N > 1 ? (N - 1) * stride : W * 0.92

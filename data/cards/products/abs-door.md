@@ -8,10 +8,12 @@ stileWidthM: 0.019
 stileDepthM: 0.035
 widthRangeM: [0.7, 1.0]
 maxHeightM: 2.1
+panelThicknessM: 0.04
 jambM: 0.065
 colorCats: [abs]
 measured: [panels]
 confirmWith:
+  panelThicknessM: 'ABS 문짝 두께 — 팜플렛 미표기(40mm 근사)'
   frameDepthM: 'ABS 발포 문틀 8종(110~230mm) 중 기본 운영 규격'
   widthRangeM: 'ABS 도어 제작 치수 범위 — 팜플렛 미표기'
   maxHeightM: 'ABS 도어 최대높이 — 팜플렛 미표기'

@@ -39,6 +39,7 @@ export function specFrom(productId: ProductId, widthM: number, railId: RailId): 
   const p = PRODUCTS[productId] as (typeof PRODUCTS)[ProductId] & {
     panelWidthFr?: readonly number[]; fixedPanels?: readonly number[]
     overlapM?: number; louverBarM?: number; louverGapM?: number
+    trackPitchM?: number; panelThicknessM?: number
   }
   const [wMin, wMax] = p.widthRangeM
   return {
@@ -51,6 +52,8 @@ export function specFrom(productId: ProductId, widthM: number, railId: RailId): 
     panels: p.panels,
     overlap: p.overlapM ?? 0,
     jamb: p.jambM,
+    trackPitch: p.trackPitchM ?? 0,
+    panelThickness: p.panelThicknessM,
     louver: p.louverBarM != null && p.louverGapM != null ? { barW: p.louverBarM, gap: p.louverGapM } : undefined,
     panelWidthFr: p.panelWidthFr ? [...p.panelWidthFr] : undefined,
     fixedPanels: p.fixedPanels ? [...p.fixedPanels] : undefined,
