@@ -125,9 +125,9 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       {/* 개방형: 도어 리턴(z 0~-SIDE_W) 뒤를 잇는 하프월 가벽 + 브론즈 고정유리 + 상부 마감 */}
       {openCorner && (() => {
         // 도어 문틀(깊이 117mm, z ±0.0585) 안쪽에서 시작 — 가벽 끝면이 문틀에 가려 이음새가 보이지 않는다
-        // 가벽 앞면을 정면 벽 앞면(z +0.075)과 같은 평면에 두면 코너가 한 줄로 떨어진다.
-        // 뒤로 물리면 끝면이 문틀 옆에 턱으로 드러난다
-        const zF = 0.075
+        // 문틀이 가벽을 이긴다 — 코너 기둥(문틀 색, 가벽 두께까지 덮음)이 앞면을 잡고,
+        // 가벽·고정창은 그 기둥 뒷면(z −0.075)에서 시작해 끝면이 기둥에 완전히 가려진다
+        const zF = -0.075
         const len = DEPTH + zF, cz = (zF - DEPTH) / 2
         const y0 = doorH + JAMB // 상부 마감 시작 = 정면 헤더와 같은 높이
         return (
@@ -157,6 +157,13 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
           </group>
         )
       })()}
+      {/* 코너 기둥 — 문틀 색으로 개구 끝선부터 가벽 바깥면까지 덮는다. 도어 문틀과 같은 부재로 읽히면서
+          가벽·고정창의 끝면을 가려 코너에 턱이 남지 않는다 (문틀이 가벽을 이긴다) */}
+      {openCorner && (
+        <mesh material={booth.frame} position={[(boothR + boothOut) / 2, (doorH + JAMB) / 2, 0]}>
+          <boxGeometry args={[boothOut - boothR, doorH + JAMB, 0.15]} />
+        </mesh>
+      )}
       <mesh material={mats.wall} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H, (3.5 - DEPTH) / 2]}>
         <planeGeometry args={[WALL_W, DEPTH + 3.5]} />
       </mesh>
