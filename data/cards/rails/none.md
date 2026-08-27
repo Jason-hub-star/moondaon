@@ -4,6 +4,7 @@ name: 무레일
 heightMm: 0
 widthMm: null
 note: 문턱 없음 — 발 걸림·청소 부담이 없고 외풍 차단은 약하다
+measured: [heightMm]
 source: '리플렛 IMG_6283 자동 실내중문 "하부 레일 : 7MM / 10MM / 무레일" · 원슬 자동 "하부레일 : 6MM / 무레일"'
 ---
 

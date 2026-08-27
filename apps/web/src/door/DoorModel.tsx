@@ -35,7 +35,11 @@ export function gridOf(id: PatternId): PatternGrid {
 
 /** 제품 카드 → DoorSpec (1 unit = 1m) */
 export function specFrom(productId: ProductId, widthM: number, railId: RailId): DoorSpec {
-  const p = PRODUCTS[productId] as (typeof PRODUCTS)[ProductId] & { panelWidthFr?: readonly number[]; fixedPanels?: readonly number[] }
+  // 카드가 제품마다 다른 필드를 갖는다(리터럴 유니온) — 옵셔널 수치는 여기서 한 번만 넓힌다
+  const p = PRODUCTS[productId] as (typeof PRODUCTS)[ProductId] & {
+    panelWidthFr?: readonly number[]; fixedPanels?: readonly number[]
+    overlapM?: number; louverBarM?: number; louverGapM?: number
+  }
   const [wMin, wMax] = p.widthRangeM
   return {
     railHeight: railHeightOf(productId, railId),
@@ -45,8 +49,9 @@ export function specFrom(productId: ProductId, widthM: number, railId: RailId): 
     stileWidth: p.stileWidthM,
     stileDepth: p.stileDepthM,
     panels: p.panels,
-    overlap: 0.03, // 겹침폭 — 인접 문짝 테두리 바(19mm)가 포개져 정면에서 한 줄로 보이게 (실측치 없음, approx)
-    louver: p.motion === 'louver_sliding' ? { barW: 0.03, gap: 0.035 } : undefined,
+    overlap: p.overlapM ?? 0,
+    jamb: p.jambM,
+    louver: p.louverBarM != null && p.louverGapM != null ? { barW: p.louverBarM, gap: p.louverGapM } : undefined,
     panelWidthFr: p.panelWidthFr ? [...p.panelWidthFr] : undefined,
     fixedPanels: p.fixedPanels ? [...p.fixedPanels] : undefined,
   }

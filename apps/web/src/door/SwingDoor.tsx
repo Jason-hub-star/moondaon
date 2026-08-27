@@ -34,7 +34,7 @@ export function SwingDoor({ spec, colorId, glassId, patterns, handleLengthM, qua
 
   const { W, H } = { W: spec.width, H: spec.height }
   const fd = spec.frameDepth
-  const jamb = 0.04
+  const jamb = spec.jamb // 문틀 정면폭 — 카드 jambM
   const N = spec.panels
   const fr = spec.panelWidthFr && spec.panelWidthFr.length === N ? spec.panelWidthFr : Array.from({ length: N }, () => 1 / N)
   const fixed = new Set(spec.fixedPanels ?? [])

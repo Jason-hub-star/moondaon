@@ -28,7 +28,7 @@ export function AbsDoor({ spec, colorId, handleLengthM, t }: Props) {
   }), [colorId])
 
   const { W, H } = { W: spec.width, H: spec.height }
-  const jamb = 0.065 // ABS 발포 문틀 (팜플렛 110~230mm 계열 근사)
+  const jamb = spec.jamb // ABS 발포 문틀 — 카드 jambM (팜플렛 110~230mm 계열 근사)
   const d = 0.04 // 문짝 두께
   const angle = -t * MAX_ANGLE // 안여닫이
 

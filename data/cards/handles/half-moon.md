@@ -5,6 +5,7 @@ lengthM: 0.18
 type: half-moon
 orderType: order
 colorIds: [white, black, sage]
+measured: [lengthM]
 source: 팜플렛 2026-08 p5 기본운영 하드웨어 — 주문제 반달 손잡이 90×180×40 (타공 130)
 ---
 

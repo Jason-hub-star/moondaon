@@ -11,7 +11,8 @@ import { Entryway } from './scene/Entryway'
 import { isEditMode } from './scene/sceneProps'
 import { useSceneReady, SceneLoading } from './Loading'
 import { CAMERA, CAMERA_MOBILE, ORBIT } from './scene/props.data'
-import { useConfig, sizeZone } from './configurator/store'
+import { useConfig } from './configurator/store'
+import { sizeZoneOf } from './configurator/sizeZone'
 // 하부레일(문턱) — 팜플렛이 제품마다 다르게 운영한다. 판정은 순수 모듈 하나에서만 한다 (node --test 대상)
 import { railsOf, railAllowed, effectiveRail } from './configurator/rails'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
@@ -83,6 +84,7 @@ export default function App() {
   const { t, productId, colorId, glassId, patternId, handleId, railId, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM, railId)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
+  const zone = sizeZoneOf(productId, spec.width) // 팜플렛 구간표가 있는 제품만 표시
   // ㄱ자도 이제 정면 3연동이라 폭 = 개구폭 (구 버전은 1/3을 측면 픽스로 떼어 2/3만 정면에 썼다)
   const wallW = spec.width
   const editTools = isEditMode()
@@ -418,7 +420,7 @@ export default function App() {
             </Section>
           )
         })()}
-        <Section title={`치수 — ${Math.round(spec.width * 1000)}mm${PRODUCTS[productId].motion === 'sliding_multi_panel' ? ' · ' + sizeZone(spec.width) : ''}`}>
+        <Section title={`치수 — ${Math.round(spec.width * 1000)}mm${zone ? ' · ' + zone : ''}`}>
           <input type="range" min={wMin} max={wMax} step={0.01} value={Math.min(wMax, Math.max(wMin, widthM))} aria-label="가로 치수"
             onChange={(e) => set({ widthM: Number(e.target.value) })} style={{ width: '100%', accentColor: '#c5a572' }} />
         </Section>

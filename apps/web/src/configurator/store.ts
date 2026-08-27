@@ -34,13 +34,3 @@ export const useConfig = create<ConfigState>((set, get) => ({
   },
 }))
 
-/** 팜플렛 구간별 사이즈 A~D 판정 */
-export function sizeZone(widthM: number): string {
-  const mm = widthM * 1000
-  if (mm < 1200) return '범위 밖 (최소 1200)'
-  if (mm <= 1400) return 'A구간 (1200~1400)'
-  if (mm <= 1600) return 'B구간 (1401~1600)'
-  if (mm <= 1800) return 'C구간 (1601~1800)'
-  if (mm <= 2000) return 'D구간 (1801~2000)'
-  return '범위 밖 (최대 2000)'
-}

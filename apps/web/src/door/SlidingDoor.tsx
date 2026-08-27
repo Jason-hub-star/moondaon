@@ -26,7 +26,7 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
   const { W, H } = { W: spec.width, H: spec.height }
   const fd = spec.frameDepth
   const rail = spec.railHeight ?? 0 // 문턱 높이 — 문짝은 레일 '위'에 얹힌다
-  const jamb = 0.04 // 문틀 정면폭 (근사)
+  const jamb = spec.jamb // 문틀 정면폭 — 카드 jambM
   const N = spec.panels
   // 패널 폭: 개구부 N분할 + 겹침 (N=1이면 전폭)
   const pw = N > 1 ? (W + (N - 1) * spec.overlap) / N : W

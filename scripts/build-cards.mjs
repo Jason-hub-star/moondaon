@@ -8,6 +8,29 @@ import { z } from 'zod'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const hex = z.string().regex(/^#[0-9a-f]{6}$/)
 
+/**
+ * 근거 규약 (R1-14 "실측치 들어오면 교체"의 구조화).
+ *
+ * `measured` = **문다온이 준 수치**를 그대로 쓴 필드 목록 (팜플렛 인쇄값 또는 실측 수령값).
+ * 목록에 없는 수치 필드는 전부 **우리가 추정한 값** — 실측이 도착하면 교체 대상이다.
+ * `confirmWith` = 문다온에 물어봐야 할 필드와 그 내용. 물어볼 게 있는 것만 적는다.
+ *
+ * 값이 하나뿐인 카드(색상 hex·유리 발색)는 카드 단위 `hexSource`/`renderSource`가 이미
+ * 같은 일을 하므로 중복해서 넣지 않는다 — 집계만 양쪽을 함께 센다.
+ */
+const provenance = {
+  measured: z.array(z.string()).optional(),
+  confirmWith: z.record(z.string(), z.string()).optional(),
+}
+
+/** 실측 교체 대상이 되는 수치 필드 (집계 분모) */
+const NUMERIC_FIELDS = {
+  products: ['panels', 'frameDepthM', 'stileWidthM', 'stileDepthM', 'widthRangeM', 'maxHeightM', 'panelWidthFr', 'jambM', 'overlapM', 'louverBarM', 'louverGapM', 'sizeZonesMm'],
+  handles: ['lengthM'],
+  rails: ['heightMm', 'widthMm'],
+  patterns: ['archProfile'],
+}
+
 const schemas = {
   colors: z.object({
     id: z.string(), name: z.string(),
@@ -35,6 +58,7 @@ const schemas = {
       fill: z.enum(['solid', 'glass']), invert: z.boolean().optional(),
     })).optional(),
     motions: z.array(z.string()).optional(),
+    ...provenance,
     geometrySource: z.enum(['approx', 'measured']), source: z.string(),
   }),
   rails: z.object({
@@ -45,6 +69,7 @@ const schemas = {
     widthMm: z.number().nullable(),
     /** 고객이 읽을 한 줄 — 걸림·외풍·청소 트레이드오프 */
     note: z.string(),
+    ...provenance,
     source: z.string(),
   }),
   handles: z.object({
@@ -52,6 +77,7 @@ const schemas = {
     type: z.enum(['adhesive', 'integrated', 'half-moon']),
     orderType: z.enum(['stock', 'order']),
     colorIds: z.array(z.string()),
+    ...provenance,
     source: z.string(),
   }),
   products: z.object({
@@ -63,12 +89,22 @@ const schemas = {
     glassIds: z.array(z.string()).optional(),
     colorIds: z.array(z.string()).optional(),
     colorCats: z.array(z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs'])).optional(),
+    /** 팜플렛 "구간별 사이즈" 표 (mm) — 없으면 구간 개념이 없는 제품이라 UI가 표시하지 않는다 */
+    sizeZonesMm: z.array(z.tuple([z.number().int(), z.number().int()])).optional(),
+    /** 문틀 정면폭 (m) — 팜플렛 미표기. 렌더가 이 값으로 문틀 3면을 그린다 */
+    jambM: z.number(),
+    /** 인접 문짝 겹침폭 (m) — 연동 슬라이딩만. 없으면 겹침 0 */
+    overlapM: z.number().optional(),
+    /** 간살 바 폭·간격 (m) — 간살 도어만 (팜플렛 "기본간격 30~40미리") */
+    louverBarM: z.number().optional(),
+    louverGapM: z.number().optional(),
     /** 하부레일(문턱) 허용 목록 — 없으면 레일 개념이 없는 제품(스윙·ABS 여닫이)이라 UI가 섹션을 숨긴다 */
     railIds: z.array(z.string()).optional(),
     /** 스윙 제품 힌지 구성 (팜플렛 2026-08 p5 제작칫수) */
     hinge: z.string().optional(),
     /** 양개도어 주문 시 강화유리 기본적용 (팜플렛 2026-08 p5) */
     temperedDefault: z.boolean().optional(),
+    ...provenance,
     phase: z.string(), source: z.string(),
   }),
 }
@@ -127,6 +163,25 @@ for (const c of out.products) {
     for (const g of c.railIds)
       if (!railIdSet.has(g)) xerr.push(`products/${c.id}: railIds '${g}' — 존재하지 않는 레일 카드`)
   }
+  // 간살 수치는 간살 도어에만 의미가 있다 — 다른 제품에 붙으면 렌더가 조용히 무시해 낡은 값이 남는다
+  const isLouver = c.motion === 'louver_sliding'
+  const hasLouver = c.louverBarM != null || c.louverGapM != null
+  if (isLouver && !(c.louverBarM != null && c.louverGapM != null))
+    xerr.push(`products/${c.id}: 간살 도어인데 louverBarM/louverGapM이 없다`)
+  if (!isLouver && hasLouver) xerr.push(`products/${c.id}: 간살이 아닌데 louver 수치가 있다`)
+  if (c.panels > 1 && c.motion.startsWith('sliding') && c.overlapM == null)
+    xerr.push(`products/${c.id}: 연동 슬라이딩인데 overlapM이 없다 — 겹침 0으로 렌더된다`)
+  if (c.sizeZonesMm) {
+    const z = c.sizeZonesMm
+    for (let i = 0; i < z.length; i++) {
+      if (z[i][0] >= z[i][1]) xerr.push(`products/${c.id}: sizeZonesMm[${i}] 하한이 상한 이상`)
+      if (i > 0 && z[i][0] <= z[i - 1][1]) xerr.push(`products/${c.id}: sizeZonesMm 구간이 겹치거나 역순`)
+    }
+    // 슬라이더 범위와 어긋나면 고객이 표에 없는 폭을 고르고도 구간을 못 본다
+    const [lo, hi] = [z[0][0], z[z.length - 1][1]]
+    if (Math.round(c.widthRangeM[0] * 1000) !== lo) xerr.push(`products/${c.id}: 구간 하한 ${lo} ≠ widthRangeM 하한 ${c.widthRangeM[0] * 1000}`)
+    if (Math.round(c.widthRangeM[1] * 1000) !== hi) xerr.push(`products/${c.id}: 구간 상한 ${hi} ≠ widthRangeM 상한 ${c.widthRangeM[1] * 1000}`)
+  }
   if (c.panelWidthFr) {
     if (c.panelWidthFr.length !== c.panels) xerr.push(`products/${c.id}: panelWidthFr 길이 ${c.panelWidthFr.length} ≠ panels ${c.panels}`)
     const sum = c.panelWidthFr.reduce((a, b) => a + b, 0)
@@ -135,6 +190,35 @@ for (const c of out.products) {
   for (const i of c.fixedPanels ?? [])
     if (i < 0 || i >= c.panels) xerr.push(`products/${c.id}: fixedPanels ${i}가 panels ${c.panels} 밖`)
 }
+// ---- 근거 규약 검증 + 집계 (실측값이 도착했을 때 어디를 고칠지 카드가 말하게 한다) ----
+const pending = [] // 실측 대기: [kind/id, field]
+const asks = []    // 문다온 확인: [kind/id, field, 물어볼 내용]
+for (const [kind, fields] of Object.entries(NUMERIC_FIELDS)) {
+  const known = new Set(Object.keys(schemas[kind].shape))
+  for (const c of out[kind]) {
+    const measured = new Set(c.measured ?? [])
+    const ask = c.confirmWith ?? {}
+    // 오타 차단 — 스키마가 모르는 필드명을 적으면 그 항목은 영원히 아무것도 가리키지 않는다
+    for (const f of measured)
+      if (!known.has(f)) xerr.push(`${kind}/${c.id}: measured '${f}' — 스키마에 없는 필드명`)
+    for (const [f, why] of Object.entries(ask)) {
+      if (!known.has(f)) xerr.push(`${kind}/${c.id}: confirmWith '${f}' — 스키마에 없는 필드명`)
+      if (!why.trim()) xerr.push(`${kind}/${c.id}: confirmWith.${f} — 물어볼 내용이 비었다`)
+      // 모순 차단: 실측을 반영하고도 확인 목록을 안 지우는 사고를 여기서 잡는다
+      if (measured.has(f)) xerr.push(`${kind}/${c.id}: '${f}'가 measured이면서 confirmWith에 남아 있다 — 반영 후 확인 항목을 지운다`)
+      asks.push([`${kind}/${c.id}`, f, why])
+    }
+    if (c.measured && !c.measured.length) xerr.push(`${kind}/${c.id}: measured가 빈 배열 — 확정 필드가 없으면 필드를 지운다`)
+    // null은 "그 제품엔 해당 없음"이라 실측 대상이 아니다 (레일 widthMm 등)
+    for (const f of fields)
+      if (c[f] != null && !measured.has(f)) pending.push([`${kind}/${c.id}`, f])
+  }
+}
+// 값이 하나뿐인 카드는 기존 카드 단위 등급이 같은 일을 한다 — 분모만 합친다
+const approxCards = out.colors.filter((c) => c.hexSource === 'approx').length
+  + out.glasses.filter((c) => c.renderSource === 'approx').length
+  + out.patterns.filter((c) => c.geometrySource === 'approx').length
+
 if (xerr.length) { xerr.forEach((e) => console.error('XCHECK FAIL', e)); process.exit(1) }
 
 // ---- 패턴 썸네일 SVG (시각 게이트 + UI 칩) — PanelMesh와 동일한 파라메트릭 샘플링 ----
@@ -278,3 +362,8 @@ export const PRODUCT_THUMBS: Record<ProductId, string> = ${JSON.stringify(produc
 mkdirSync(join(root, 'apps/web/src/generated'), { recursive: true })
 writeFileSync(join(root, 'apps/web/src/generated/cards.ts'), ts)
 console.log(`OK: ${Object.entries(out).map(([k, v]) => `${k} ${v.length}`).join(', ')}`)
+console.log(`근거: 실측 대기 ${pending.length}개 필드 + 근사 카드 ${approxCards}장 · 문다온 확인 ${asks.length}건`)
+if (process.argv.includes('--pending')) {
+  for (const [card, f] of pending) console.log(`  대기 ${card}.${f}`)
+  for (const [card, f, why] of asks) console.log(`  확인 ${card}.${f} — ${why}`)
+}

@@ -4,6 +4,7 @@ name: 20mm 하부레일
 heightMm: 20
 widthMm: null
 note: 문턱 20mm — 외풍 차단이 크지만 발에 걸리고 청소 부담이 있다
+measured: [heightMm]
 source: '리플렛 IMG_6279 초슬림 3연동 "하부 프레임 : 7MM / 20MM 운영" · IMG_6283 ㄱ자 동일 문구'
 ---
 

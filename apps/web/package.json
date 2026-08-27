@@ -9,6 +9,7 @@
     "test": "node --test 'src/**/*.test.ts'",
     "lint": "oxlint",
     "preview": "vite preview",
+    "cards": "node ../../scripts/build-cards.mjs",
     "prebuild": "node ../../scripts/build-cards.mjs",
     "predev": "node ../../scripts/build-cards.mjs"
   },
