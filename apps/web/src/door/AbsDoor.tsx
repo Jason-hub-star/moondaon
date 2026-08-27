@@ -13,7 +13,8 @@ interface Props {
   t: number
 }
 
-const MAX_ANGLE = (95 * Math.PI) / 180
+// 88° 클램프 — 90° 초과 시 문짝이 개구 평면 뒤로 넘어가 주변 소품 관통 (스윙 공통 실측 2026-08-27)
+const MAX_ANGLE = (88 * Math.PI) / 180
 
 /**
  * ABS 도어 — 여닫이 방문 (수렴: 방문 씬 분기). 발포 문틀 + 솔리드 ABS 문짝.
@@ -47,12 +48,12 @@ export function AbsDoor({ spec, colorId, handleLengthM, t }: Props) {
               <boxGeometry args={[W - 0.12, 0.012, 0.004]} />
             </mesh>
           ))}
-          {/* 레버 손잡이 */}
-          {handleLengthM > 0 && (
-            <mesh material={mats.frame} position={[W / 2 - 0.07, -0.02, d / 2 + 0.02]}>
+          {/* 레버 손잡이 — 양면 */}
+          {handleLengthM > 0 && [1, -1].map((z) => (
+            <mesh key={z} material={mats.frame} position={[W / 2 - 0.07, -0.02, z * (d / 2 + 0.02)]}>
               <boxGeometry args={[0.13, 0.02, 0.02]} />
             </mesh>
-          )}
+          ))}
         </group>
       </group>
     </group>

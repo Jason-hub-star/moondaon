@@ -17,7 +17,8 @@ interface Props {
   dir?: 1 | -1
 }
 
-const MAX_ANGLE = (100 * Math.PI) / 180
+// 88° 클램프 — 90° 초과 시 문짝 끝이 문 평면 뒤로 넘어가 신발장(전면이 문 평면과 동일선)을 관통 (실측 2026-08-27)
+const MAX_ANGLE = (88 * Math.PI) / 180
 
 /**
  * 양방향 스윙 도어 — 1S/2S + 픽스 사이드라이트 (팜플렛: 스마트 양방향 베젤양개).
@@ -40,7 +41,6 @@ export function SwingDoor({ spec, colorId, glassId, patterns, handleLengthM, qua
   const angle = t * MAX_ANGLE * dir
   let acc = -W / 2
   const slots = fr.map((f) => { const lw = f * W; const x0 = acc; acc += lw; return { lw, x0 } })
-  const lastMovable = slots.reduce((m, _, i) => (fixed.has(i) ? m : i), -1)
 
   return (
     <group>
@@ -51,7 +51,6 @@ export function SwingDoor({ spec, colorId, glassId, patterns, handleLengthM, qua
       {slots.map(({ lw, x0 }, i) => {
         const center = x0 + lw / 2
         const pat = patterns[i] ?? patterns[0]
-        const handleLen = i === lastMovable ? handleLengthM : 0
         if (fixed.has(i)) {
           return (
             <group key={i} position={[center, H / 2, 0]}>
@@ -63,7 +62,8 @@ export function SwingDoor({ spec, colorId, glassId, patterns, handleLengthM, qua
         return (
           <group key={i} position={[hingeLeft ? x0 : x0 + lw, H / 2, 0]} rotation={[0, hingeLeft ? angle : -angle, 0]}>
             <group position={[hingeLeft ? lw / 2 : -lw / 2, 0, 0]}>
-              <PanelMesh w={lw} h={H - 0.01} spec={spec} mats={mats} pattern={pat} handleLen={handleLen} />
+              {/* 손잡이는 힌지 반대쪽 자유단 — 2S 양개는 가운데 만나는 스타일에 좌·우 각 1개 */}
+              <PanelMesh w={lw} h={H - 0.01} spec={spec} mats={mats} pattern={pat} handleLen={handleLengthM} handleSide={hingeLeft ? 1 : -1} />
             </group>
           </group>
         )

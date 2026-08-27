@@ -58,25 +58,25 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
       <mesh material={mats.wood} position={[tileCX, -STEP / 2, -0.02]}>
         <boxGeometry args={[tileW, STEP, 0.016]} />
       </mesh>
-      {/* 개구부를 낀 벽 — 좌/우/상 */}
-      <mesh material={mats.wall} position={[-(doorW / 2 + side / 2 + 0.04), WALL_H / 2, 0]}>
-        <boxGeometry args={[side - 0.08, WALL_H, 0.15]} />
+      {/* 개구부를 낀 벽 — 좌/우/상. 안쪽 모서리를 문틀 잼(개구+40mm)에 10mm 겹쳐 물림 — 공중 슬릿 제거 (실측 2026-08-27) */}
+      <mesh material={mats.wall} position={[-(doorW / 2 + side / 2 + 0.015), WALL_H / 2, 0]}>
+        <boxGeometry args={[side - 0.03, WALL_H, 0.15]} />
       </mesh>
       {!openCorner && (
-        <mesh material={mats.wall} position={[doorW / 2 + side / 2 + 0.04, WALL_H / 2, 0]}>
-          <boxGeometry args={[side - 0.08, WALL_H, 0.15]} />
+        <mesh material={mats.wall} position={[doorW / 2 + side / 2 + 0.015, WALL_H / 2, 0]}>
+          <boxGeometry args={[side - 0.03, WALL_H, 0.15]} />
         </mesh>
       )}
-      <mesh material={mats.wall} position={[0, doorH + 0.08 + (WALL_H - doorH) / 2, 0]}>
+      <mesh material={mats.wall} position={[0, doorH + 0.03 + (WALL_H - doorH) / 2, 0]}>
         <boxGeometry args={[doorW + 0.3, WALL_H - doorH, 0.15]} />
       </mesh>
       {/* 걸레받이 — 정면벽 좌우 + 측벽 */}
-      <mesh material={mats.base} position={[-(doorW / 2 + side / 2 + 0.04), 0.045, 0.082]}>
-        <boxGeometry args={[side - 0.08, 0.09, 0.012]} />
+      <mesh material={mats.base} position={[-(doorW / 2 + side / 2 + 0.015), 0.045, 0.082]}>
+        <boxGeometry args={[side - 0.03, 0.09, 0.012]} />
       </mesh>
       {!openCorner && (
-        <mesh material={mats.base} position={[doorW / 2 + side / 2 + 0.04, 0.045, 0.082]}>
-          <boxGeometry args={[side - 0.08, 0.09, 0.012]} />
+        <mesh material={mats.base} position={[doorW / 2 + side / 2 + 0.015, 0.045, 0.082]}>
+          <boxGeometry args={[side - 0.03, 0.09, 0.012]} />
         </mesh>
       )}
       <mesh material={mats.base} position={[-WALL_W / 2 + 0.056, 0.045, 1.2]}>

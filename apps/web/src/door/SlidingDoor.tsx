@@ -52,7 +52,7 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
         const x = closedX - t * r * maxTravel
         return (
           <group key={i} position={[x, H / 2, trackZ[i]]}>
-            <PanelMesh w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={patterns[i]} handleLen={i === 2 ? handleLengthM : 0} />
+            <PanelMesh w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={patterns[i]} handleLen={i === N - 1 ? handleLengthM : 0} />
           </group>
         )
       })}

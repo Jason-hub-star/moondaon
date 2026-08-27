@@ -8,6 +8,7 @@ import { sharePhoto } from './capture/sharePhoto'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
+import { isEditMode } from './scene/sceneProps'
 import { useConfig, sizeZone } from './configurator/store'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
@@ -45,6 +46,7 @@ export default function App() {
   const spec = specFrom(productId, widthM)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
+  const editTools = isEditMode()
   const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
   const isArch = productId === 'custom-arch'
   type Constrained = { glassIds?: readonly string[]; colorIds?: readonly string[]; colorCats?: readonly string[] }
@@ -191,20 +193,27 @@ export default function App() {
         </Canvas>
         <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
           <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current) }}>실물 크기로 보기 (AR)</TopBtn>
-          <TopBtn onClick={() => { setCompare((c) => !c); if (!compare) useCapture.getState().firePreset() }}>
-            {compare ? '커스텀으로 돌아가기' : '제작사례와 비교'}</TopBtn>
-          <div style={{ position: 'relative' }}>
-            <TopBtn onClick={() => setCapMenu((m) => !m)}>{capActive ? '● 녹화 중…' : '캡처 (영상AI 레퍼런스)'}</TopBtn>
-            {capMenu && !capActive && (
-              <div style={{ position: 'absolute', top: 40, left: 0, background: '#fff', border: '1px solid #e6e1d8',
-                borderRadius: 10, padding: 8, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
-                {(['front', 'orbit', 'walk'] as CameraPath[]).map((p) => (
-                  <Chip key={p} active={false} onClick={() => record(p)}>
-                    {{ front: '정면 고정', orbit: '궤도 회전', walk: '워크스루' }[p]}</Chip>
-                ))}
+          {/* 레퍼런스 비교·영상 캡처는 내부 검수 도구 — 맵 편집기(?edit=1)에서만 노출.
+              import.meta.env.DEV를 게이트 앞에 직접 두어야 프로덕션 번들에서 이 블록이 통째로 제거된다
+              (isEditMode() 호출만으로는 런타임 분기라 코드·문자열이 남는다 — 실측 2026-08-27) */}
+          {import.meta.env.DEV && editTools && (
+            <>
+              <TopBtn onClick={() => { setCompare((c) => !c); if (!compare) useCapture.getState().firePreset() }}>
+                {compare ? '커스텀으로 돌아가기' : '제작사례와 비교'}</TopBtn>
+              <div style={{ position: 'relative' }}>
+                <TopBtn onClick={() => setCapMenu((m) => !m)}>{capActive ? '● 녹화 중…' : '캡처 (영상AI 레퍼런스)'}</TopBtn>
+                {capMenu && !capActive && (
+                  <div style={{ position: 'absolute', top: 40, left: 0, background: '#fff', border: '1px solid #e6e1d8',
+                    borderRadius: 10, padding: 8, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
+                    {(['front', 'orbit', 'walk'] as CameraPath[]).map((p) => (
+                      <Chip key={p} active={false} onClick={() => record(p)}>
+                        {{ front: '정면 고정', orbit: '궤도 회전', walk: '워크스루' }[p]}</Chip>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
         <div style={{ position: 'absolute', left: isMobile ? 12 : 24, right: isMobile ? 12 : 24, bottom: isMobile ? 10 : 20, display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12 }}>
           <span style={{ fontSize: 13 }}>닫힘</span>
@@ -218,7 +227,7 @@ export default function App() {
           </button>
         </div>
       </div>
-      {capDone && (
+      {import.meta.env.DEV && capDone && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,15,.55)', zIndex: 40,
           display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#faf9f7', borderRadius: 14, padding: 22, width: 560, maxWidth: '92vw' }}>
@@ -259,6 +268,13 @@ export default function App() {
               if (arch && cur.archProfile == null) patch.patternId = 'arch3'
               if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
               if (cur.motions && !cur.motions.includes(PRODUCTS[id].motion)) patch.patternId = 'open'
+              // 폭 — 새 제품 범위로 클램프. ㄱ자는 width가 정면+측면 합이라 일반 기본값 1.25m면 정면이 833mm까지
+              // 좁아진다 → 레퍼런스 실측 정면 1147mm를 재현하는 총폭 1.72m로 맞춘다 (KKART-PATTERN.md ㄱ자 실측)
+              if (productId !== id) {
+                const [nMin, nMax] = PRODUCTS[id].widthRangeM
+                const want = PRODUCTS[id].motion === 'sliding_multi_panel_corner' ? 1.72 : widthM
+                patch.widthM = Math.min(nMax, Math.max(nMin, want))
+              }
               patch.panelPatterns = undefined
               set(patch)
             }} />

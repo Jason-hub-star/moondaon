@@ -75,6 +75,9 @@ export function DoorModel({ productId, widthM, patternId, panelPatternIds, ...re
       return <LShapeDoor spec={spec} patterns={patterns} {...rest} />
     case 'abs_hinged':
       return <AbsDoor spec={spec} patterns={patterns} {...rest} />
+    case 'automatic_sliding':
+      // 자동문은 손잡이가 없다 — 센서 개폐 (실물 관행)
+      return <SlidingDoor spec={spec} patterns={patterns} {...rest} handleLengthM={0} />
     case 'sliding_multi_panel':
     case 'sliding_single_panel':
     default:

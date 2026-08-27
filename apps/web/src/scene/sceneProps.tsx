@@ -385,10 +385,13 @@ export const RENDERERS = {
 // dev 빌드에서만 존재 — 프로덕션 번들에는 분기 제거로 청크 자체가 없다
 const SceneEditor = import.meta.env.DEV ? lazy(() => import('./SceneEditor')) : null
 
+/** 맵 편집기 모드 — dev 서버 + `?edit=1`. 내부 도구(레퍼런스 비교·영상 캡처)의 노출 게이트를 겸한다 */
+export const isEditMode = () => import.meta.env.DEV && new URLSearchParams(location.search).has('edit')
+
 export function SceneProps({ doorW, openCorner = false }: { doorW: number; openCorner?: boolean }) {
   const [props, setProps] = useState(SCENE_PROPS)
   const [selected, setSelected] = useState<string | null>(null)
-  const editing = import.meta.env.DEV && SceneEditor && new URLSearchParams(location.search).has('edit')
+  const editing = SceneEditor && isEditMode()
   return (
     <>
       {props.map((p) => {

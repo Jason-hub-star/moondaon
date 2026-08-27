@@ -162,10 +162,12 @@ export function mirrorPattern(p: PatternGrid): PatternGrid {
 }
 
 /** 문짝 1장 — 프레임 4변(19×32) + 분할 그리드 셀(유리|랩핑MDF) + arc/스팬드럴 오버레이 */
-export function PanelMesh({ w, h, spec, mats, pattern, handleLen }: {
+export function PanelMesh({ w, h, spec, mats, pattern, handleLen, handleSide = 1 }: {
   w: number; h: number; spec: DoorSpec; pattern: PatternGrid
   mats: { frame: THREE.Material; glass: THREE.Material; wrap: THREE.Material }
   handleLen: number
+  /** 손잡이가 붙는 자유단: 1=우측 스타일, -1=좌측 (스윙 오른짝 등 힌지 반대쪽) */
+  handleSide?: 1 | -1
 }) {
   const s = spec.stileWidth
   const d = spec.stileDepth
@@ -220,11 +222,11 @@ export function PanelMesh({ w, h, spec, mats, pattern, handleLen }: {
       <group>
         <mesh material={mats.frame} geometry={archGeos.frame} />
         <mesh material={mats.glass} geometry={archGeos.glass} />
-        {handleLen > 0 && (
-          <mesh material={mats.frame} position={[w / 2 - 0.045, 0, d / 2 + 0.008]}>
+        {handleLen > 0 && [1, -1].map((z) => (
+          <mesh key={z} material={mats.frame} position={[handleSide * (w / 2 - 0.045), 0, z * (d / 2 + 0.008)]}>
             <boxGeometry args={[0.012, handleLen, 0.014]} />
           </mesh>
-        )}
+        ))}
       </group>
     )
   }
@@ -289,11 +291,12 @@ export function PanelMesh({ w, h, spec, mats, pattern, handleLen }: {
           </mesh>
         ))
       })()}
-      {handleLen > 0 && (
-        <mesh material={mats.frame} position={[w / 2 - 0.045, 0, d / 2 + 0.008]}>
+      {/* 손잡이 — 자유단 스타일, 양면 (현관 쪽에서도 보이게) */}
+      {handleLen > 0 && [1, -1].map((z) => (
+        <mesh key={z} material={mats.frame} position={[handleSide * (w / 2 - 0.045), 0, z * (d / 2 + 0.008)]}>
           <boxGeometry args={[0.012, handleLen, 0.014]} />
         </mesh>
-      )}
+      ))}
     </group>
   )
 }
