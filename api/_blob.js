@@ -9,11 +9,19 @@
  */
 export function publicBlobHost() {
   const explicit = process.env.BLOB_PUBLIC_HOST
-  if (explicit) return explicit.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+  if (explicit) return norm(explicit.replace(/^https?:\/\//, '').replace(/\/.*$/, ''))
   const seg = String(process.env.BLOB_READ_WRITE_TOKEN ?? '').replace(/^"|"$/g, '').split('_')
   const storeId = seg[0] === 'vercel' && seg[1] === 'blob' && seg.length >= 5 ? seg[3] : ''
-  return /^[A-Za-z0-9]{8,}$/.test(storeId) ? `${storeId}.public.blob.vercel-storage.com` : null
+  return /^[A-Za-z0-9]{8,}$/.test(storeId) ? norm(`${storeId}.public.blob.vercel-storage.com`) : null
 }
+
+/**
+ * 소문자로 눕힌다. **토큰 안의 store id는 대소문자가 섞여 있는데(kfpb6CTDHooPslmB) 실제 blob
+ * 호스트는 전부 소문자다(kfpb6ctdhoopslmb).** `URL.hostname`도 항상 소문자로 정규화되므로,
+ * 눕히지 않으면 우리 블롭조차 한 번도 일치하지 않아 공유 카드가 전부 기본 이미지로 떨어진다
+ * — 배포 후 운영 검증에서 실제로 그렇게 났다 (2026-08-27).
+ */
+const norm = (h) => h.toLowerCase()
 
 /** 우리 사이트에서 온 요청인가. 브라우저는 same-origin POST에도 Origin을 붙인다 */
 export function sameSite(req) {
