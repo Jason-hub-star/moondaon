@@ -208,7 +208,9 @@ export default function App() {
           <OrbitControls target={CAMERA.target} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
         </Canvas>
         <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
-          <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current) }}>실물 크기로 보기 (AR)</TopBtn>
+          {/* 실측 치수를 함께 넘긴다 — AR 세션 안에는 우리 UI를 못 그리므로 진입 전 가이드가
+              폭·높이를 말해줄 유일한 자리다 (ar/openAR.ts) */}
+          <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current, spec) }}>실물 크기로 보기 (AR)</TopBtn>
           {/* 레퍼런스 비교·영상 캡처는 내부 검수 도구 — 맵 편집기(?edit=1)에서만 노출.
               import.meta.env.DEV를 게이트 앞에 직접 두어야 프로덕션 번들에서 이 블록이 통째로 제거된다
               (isEditMode() 호출만으로는 런타임 분기라 코드·문자열이 남는다 — 실측 2026-08-27) */}
