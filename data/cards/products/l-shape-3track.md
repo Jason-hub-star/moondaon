@@ -8,6 +8,7 @@ stileWidthM: 0.019
 stileDepthM: 0.032
 widthRangeM: [1.2, 2.0]
 maxHeightM: 2.3
+railIds: [flat-7, raised-20]
 fixedPanels: [2]
 colorCats: [basic-op, basic-sheet, wood-sheet, marble-sheet]
 phase: P3

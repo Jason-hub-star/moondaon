@@ -8,6 +8,7 @@ stileWidthM: 0.019
 stileDepthM: 0.032
 widthRangeM: [0.8, 2.4]
 maxHeightM: 2.3
+railIds: [slim-25x5]  # 팜플렛 명시 1종 (수동 원슬은 무레일 표기 없음)
 colorIds: [white, black, champagne-gold]  # 도장 기본운영 3색
 colorCats: [wood-sheet]
 phase: P2

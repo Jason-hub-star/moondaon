@@ -12,10 +12,12 @@ import { isEditMode } from './scene/sceneProps'
 import { useSceneReady, SceneLoading } from './Loading'
 import { CAMERA, CAMERA_MOBILE, ORBIT } from './scene/props.data'
 import { useConfig, sizeZone } from './configurator/store'
+// 하부레일(문턱) — 팜플렛이 제품마다 다르게 운영한다. 판정은 순수 모듈 하나에서만 한다 (node --test 대상)
+import { railsOf, railAllowed, effectiveRail } from './configurator/rails'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
-  COLORS, GLASSES, PATTERNS, HANDLES, PRODUCTS,
-  type ColorId, type GlassId, type PatternId, type HandleId, type ProductId,
+  COLORS, GLASSES, PATTERNS, HANDLES, RAILS, PRODUCTS,
+  type ColorId, type GlassId, type PatternId, type HandleId, type RailId, type ProductId,
 } from './generated/cards'
 
 /** P1~P2 노출 제품 (이후 페이즈에서 카드 phase로 자동 확장) */
@@ -78,8 +80,8 @@ export default function App() {
   const orbitRef = useRef<ComponentRef<typeof OrbitControls> | null>(null)
   const [resetSeq, setResetSeq] = useState(0)
   const [viewMoved, setViewMoved] = useState(false)
-  const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, panelPatterns, set } = useConfig()
-  const spec = specFrom(productId, widthM)
+  const { t, productId, colorId, glassId, patternId, handleId, railId, widthM, quality, panelPatterns, set } = useConfig()
+  const spec = specFrom(productId, widthM, railId)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   // ㄱ자도 이제 정면 3연동이라 폭 = 개구폭 (구 버전은 1/3을 측면 픽스로 떼어 2/3만 정면에 썼다)
   const wallW = spec.width
@@ -110,6 +112,8 @@ export default function App() {
     if (!glassAllowed(productId, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(productId, g)) ?? 'clear'
     const g0 = patch.glassId ?? glassId
     if (!handleAllowed(g0, handleId)) patch.handleId = fallbackHandle(g0)
+    const r0 = railsOf(productId)
+    if (r0.length && !railAllowed(productId, railId)) patch.railId = r0[0]
     if (Object.keys(patch).length) set(patch)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -236,7 +240,7 @@ export default function App() {
           <ContactShadows position={[0, 0.012, 1.3]} scale={[5.5, 4.5]} opacity={0.3} blur={2.6} far={2.2} resolution={512} frames={1} />
           <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
-            patternId={patternId} panelPatternIds={panelPatterns ?? undefined}
+            patternId={patternId} panelPatternIds={panelPatterns ?? undefined} railId={railId}
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           </group>
           <CaptureRig />
@@ -342,6 +346,9 @@ export default function App() {
               if (!glassAllowed(id, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(id, g)) ?? 'clear'
               const g1 = patch.glassId ?? glassId
               if (!handleAllowed(g1, handleId)) patch.handleId = fallbackHandle(g1)
+              // 레일 목록이 없는 제품으로 갈 때는 고른 값을 남긴다 — 되돌아오면 그대로 복원된다
+              const r1 = railsOf(id)
+              if (r1.length && !railAllowed(id, railId)) patch.railId = r1[0]
               const cur = PATTERNS[patternId] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
               if (arch && cur.archProfile == null) patch.patternId = 'arch3'
               if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
@@ -397,6 +404,20 @@ export default function App() {
             <HandleChip key={id} id={id} active={handleId === id} onClick={() => set({ handleId: id })} />
           ))}
         </Section>
+        {railsOf(productId).length > 0 && (() => {
+          // 카드 밖 값이 해시로 들어와도 라벨·설명은 실제 렌더에 쓰이는 레일을 가리켜야 한다
+          const shown = effectiveRail(productId, railId) as RailId
+          return (
+            <Section title="하부레일 (문턱)">
+              {railsOf(productId).map((id) => (
+                <Chip key={id} active={shown === id} onClick={() => set({ railId: id })}>{RAILS[id].name}</Chip>
+              ))}
+              <p style={{ width: '100%', margin: '2px 0 0', fontSize: 11, lineHeight: 1.5, color: '#8a8478' }}>
+                {RAILS[shown].note}
+              </p>
+            </Section>
+          )
+        })()}
         <Section title={`치수 — ${Math.round(spec.width * 1000)}mm${PRODUCTS[productId].motion === 'sliding_multi_panel' ? ' · ' + sizeZone(spec.width) : ''}`}>
           <input type="range" min={wMin} max={wMax} step={0.01} value={Math.min(wMax, Math.max(wMin, widthM))} aria-label="가로 치수"
             onChange={(e) => set({ widthM: Number(e.target.value) })} style={{ width: '100%', accentColor: '#c5a572' }} />

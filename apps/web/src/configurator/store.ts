@@ -29,8 +29,8 @@ export const useConfig = create<ConfigState>((set, get) => ({
   quality: 'high',
   set: (p) => {
     set(p)
-    const { v, productId, colorId, glassId, patternId, handleId, widthM, panelPatterns } = get()
-    encodeHash({ v, productId, colorId, glassId, patternId, handleId, widthM, panelPatterns })
+    const { v, productId, colorId, glassId, patternId, handleId, railId, widthM, panelPatterns } = get()
+    encodeHash({ v, productId, colorId, glassId, patternId, handleId, railId, widthM, panelPatterns })
   },
 }))
 

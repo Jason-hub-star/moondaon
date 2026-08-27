@@ -1,6 +1,6 @@
 // 확장자를 붙여야 `node --test`가 이 파일을 번들러 없이 그대로 실행할 수 있다 (형제 파일들은 vite 해석에 맡긴다)
-import { PRODUCTS, COLORS, GLASSES, PATTERNS, HANDLES } from '../generated/cards.ts'
-import type { ColorId, GlassId, PatternId, HandleId, ProductId } from '../generated/cards.ts'
+import { PRODUCTS, COLORS, GLASSES, PATTERNS, HANDLES, RAILS } from '../generated/cards.ts'
+import type { ColorId, GlassId, PatternId, HandleId, RailId, ProductId } from '../generated/cards.ts'
 
 export interface ShareState {
   /** URL 공유 스키마 버전 (수렴: 카드 변경에서 옛 링크 보호. v2: panelPatterns 추가) */
@@ -10,13 +10,15 @@ export interface ShareState {
   glassId: GlassId
   patternId: PatternId
   handleId: HandleId
+  /** 하부레일(문턱) — 레일 개념이 없는 제품(스윙·ABS)에서는 무시된다 */
+  railId: RailId
   /** 개구부 가로 (m) — 팜플렛 구간 A~D */
   widthM: number
   /** 패널별 패턴 오버라이드 (수렴 PATTERN-V2) — null/미지정 = patternId 균일 적용 */
   panelPatterns?: (PatternId | null)[]
 }
 
-export const DEFAULTS: ShareState = { v: 2, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.25 } // widthM: KKARTdoor 쇼츠 64편 실측 중앙값 1214mm(2026-08-26)
+export const DEFAULTS: ShareState = { v: 2, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', railId: 'flat-7', widthM: 1.25 } // widthM: KKARTdoor 쇼츠 64편 실측 중앙값 1214mm(2026-08-26)
 
 /** 카드에 실재하는 id인가. hasOwn이라 '__proto__'·'constructor' 같은 상속 키는 통과 못 한다 */
 const isCardId = (table: object, v: unknown): v is string => typeof v === 'string' && Object.hasOwn(table, v)
@@ -38,6 +40,7 @@ export function sanitizeShare(raw: unknown): Partial<ShareState> {
   if (isCardId(GLASSES, o.glassId)) out.glassId = o.glassId as GlassId
   if (isCardId(PATTERNS, o.patternId)) out.patternId = o.patternId as PatternId
   if (isCardId(HANDLES, o.handleId)) out.handleId = o.handleId as HandleId
+  if (isCardId(RAILS, o.railId)) out.railId = o.railId as RailId
 
   // 폭은 제품이 정해진 뒤에야 범위를 안다 — 주입된 값이 해시에 그대로 남지 않도록 여기서 가둔다
   if (typeof o.widthM === 'number' && Number.isFinite(o.widthM)) {

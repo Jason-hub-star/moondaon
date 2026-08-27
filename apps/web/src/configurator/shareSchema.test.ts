@@ -6,7 +6,7 @@ import { sanitizeShare, DEFAULTS } from './shareSchema.ts'
 const ok = { ...DEFAULTS }
 
 test('1. 없는 id는 필드별로 떨어지고 예외를 던지지 않는다', () => {
-  for (const key of ['productId', 'colorId', 'glassId', 'patternId', 'handleId'] as const) {
+  for (const key of ['productId', 'colorId', 'glassId', 'patternId', 'handleId', 'railId'] as const) {
     const out = sanitizeShare({ ...ok, [key]: 'no-such-card' })
     assert.equal(out[key], undefined, `${key}가 통과했다`)
     // 오염되지 않은 형제 필드는 살아 있어야 한다

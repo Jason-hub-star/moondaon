@@ -25,6 +25,7 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
 
   const { W, H } = { W: spec.width, H: spec.height }
   const fd = spec.frameDepth
+  const rail = spec.railHeight ?? 0 // 문턱 높이 — 문짝은 레일 '위'에 얹힌다
   const jamb = 0.04 // 문틀 정면폭 (근사)
   const N = spec.panels
   // 패널 폭: 개구부 N분할 + 겹침 (N=1이면 전폭)
@@ -42,8 +43,10 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
       <mesh material={mats.frame} position={[0, H + jamb / 2, 0]}><boxGeometry args={[W + 2 * jamb, jamb, fd]} /></mesh>
       <mesh material={mats.frame} position={[-W / 2 - jamb / 2, H / 2, 0]}><boxGeometry args={[jamb, H + jamb, fd]} /></mesh>
       <mesh material={mats.frame} position={[W / 2 + jamb / 2, H / 2, 0]}><boxGeometry args={[jamb, H + jamb, fd]} /></mesh>
-      {/* 하부 레일 7mm */}
-      <mesh material={mats.frame} position={[0, 0.0035, 0]}><boxGeometry args={[W, 0.007, fd]} /></mesh>
+      {/* 하부레일 — 카드값(문턱 높이). 0(무레일)이면 메시 자체를 그리지 않는다 */}
+      {rail > 0 && (
+        <mesh material={mats.frame} position={[0, rail / 2, 0]}><boxGeometry args={[W, rail, fd]} /></mesh>
+      )}
       {/* 상부 트랙 커버 — 실물 문틀이 패널 상단 틈·트랙을 가림 (닫힘 시 슬릿 방지) */}
       <mesh material={mats.frame} position={[0, H - 0.014, 0]}><boxGeometry args={[W, 0.032, fd + 0.004]} /></mesh>
       {/* 패널 3장 — 닫힘: 좌/중/우 배치, 열림: 왼쪽으로 순차 겹침 */}
@@ -51,8 +54,8 @@ export function SlidingDoor({ spec, colorId, glassId, patterns, handleLengthM, q
         const closedX = -W / 2 + pw / 2 + i * stride
         const x = closedX - t * r * maxTravel
         return (
-          <group key={i} position={[x, H / 2, trackZ[i]]}>
-            <PanelMesh w={pw} h={H - 0.01} spec={spec} mats={mats} pattern={patterns[i]} handleLen={i === N - 1 ? handleLengthM : 0} />
+          <group key={i} position={[x, rail + (H - rail) / 2, trackZ[i]]}>
+            <PanelMesh w={pw} h={H - rail - 0.01} spec={spec} mats={mats} pattern={patterns[i]} handleLen={i === N - 1 ? handleLengthM : 0} />
           </group>
         )
       })}

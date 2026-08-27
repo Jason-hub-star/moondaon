@@ -37,6 +37,16 @@ const schemas = {
     motions: z.array(z.string()).optional(),
     geometrySource: z.enum(['approx', 'measured']), source: z.string(),
   }),
+  rails: z.object({
+    id: z.string(), name: z.string(),
+    /** 문턱 높이 (mm) — 0이면 무레일 */
+    heightMm: z.number().min(0).max(50),
+    /** 레일 폭 (mm) — 팜플렛에 표기된 제품만 (원슬 25X5) */
+    widthMm: z.number().nullable(),
+    /** 고객이 읽을 한 줄 — 걸림·외풍·청소 트레이드오프 */
+    note: z.string(),
+    source: z.string(),
+  }),
   handles: z.object({
     id: z.string(), name: z.string(), lengthM: z.number(),
     type: z.enum(['adhesive', 'integrated', 'half-moon']),
@@ -53,6 +63,8 @@ const schemas = {
     glassIds: z.array(z.string()).optional(),
     colorIds: z.array(z.string()).optional(),
     colorCats: z.array(z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs'])).optional(),
+    /** 하부레일(문턱) 허용 목록 — 없으면 레일 개념이 없는 제품(스윙·ABS 여닫이)이라 UI가 섹션을 숨긴다 */
+    railIds: z.array(z.string()).optional(),
     /** 스윙 제품 힌지 구성 (팜플렛 2026-08 p5 제작칫수) */
     hinge: z.string().optional(),
     /** 양개도어 주문 시 강화유리 기본적용 (팜플렛 2026-08 p5) */
@@ -96,6 +108,7 @@ for (const c of out.patterns) {
 }
 const glassIdSet = new Set(out.glasses.map((g) => g.id))
 const colorIdSet = new Set(out.colors.map((g) => g.id))
+const railIdSet = new Set(out.rails.map((g) => g.id))
 if (out.glasses.some((g) => g.requiresIntegratedHandle) && !out.handles.some((h) => h.type === 'integrated'))
   xerr.push(`glasses: requiresIntegratedHandle 유리가 있는데 type 'integrated' 손잡이 카드가 없음 — UI가 고를 수 있는 손잡이를 잃는다`)
 for (const c of out.handles) {
@@ -108,6 +121,12 @@ for (const c of out.products) {
     if (!glassIdSet.has(g)) xerr.push(`products/${c.id}: glassIds '${g}' — 존재하지 않는 유리 카드`)
   for (const g of c.colorIds ?? [])
     if (!colorIdSet.has(g)) xerr.push(`products/${c.id}: colorIds '${g}' — 존재하지 않는 색상 카드`)
+  if (c.railIds) {
+    // 빈 배열은 "레일이 없다"가 아니라 "고를 게 없다"라 UI가 빈 섹션을 그린다 — 필드를 지우게 한다
+    if (!c.railIds.length) xerr.push(`products/${c.id}: railIds가 비어 있음 — 레일이 없는 제품이면 필드를 지운다`)
+    for (const g of c.railIds)
+      if (!railIdSet.has(g)) xerr.push(`products/${c.id}: railIds '${g}' — 존재하지 않는 레일 카드`)
+  }
   if (c.panelWidthFr) {
     if (c.panelWidthFr.length !== c.panels) xerr.push(`products/${c.id}: panelWidthFr 길이 ${c.panelWidthFr.length} ≠ panels ${c.panels}`)
     const sum = c.panelWidthFr.reduce((a, b) => a + b, 0)
@@ -250,6 +269,7 @@ export type ColorId = ${ids('colors')}
 export type GlassId = ${ids('glasses')}
 export type PatternId = ${ids('patterns')}
 export type HandleId = ${ids('handles')}
+export type RailId = ${ids('rails')}
 export type ProductId = ${ids('products')}
 ${Object.entries(out).map(([k, v]) => `export const ${k.toUpperCase()} = ${JSON.stringify(Object.fromEntries(v.map((c) => [c.id, c])), null, 1)} as const`).join('\n')}
 export const PATTERN_THUMBS: Record<PatternId, string> = ${JSON.stringify(thumbs, null, 0)}

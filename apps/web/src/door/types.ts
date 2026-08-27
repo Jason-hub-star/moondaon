@@ -14,6 +14,8 @@ export interface DoorSpec {
   overlap: number
   /** 간살 도어 — 세로 간살 (팜플렛: 기본간격 30~40mm) */
   louver?: { barW: number; gap: number }
+  /** 하부레일 높이 (m) — 0이면 무레일(레일 메시를 그리지 않는다). 레일이 없는 제품은 undefined */
+  railHeight?: number
   /** 패널별 폭 비율 (합 1) — 없으면 균등. 예: 도어+픽스 사이드라이트 [0.72, 0.28] */
   panelWidthFr?: number[]
   /** 고정(비개폐) 패널 인덱스 — 픽스창·ㄱ자 측면 */

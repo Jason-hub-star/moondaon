@@ -3,7 +3,8 @@ import { SwingDoor } from './SwingDoor'
 import { AbsDoor } from './AbsDoor'
 import type { DoorSpec, PatternGrid } from './types'
 import { mirrorPattern } from './PanelMesh'
-import { PATTERNS, PRODUCTS, type ColorId, type GlassId, type PatternId, type ProductId } from '../generated/cards'
+import { railHeightOf } from '../configurator/rails'
+import { PATTERNS, PRODUCTS, type ColorId, type GlassId, type PatternId, type RailId, type ProductId } from '../generated/cards'
 
 interface Props {
   productId: ProductId
@@ -13,6 +14,7 @@ interface Props {
   patternId: PatternId
   /** 패널별 오버라이드 (null/미지정 = patternId 균일) — 수렴 PATTERN-V2 */
   panelPatternIds?: (PatternId | null)[]
+  railId: RailId
   handleLengthM: number
   quality: 'high' | 'lite'
   t: number
@@ -32,10 +34,11 @@ export function gridOf(id: PatternId): PatternGrid {
 }
 
 /** 제품 카드 → DoorSpec (1 unit = 1m) */
-export function specFrom(productId: ProductId, widthM: number): DoorSpec {
+export function specFrom(productId: ProductId, widthM: number, railId: RailId): DoorSpec {
   const p = PRODUCTS[productId] as (typeof PRODUCTS)[ProductId] & { panelWidthFr?: readonly number[]; fixedPanels?: readonly number[] }
   const [wMin, wMax] = p.widthRangeM
   return {
+    railHeight: railHeightOf(productId, railId),
     width: Math.min(wMax, Math.max(wMin, widthM)),
     height: p.maxHeightM,
     frameDepth: p.frameDepthM,
@@ -63,9 +66,9 @@ export function resolvePanelPatterns(productId: ProductId, spec: DoorSpec, patte
 }
 
 /** 제품 카드 motion → 개폐 컴포넌트 디스패치 */
-export function DoorModel({ productId, widthM, patternId, panelPatternIds, ...rest }: Props) {
+export function DoorModel({ productId, widthM, patternId, panelPatternIds, railId, ...rest }: Props) {
   const p = PRODUCTS[productId]
-  const spec = specFrom(productId, widthM)
+  const spec = specFrom(productId, widthM, railId)
   const patterns = resolvePanelPatterns(productId, spec, patternId, panelPatternIds)
   switch (p.motion) {
     case 'swing_bi_directional':
