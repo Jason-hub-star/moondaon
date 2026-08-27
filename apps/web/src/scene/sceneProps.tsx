@@ -63,6 +63,7 @@ function makePropMats() {
     shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
     shoeLight: new THREE.MeshStandardMaterial({ color: '#cfc4b4', roughness: 0.8 }),
     shoeSole: new THREE.MeshStandardMaterial({ color: '#8d8880', roughness: 0.9 }),
+    shoeIn: new THREE.MeshStandardMaterial({ color: '#3a352f', roughness: 1 }), // 신발 입구 — 어둠 한 점이 '빈 통'을 '신을 수 있는 것'으로 만든다
     // 코트는 원경 40px짜리 실루엣이다 — 흰 신발장보다 대비를 세우지 않는 중간 값 토프로 둔다
     // (2026-08-27 "문이 주인공" 피드백 불가침)
     coat: new THREE.MeshStandardMaterial({ color: '#7f7668', roughness: 1 }),
@@ -136,15 +137,75 @@ function slipperGeos() {
   return _slip
 }
 
-/* 신발 한 켤레 — 밑창+갑피+앞코 3상자 × 2짝. 짝마다 각도를 달리해야 '벗어둔 것'으로 읽힌다 */
+/* 신발 지오메트리 싱글턴 — 슬리퍼와 **같은 기법**(베지어 윤곽 + 압출 + 베벨 + 정점 변형).
+   구 버전은 상자 3개 근사라 유리 너머에서도 '블록'으로 읽혔다 (2026-08-27 주인님 지적).
+   등급은 A 유지 — `소품` 스킬이 신발을 원경 A급으로 못박고 있어 img2threejs(B급, 12k tri)는 과잉이다.
+   curveSegments 8 / bevelSegments 1로 켤레당 ~1.8k tri에 묶는다. */
+let _shoe: { sole: THREE.BufferGeometry; upper: THREE.BufferGeometry; collar: THREE.BufferGeometry } | null = null
+function shoeGeos() {
+  if (_shoe) return _shoe
+  // 발 윤곽 — +y가 앞코(넓고 둥글다), -y가 뒤꿈치(좁다). 허리는 안쪽으로 들어간다
+  const outline = (w: number, l: number) => {
+    const c = new THREE.Shape()
+    c.moveTo(0, l)
+    c.bezierCurveTo(w * 0.72, l * 0.97, w, l * 0.74, w, l * 0.40)
+    c.bezierCurveTo(w, l * 0.06, w * 0.80, -l * 0.32, w * 0.78, -l * 0.62)
+    c.bezierCurveTo(w * 0.76, -l * 0.90, w * 0.46, -l, 0, -l)
+    c.bezierCurveTo(-w * 0.46, -l, -w * 0.76, -l * 0.90, -w * 0.78, -l * 0.62)
+    c.bezierCurveTo(-w * 0.80, -l * 0.32, -w, l * 0.06, -w, l * 0.40)
+    c.bezierCurveTo(-w, l * 0.74, -w * 0.72, l * 0.97, 0, l)
+    return c
+  }
+  const EXT = { bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.004, bevelSegments: 1, curveSegments: 8 }
+  // rotateX(-90°)는 (x,y,z)를 (x, z, -y)로 보낸다 → 압출 두께가 +y(높이), 앞코가 -z로 간다
+  const sole = new THREE.ExtrudeGeometry(outline(0.047, 0.132), { ...EXT, depth: 0.020 })
+  sole.rotateX(-Math.PI / 2)
+
+  const upper = new THREE.ExtrudeGeometry(outline(0.042, 0.124), { ...EXT, depth: 0.090 })
+  upper.rotateX(-Math.PI / 2)
+  /* 갑피 옆모습 — 이 곡선 하나가 '상자'와 '신발'을 가른다.
+     앞코는 낮고 둥글게, 발등에서 가장 높고, 발목 입구에서 파이고, 뒤축이 다시 선다. */
+  const PROFILE: [number, number][] = [
+    [-0.132, 0.026], [-0.088, 0.044], [-0.040, 0.070], [0.000, 0.082],
+    [0.042, 0.056], [0.088, 0.074], [0.124, 0.064],
+  ]
+  const heightAt = (z: number) => {
+    if (z <= PROFILE[0][0]) return PROFILE[0][1]
+    for (let i = 1; i < PROFILE.length; i++) {
+      const [z0, h0] = PROFILE[i - 1], [z1, h1] = PROFILE[i]
+      if (z <= z1) return h0 + ((h1 - h0) * (z - z0)) / (z1 - z0)
+    }
+    return PROFILE[PROFILE.length - 1][1]
+  }
+  const pa = upper.attributes.position
+  for (let i = 0; i < pa.count; i++) {
+    if (pa.getY(i) < 0.045) continue // 아랫면·옆면 하단은 그대로 (밑창에 붙는다)
+    pa.setY(i, heightAt(pa.getZ(i)))
+  }
+  upper.computeVertexNormals()
+  upper.translate(0, 0.018, 0) // 밑창 위에 얹는다
+
+  // 발목 입구 — 어두운 타원 한 장. 원경에서 '신을 수 있는 것'으로 읽히게 하는 최소 단서
+  const hole = new THREE.Shape()
+  hole.absellipse(0, 0, 0.030, 0.040, 0, Math.PI * 2, false, 0)
+  const collar = new THREE.ShapeGeometry(hole, 10)
+  collar.rotateX(-Math.PI / 2)
+  collar.translate(0, 0.070, 0.042)
+
+  _shoe = { sole, upper, collar }
+  return _shoe
+}
+
+/* 신발 한 켤레 — 짝마다 각도를 달리해야 '벗어둔 것'이지 '진열된 것'이 아니다 */
 function shoePair(upper: THREE.Material) {
+  const g = shoeGeos()
   return (
     <>
-      {([[-0.075, 0, 0.06], [0.075, 0.02, -0.13]] as const).map(([x, z, rot], i) => (
+      {([[-0.072, 0.01, 0.09], [0.072, -0.02, -0.16]] as const).map(([x, z, rot], i) => (
         <group key={i} position={[x, 0, z]} rotation={[0, rot, 0]}>
-          <mesh material={pm().shoeSole} position={[0, 0.012, 0]} castShadow><boxGeometry args={[0.085, 0.024, 0.26]} /></mesh>
-          <mesh material={upper} position={[0, 0.055, -0.045]} castShadow><boxGeometry args={[0.08, 0.07, 0.15]} /></mesh>
-          <mesh material={upper} position={[0, 0.04, 0.085]}><boxGeometry args={[0.075, 0.04, 0.09]} /></mesh>
+          <mesh geometry={g.sole} material={pm().shoeSole} castShadow />
+          <mesh geometry={g.upper} material={upper} castShadow />
+          <mesh geometry={g.collar} material={pm().shoeIn} />
         </group>
       ))}
     </>
