@@ -129,6 +129,8 @@ test('문 4모서리가 데스크톱·모바일 양쪽에서 프레임 안에 �
 test('줌은 자유 — 거리 제한 없음 (2026-08-27 결정). 회전 한계만 남는다', () => {
   // 방 깊이가 3.5m·폭 5m다. 20m면 사실상 무제한 — 구 상한 4.6m처럼 체감되는 벽이 아니다
   assert.ok(ORBIT.maxDistance >= 15, `줌아웃 상한 ${ORBIT.maxDistance}m 는 방(5m) 대비 너무 좁다`)
+  // Infinity는 운영 빌드에서만 줌을 죽인다(2026-08-27 실측). 유한값이어야 한다
+  assert.ok(Number.isFinite(ORBIT.maxDistance), 'Infinity 금지 — 운영 빌드에서 줌이 통째로 죽는다')
   assert.ok(ORBIT.minDistance <= 1, `줌인 하한 ${ORBIT.minDistance}m 가 너무 멀다`)
   // D2가 실제로 막으려던 건 '문 소실'이고, 그건 회전 한계가 담당한다
   assert.ok(ORBIT.minPolar > 0 && ORBIT.maxPolar <= Math.PI / 2, '회전 한계는 유지되어야 한다')
