@@ -77,9 +77,18 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
           <boxGeometry args={[side - 0.03, WALL_H, 0.15]} />
         </mesh>
       )}
-      <mesh material={mats.wall} position={[0, doorH + 0.03 + (WALL_H - doorH) / 2, 0]}>
-        <boxGeometry args={[doorW + 0.3, WALL_H - doorH, 0.15]} />
-      </mesh>
+      {/* 개구 상부 벽 — 문틀 상단(doorH+0.04)에서 천장까지 딱 맞게. 높이를 WALL_H-doorH로 두면 천장 위로 솟는다.
+          개방형에선 우측 끝을 부스 가벽 바깥면(boothR+0.08)에 맞춰 헤더가 부스보다 튀어나오지 않게 한다 */}
+      {(() => {
+        const y0 = doorH + 0.04
+        const xL = -(doorW / 2 + 0.15)
+        const xR = openCorner ? boothR + 0.08 : doorW / 2 + 0.15
+        return (
+          <mesh material={mats.wall} position={[(xL + xR) / 2, (y0 + WALL_H) / 2, 0]}>
+            <boxGeometry args={[xR - xL, WALL_H - y0, 0.15]} />
+          </mesh>
+        )
+      })()}
       {/* 걸레받이 — 정면벽 좌우 + 측벽 */}
       <mesh material={mats.base} position={[-(doorW / 2 + side / 2 + 0.015), 0.045, 0.082]}>
         <boxGeometry args={[side - 0.03, 0.09, 0.012]} />
