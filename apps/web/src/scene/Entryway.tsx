@@ -37,6 +37,9 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
   const SIDE_W = doorW / 2 // LShapeDoor 측면 리턴 깊이와 동일 (frontW의 1/2) — 레퍼런스 실측 리턴 ≈650mm과 부합
   const HALF_H = 0.92 // 하프월 높이 — 아이지도어 레퍼런스 실측 0.40×H(2300) ≈ 920mm
   const boothR = doorW / 2 // 부스 우측 면(도어 리턴 평면)
+  // 도어 측면 픽스의 유리면 x — LShapeDoor가 리턴 패널을 로컬 z+0.033에 두고 -90° 회전시키므로 boothR에서 33mm 안쪽.
+  // 부스 가벽·유리는 이 평면을 그대로 이어받아야 도어와 벽이 한 면으로 보인다 (기존 boothR+0.04는 73mm 어긋나 틈이 보였다)
+  const SIDE_PLANE = boothR - 0.033
   const tileW = openCorner ? VEST + boothR : VEST * 2
   const tileCX = openCorner ? (boothR - VEST) / 2 : 0
   return (
@@ -100,10 +103,12 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
       )}
       {/* 개방형: 도어 리턴(z 0~-SIDE_W) 뒤를 잇는 하프월 가벽 + 브론즈 고정유리 + 상부 마감 */}
       {openCorner && (() => {
-        const z0 = SIDE_W - 0.1 // 도어 리턴 끝 기둥과 100mm 겹쳐 이음새 틈 제거
+        // 도어 리턴 끝 기둥(z −SIDE_W ~ −SIDE_W−0.04) 한가운데에서 잇는다 — 가벽 끝면이 기둥에 가려 이음새가 사라진다.
+        // 가벽이 도어와 같은 평면이 된 뒤로는 겹침을 키우면(옛 −0.1) 끝면이 리턴 유리 안쪽으로 튀어나온다
+        const z0 = SIDE_W + 0.02
         const len = DEPTH - z0, cz = -(z0 + DEPTH) / 2
         return (
-          <group position={[boothR + 0.04, 0, 0]}>
+          <group position={[SIDE_PLANE, 0, 0]}>
             <mesh material={mats.wall} position={[0, HALF_H / 2, cz]}>
               <boxGeometry args={[0.08, HALF_H, len]} />
             </mesh>

@@ -238,10 +238,12 @@ export function setWallParams(patch: Partial<WallParams>) {
 let _pm: ReturnType<typeof makePropMats> | null = null
 function makePropMats() {
   return {
-    cabinet: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/sebiji.jpg', 1.2), roughness: 0.75 }),
-    cabinetEdge: new THREE.MeshStandardMaterial({ color: '#b8a488', roughness: 0.7 }),
-    steel: new THREE.MeshStandardMaterial({ color: '#9a9da1', metalness: 0.55, roughness: 0.45 }),
-    steelDark: new THREE.MeshStandardMaterial({ color: '#4d5054', metalness: 0.7, roughness: 0.35 }),
+    // 신발장·방화문은 흰색 도장 — 목재/회색강판이 중문보다 대비가 세서 주인공을 가렸다 (피드백 2026-08-27).
+    // 배경으로 물러나되 분할선·프레임은 한 톤 낮은 회색으로 남겨 형태는 읽히게 한다
+    cabinet: new THREE.MeshStandardMaterial({ color: '#f4f1ec', roughness: 0.55 }),
+    cabinetEdge: new THREE.MeshStandardMaterial({ color: '#dcd6cc', roughness: 0.7 }),
+    steel: new THREE.MeshStandardMaterial({ color: '#eeebe5', metalness: 0.12, roughness: 0.55 }),
+    steelDark: new THREE.MeshStandardMaterial({ color: '#bdb8b0', metalness: 0.2, roughness: 0.45 }),
     mat: new THREE.MeshStandardMaterial({ color: '#8f8377', roughness: 1 }),
     shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
     rug: new THREE.MeshStandardMaterial({ color: '#dcc9ad', roughness: 1 }),
