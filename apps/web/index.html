@@ -20,6 +20,17 @@
     <meta name="twitter:image" content="https://moondaon-showroom.vercel.app/og.png" />
   </head>
   <body>
+    <!-- 감사 D4 — 번들(1.1MB)을 내려받는 동안 React가 없어 화면이 통째로 백지였다.
+         이 블록은 HTML만으로 즉시 그려지고, React가 첫 커밋을 마치면 src/Loading.tsx가 걷어간다.
+         생김새·색은 SceneLoading과 같은 값이라 교대가 보이지 않는다. 외부 요청 0(인라인 스타일). -->
+    <div id="boot" style="position:fixed;inset:0;z-index:9;background:#f4f1ec;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#2b2926;font-family:system-ui,sans-serif">
+      <div style="font-size:20px;font-weight:700;letter-spacing:.02em">문다온</div>
+      <div style="font-size:13px;opacity:.6">3D 쇼룸 준비 중…</div>
+      <div style="width:148px;height:3px;border-radius:2px;background:#e6e1d8;overflow:hidden">
+        <div style="width:35%;height:100%;background:#c5a572;animation:bootbar 1.1s ease-in-out infinite"></div>
+      </div>
+    </div>
+    <style>@keyframes bootbar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}</style>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

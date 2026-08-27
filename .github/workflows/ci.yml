@@ -17,6 +17,8 @@ jobs:
       - run: npm ci
       # 카드 게이트 단독 실행 (Zod + 교차검증 + 썸네일 생성)
       - run: node scripts/build-cards.mjs
+      # 공유 카드 호스트 고정·업로드 방어 (감사 D3 회귀 방지)
+      - run: npm test
       - run: npm ci
         working-directory: apps/web
       # prebuild가 카드 재생성 → tsc → vite build

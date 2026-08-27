@@ -9,6 +9,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { isEditMode } from './scene/sceneProps'
+import { useSceneReady, SceneLoading } from './Loading'
 import { CAMERA, CAMERA_MOBILE, ORBIT } from './scene/props.data'
 import { useConfig, sizeZone } from './configurator/store'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
@@ -71,6 +72,8 @@ function CameraRig({ isMobile, resetSeq, orbit }: {
 
 export default function App() {
   const isMobile = useIsMobile()
+  // 첫 로딩 백지 방지 (감사 D4) — 텍스처가 다 붙을 때까지 캔버스를 덮는다
+  const { ready: sceneReady, progress: loadProgress } = useSceneReady()
   // 시점 이탈 복구 (감사 D2) — 기본 위치에서 벗어났을 때만 버튼을 띄운다
   const orbitRef = useRef<ComponentRef<typeof OrbitControls> | null>(null)
   const [resetSeq, setResetSeq] = useState(0)
@@ -251,6 +254,7 @@ export default function App() {
             }} />
           <CameraRig isMobile={isMobile} resetSeq={resetSeq} orbit={orbitRef} />
         </Canvas>
+        {!sceneReady && <SceneLoading progress={loadProgress} />}
         <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
           {/* 실측 치수를 함께 넘긴다 — AR 세션 안에는 우리 UI를 못 그리므로 진입 전 가이드가
               폭·높이를 말해줄 유일한 자리다 (ar/openAR.ts) */}
