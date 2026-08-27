@@ -6,7 +6,14 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   border: active ? '1.5px solid #c5a572' : '1px solid #d9d4ca',
   background: active ? '#f6efe3' : '#fff', color: '#2b2926',
 })
-const labelStyle: React.CSSProperties = { fontSize: 10, maxWidth: 62, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+// 62px 고정폭 + nowrap이던 때 라벨 34개 중 14개가 잘렸다(창 폭 420~1920 전 구간 동일 — 폭이 px 고정이라
+// 화면 크기가 개입할 여지가 없다). "아치 (스팬드럴 유리)"와 "아치 (스팬드럴 고시)"처럼 앞부분이 같은 이름은
+// 잘리면 구분 자체가 불가능해진다. 2줄을 허용하면 34개 전부 들어간다(실측: 3줄 필요한 이름 없음).
+const labelStyle: React.CSSProperties = {
+  fontSize: 10, maxWidth: 62, lineHeight: 1.2, textAlign: 'center',
+  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+  minHeight: 24, // 2줄분 — 1줄 라벨도 같은 높이를 잡아야 같은 행 칩들의 아랫변이 어긋나지 않는다
+}
 const svgSrc = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 
 /** 패턴 선택 칩 — 카드에서 자동 생성된 SVG 미니어처(시각 게이트 겸용) + 이름 */
