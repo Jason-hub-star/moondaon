@@ -61,12 +61,19 @@ export default function App() {
     const pc = PRODUCTS[pid] as Constrained
     return !pc.glassIds || pc.glassIds.includes(id)
   }
+  // 팜플렛 p2: 모루·굴곡유리는 기본 일체형 손잡이 적용 — 접착식·반달을 고를 수 없다
+  const handleAllowed = (gid: GlassId, id: HandleId) =>
+    !(GLASSES[gid] as { requiresIntegratedHandle?: boolean }).requiresIntegratedHandle || HANDLES[id].type === 'integrated'
+  const fallbackHandle = (gid: GlassId) =>
+    (Object.keys(HANDLES) as HandleId[]).find((h) => handleAllowed(gid, h)) ?? 'integrated'
   const colorGroups = COLOR_GROUPS.filter((g) => (isAbs ? g.category === 'abs' : g.category !== 'abs'))
   // 공유 링크로 비허용 값이 주입돼도 로드 시 1회 보정 (이후 전환은 onClick 보정이 담당)
   useEffect(() => {
     const patch: Parameters<typeof set>[0] = {}
     if (!colorAllowed(productId, colorId)) patch.colorId = (Object.keys(COLORS) as ColorId[]).find((c) => colorAllowed(productId, c)) ?? 'white'
     if (!glassAllowed(productId, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(productId, g)) ?? 'clear'
+    const g0 = patch.glassId ?? glassId
+    if (!handleAllowed(g0, handleId)) patch.handleId = fallbackHandle(g0)
     if (Object.keys(patch).length) set(patch)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -258,7 +265,14 @@ export default function App() {
       ) : (
       <aside style={{ width: isMobile ? 'auto' : 300, flex: isMobile ? 1 : undefined, padding: isMobile ? '14px 14px 28px' : '20px 18px', borderLeft: isMobile ? 'none' : '1px solid #e6e1d8', borderTop: isMobile ? '1px solid #e6e1d8' : 'none', overflowY: 'auto' }}>
         <h1 style={{ fontSize: 18, margin: '0 0 4px', letterSpacing: '0.06em' }}>문다온</h1>
-        <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>{PRODUCTS[productId].name}</p>
+        <p style={{ fontSize: 12, color: '#8a8478', margin: '0 0 14px' }}>
+          {PRODUCTS[productId].name}
+          {(() => {
+            const p = PRODUCTS[productId] as { hinge?: string; temperedDefault?: boolean }
+            const notes = [p.hinge, p.temperedDefault ? '강화유리 기본' : null].filter(Boolean)
+            return notes.length ? ` · ${notes.join(' · ')}` : ''
+          })()}
+        </p>
         <Section title="제품">
           {(Object.keys(PRODUCTS) as ProductId[]).filter((id) => VISIBLE_PHASES.includes(PRODUCTS[id].phase)).map((id) => (
             <ProductChip key={id} id={id} active={productId === id} onClick={() => {
@@ -266,6 +280,8 @@ export default function App() {
               const patch: Parameters<typeof set>[0] = { productId: id }
               if (!colorAllowed(id, colorId)) patch.colorId = (Object.keys(COLORS) as ColorId[]).find((c) => colorAllowed(id, c)) ?? 'white'
               if (!glassAllowed(id, glassId)) patch.glassId = (Object.keys(GLASSES) as GlassId[]).find((g) => glassAllowed(id, g)) ?? 'clear'
+              const g1 = patch.glassId ?? glassId
+              if (!handleAllowed(g1, handleId)) patch.handleId = fallbackHandle(g1)
               const cur = PATTERNS[patternId] as { archProfile?: number; spandrel?: string; motions?: readonly string[] }
               if (arch && cur.archProfile == null) patch.patternId = 'arch3'
               if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
@@ -293,7 +309,8 @@ export default function App() {
         {!isAbs && (
           <Section title="적용 유리 (5mm)">
             {(Object.keys(GLASSES) as GlassId[]).filter((id) => glassAllowed(productId, id)).map((id) => (
-              <GlassChip key={id} id={id} active={glassId === id} onClick={() => set({ glassId: id })} />
+              <GlassChip key={id} id={id} active={glassId === id} onClick={() =>
+                set(handleAllowed(id, handleId) ? { glassId: id } : { glassId: id, handleId: fallbackHandle(id) })} />
             ))}
           </Section>
         )}
@@ -316,7 +333,7 @@ export default function App() {
           </Section>
         )}
         <Section title="손잡이">
-          {(Object.keys(HANDLES) as HandleId[]).map((id) => (
+          {(Object.keys(HANDLES) as HandleId[]).filter((id) => handleAllowed(glassId, id)).map((id) => (
             <HandleChip key={id} id={id} active={handleId === id} onClick={() => set({ handleId: id })} />
           ))}
         </Section>

@@ -18,7 +18,10 @@ const schemas = {
   glasses: z.object({
     id: z.string(), name: z.string(), thicknessMm: z.number(),
     tint: hex, opacity: z.number().min(0).max(1), roughness: z.number().min(0).max(1),
-    mesh: z.boolean(), renderSource: z.enum(['approx', 'measured']), source: z.string(),
+    mesh: z.boolean(),
+    /** 팜플렛 p2: 모루·굴곡유리 선택 시 기본 일체형 손잡이 적용 */
+    requiresIntegratedHandle: z.boolean().optional(),
+    renderSource: z.enum(['approx', 'measured']), source: z.string(),
   }),
   patterns: z.object({
     id: z.string(), name: z.string(),
@@ -36,7 +39,10 @@ const schemas = {
   }),
   handles: z.object({
     id: z.string(), name: z.string(), lengthM: z.number(),
-    type: z.enum(['adhesive', 'integrated']), source: z.string(),
+    type: z.enum(['adhesive', 'integrated', 'half-moon']),
+    orderType: z.enum(['stock', 'order']),
+    colorIds: z.array(z.string()),
+    source: z.string(),
   }),
   products: z.object({
     id: z.string(), name: z.string(), motion: z.string(), panels: z.number().int(),
@@ -47,6 +53,10 @@ const schemas = {
     glassIds: z.array(z.string()).optional(),
     colorIds: z.array(z.string()).optional(),
     colorCats: z.array(z.enum(['basic-op', 'basic-sheet', 'wood-sheet', 'marble-sheet', 'abs'])).optional(),
+    /** 스윙 제품 힌지 구성 (팜플렛 2026-08 p5 제작칫수) */
+    hinge: z.string().optional(),
+    /** 양개도어 주문 시 강화유리 기본적용 (팜플렛 2026-08 p5) */
+    temperedDefault: z.boolean().optional(),
     phase: z.string(), source: z.string(),
   }),
 }
@@ -86,6 +96,13 @@ for (const c of out.patterns) {
 }
 const glassIdSet = new Set(out.glasses.map((g) => g.id))
 const colorIdSet = new Set(out.colors.map((g) => g.id))
+if (out.glasses.some((g) => g.requiresIntegratedHandle) && !out.handles.some((h) => h.type === 'integrated'))
+  xerr.push(`glasses: requiresIntegratedHandle 유리가 있는데 type 'integrated' 손잡이 카드가 없음 — UI가 고를 수 있는 손잡이를 잃는다`)
+for (const c of out.handles) {
+  if (!c.colorIds.length) xerr.push(`handles/${c.id}: colorIds가 비어 있음 — 최소 1색`)
+  for (const g of c.colorIds)
+    if (!colorIdSet.has(g)) xerr.push(`handles/${c.id}: colorIds '${g}' — 존재하지 않는 색상 카드`)
+}
 for (const c of out.products) {
   for (const g of c.glassIds ?? [])
     if (!glassIdSet.has(g)) xerr.push(`products/${c.id}: glassIds '${g}' — 존재하지 않는 유리 카드`)
