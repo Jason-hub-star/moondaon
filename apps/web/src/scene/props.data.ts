@@ -440,8 +440,10 @@ export const FRAME_ASPECT_MOBILE = 0.888
 export const ORBIT = {
   minPolar: 1.22,           // 69.9° — 더 젖히면 문이 시야에서 빠진다
   maxPolar: Math.PI / 2,    // 90° — 바닥 아래에서 올려다보지 않는다
-  minDistance: 0,           // 제한 없음
-  maxDistance: Infinity,    // 제한 없음
+  // 사실상 무제한 — 방이 5m라 20m면 한참 밖이다. `Infinity` 대신 유한값을 쓰는 건
+  // 로컬에서 둘 다 동작함을 확인한 뒤의 보수적 선택일 뿐이다(Infinity가 원인은 아니었다)
+  minDistance: 0.8,
+  maxDistance: 20,
   /** 이 거리 이상 벗어나면 '시점 초기화' 버튼을 띄운다 */
   resetHintDistance: 0.25,
 }
