@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   SCENE_PROPS, resolveProp, frameNdc, inFrame, inRemovedCornerWall,
-  CAMERA, CAMERA_MOBILE, FRAME_ASPECT, FRAME_ASPECT_MOBILE, ORBIT, WALL_PARAMS,
+  CAMERA, CAMERA_MOBILE, FRAME_ASPECT, FRAME_ASPECT_MOBILE, ORBIT,
 } from './props.data.ts'
 import { DEFAULTS } from '../configurator/shareSchema.ts'
 import { PRODUCTS } from '../generated/cards.ts'
@@ -126,17 +126,21 @@ test('문 4모서리가 데스크톱·모바일 양쪽에서 프레임 안에 �
   )
 })
 
-test('시점 한계: 어느 각도·거리 조합에서도 카메라가 천장을 뚫지 않는다', () => {
-  const top = CAMERA.target[1] + ORBIT.maxDistance * Math.cos(ORBIT.minPolar)
-  assert.ok(top < WALL_PARAMS.wallH, `카메라 최고점 ${top.toFixed(2)}m ≥ 천장 ${WALL_PARAMS.wallH}m`)
+test('줌은 자유 — 거리 제한 없음 (2026-08-27 결정). 회전 한계만 남는다', () => {
+  assert.equal(ORBIT.minDistance, 0, '줌인 제한이 살아나면 다시 잠긴다')
+  assert.equal(ORBIT.maxDistance, Infinity, '줌아웃 제한이 살아나면 다시 잠긴다')
+  // D2가 실제로 막으려던 건 '문 소실'이고, 그건 회전 한계가 담당한다
+  assert.ok(ORBIT.minPolar > 0 && ORBIT.maxPolar <= Math.PI / 2, '회전 한계는 유지되어야 한다')
 })
 
-test('기본 시점이 OrbitControls 한계 안에 있다 — 아니면 초기화가 튕긴다', () => {
+test('앱 시작 시점은 고정 — 회전 한계 안이고 좌표가 바뀌지 않았다', () => {
   const d = Math.hypot(...CAMERA.position.map((v, i) => v - CAMERA.target[i]))
-  assert.ok(d >= ORBIT.minDistance && d <= ORBIT.maxDistance, `기본 거리 ${d.toFixed(2)}m 가 한계 밖`)
   const polar = Math.acos((CAMERA.position[1] - CAMERA.target[1]) / d)
   assert.ok(
     polar >= ORBIT.minPolar && polar <= ORBIT.maxPolar,
     `기본 폴라각 ${((polar * 180) / Math.PI).toFixed(1)}° 가 한계 [${((ORBIT.minPolar * 180) / Math.PI).toFixed(1)}°, 90°] 밖`,
   )
+  // 주인님 확인 — 시작 구도는 현재 값 유지. 바뀌면 '시점 초기화'도 다른 곳으로 돌아간다
+  assert.deepEqual(CAMERA.position, [1.8, 1.5, 3.4])
+  assert.deepEqual(CAMERA.target, [0, 0.98, 0])
 })
