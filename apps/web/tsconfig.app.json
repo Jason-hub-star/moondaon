@@ -22,5 +22,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // 테스트는 node 전역(Buffer·node:test)을 쓰므로 tsconfig.node.json이 맡는다 — 앱 코드에 node 타입이 새면 브라우저에서 터질 코드가 통과한다
+  "exclude": ["src/**/*.test.ts"]
 }

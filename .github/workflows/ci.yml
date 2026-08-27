@@ -11,7 +11,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 24: node --test가 TypeScript를 번들러 없이 실행하려면 네이티브 타입 스트리핑이 필요하다
+          node-version: 24
       # 루트: 카드 파이프라인 의존성 (gray-matter·zod)
       - run: npm ci
       # 카드 게이트 단독 실행 (Zod + 교차검증 + 썸네일 생성)
@@ -20,4 +21,7 @@ jobs:
         working-directory: apps/web
       # prebuild가 카드 재생성 → tsc → vite build
       - run: npm run build
+        working-directory: apps/web
+      # 공유 링크 입력 검증 (감사 D1·D5 회귀 방지)
+      - run: npm test
         working-directory: apps/web

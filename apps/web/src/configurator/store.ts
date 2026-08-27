@@ -1,19 +1,7 @@
 import { create } from 'zustand'
-import type { ColorId, GlassId, PatternId, HandleId, ProductId } from '../generated/cards'
+import { DEFAULTS, sanitizeShare, type ShareState } from './shareSchema'
 
-export interface ShareState {
-  /** URL 공유 스키마 버전 (수렴: 카드 변경에서 옛 링크 보호. v2: panelPatterns 추가) */
-  v: 2
-  productId: ProductId
-  colorId: ColorId
-  glassId: GlassId
-  patternId: PatternId
-  handleId: HandleId
-  /** 개구부 가로 (m) — 팜플렛 구간 A~D */
-  widthM: number
-  /** 패널별 패턴 오버라이드 (수렴 PATTERN-V2) — null/미지정 = patternId 균일 적용 */
-  panelPatterns?: (PatternId | null)[]
-}
+export type { ShareState }
 
 interface ConfigState extends ShareState {
   t: number
@@ -21,16 +9,11 @@ interface ConfigState extends ShareState {
   set: (p: Partial<Omit<ConfigState, 'set' | 'v'>>) => void
 }
 
-const DEFAULTS: ShareState = { v: 2, productId: 'slim-3track-19', colorId: 'white', glassId: 'clear', patternId: 'open', handleId: 'basic-adhesive', widthM: 1.25 } // widthM: KKARTdoor 쇼츠 64편 실측 중앙값 1214mm(2026-08-26)
-
 function decodeHash(): Partial<ShareState> {
   try {
     const h = location.hash.slice(1)
     if (!h) return {}
-    const o = JSON.parse(atob(h.replace(/-/g, '+').replace(/_/g, '/')))
-    if (o?.v === 2) return o
-    if (o?.v === 1) return { ...o, v: 2 } // v1 링크 호환 — patternId 균일 적용으로 동일 렌더
-    return {}
+    return sanitizeShare(JSON.parse(atob(h.replace(/-/g, '+').replace(/_/g, '/'))))
   } catch { return {} }
 }
 
