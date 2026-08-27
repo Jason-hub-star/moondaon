@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  SCENE_PROPS, resolveProp, frameNdc, inFrame, inRemovedCornerWall, CAMERA,
+  SCENE_PROPS, resolveProp, frameNdc, inFrame, inRemovedCornerWall,
+  CAMERA, CAMERA_MOBILE, FRAME_ASPECT, FRAME_ASPECT_MOBILE, ORBIT, WALL_PARAMS,
 } from './props.data.ts'
 import { DEFAULTS } from '../configurator/shareSchema.ts'
 import { PRODUCTS } from '../generated/cards.ts'
@@ -82,4 +83,60 @@ test('ㄱ자(개방형): 사라진 벽에 걸린 소품은 숨고, 다른 중문
 test('카메라 SSOT — 뒤에서 앞을 본다(문이 -z 쪽)', () => {
   assert.ok(CAMERA.position[2] > CAMERA.target[2], '카메라가 타깃보다 +z에 있어야 문을 정면에서 본다')
   assert.ok(CAMERA.position[1] > 1 && CAMERA.position[1] < 2, '눈높이(1~2m) 밖이면 아파트 시점이 아니다')
+})
+
+/* ── 모바일 카메라 · 시점 한계 (감사 D2 + 모바일 화면비) ─────────────────── */
+
+const DOOR_H = PRODUCTS[DEFAULTS.productId].maxHeightM
+/** 문 개구부 네 모서리 — 제품 자체는 어떤 화면비에서도 여유를 두고 들어와야 한다 */
+const DOOR_CORNERS: [number, number, number][] = [
+  [-DOOR_W / 2, 0.02, 0], [DOOR_W / 2, 0.02, 0], [-DOOR_W / 2, DOOR_H, 0], [DOOR_W / 2, DOOR_H, 0],
+]
+/**
+ * 절대 상한. 데스크톱은 세로축이 0.90으로 이미 빠듯한데, P-E3에서 `target.y`를 1.15→0.98로
+ * 내려 천장을 바닥과 바꾼 결과다(채택된 구도라 되돌리지 않는다). 그래서 상한은 현행 구도를
+ * 통과시키되 더 나빠지는 것만 막는 0.93으로 두고, **모바일이 데스크톱보다 끼면 안 된다**는
+ * 상대 조건을 함께 건다 — 화면비가 좁아지는 쪽에서 제품이 먼저 잘리는 게 실제 사고였다.
+ */
+const DOOR_MARGIN = 0.93
+
+function worstDoorCorner(cam: typeof CAMERA, aspect: number) {
+  return Math.max(...DOOR_CORNERS.map((c) => {
+    const n = frameNdc(c, cam, aspect)
+    return Math.max(Math.abs(n.x), Math.abs(n.y))
+  }))
+}
+
+test('문 4모서리가 데스크톱·모바일 양쪽에서 프레임 안에 든다', () => {
+  const desk = worstDoorCorner(CAMERA, FRAME_ASPECT)
+  const mob = worstDoorCorner(CAMERA_MOBILE, FRAME_ASPECT_MOBILE)
+  for (const [name, w, cam, aspect] of [
+    ['데스크톱', desk, CAMERA, FRAME_ASPECT],
+    ['모바일', mob, CAMERA_MOBILE, FRAME_ASPECT_MOBILE],
+  ] as const) {
+    assert.ok(
+      w <= DOOR_MARGIN,
+      `${name}(fov ${cam.fov}, 화면비 ${aspect})에서 문이 프레임에 낀다 — 최대 |ndc| ${w.toFixed(2)} > ${DOOR_MARGIN}`,
+    )
+  }
+  assert.ok(
+    mob <= desk + 0.01,
+    `모바일이 데스크톱보다 문을 더 끼게 만든다 — 모바일 ${mob.toFixed(2)} > 데스크톱 ${desk.toFixed(2)}. ` +
+    `CAMERA_MOBILE.fov를 올려라(세로 fov를 넓혀야 좁은 화면비에서 가로 시야가 산다)`,
+  )
+})
+
+test('시점 한계: 어느 각도·거리 조합에서도 카메라가 천장을 뚫지 않는다', () => {
+  const top = CAMERA.target[1] + ORBIT.maxDistance * Math.cos(ORBIT.minPolar)
+  assert.ok(top < WALL_PARAMS.wallH, `카메라 최고점 ${top.toFixed(2)}m ≥ 천장 ${WALL_PARAMS.wallH}m`)
+})
+
+test('기본 시점이 OrbitControls 한계 안에 있다 — 아니면 초기화가 튕긴다', () => {
+  const d = Math.hypot(...CAMERA.position.map((v, i) => v - CAMERA.target[i]))
+  assert.ok(d >= ORBIT.minDistance && d <= ORBIT.maxDistance, `기본 거리 ${d.toFixed(2)}m 가 한계 밖`)
+  const polar = Math.acos((CAMERA.position[1] - CAMERA.target[1]) / d)
+  assert.ok(
+    polar >= ORBIT.minPolar && polar <= ORBIT.maxPolar,
+    `기본 폴라각 ${((polar * 180) / Math.PI).toFixed(1)}° 가 한계 [${((ORBIT.minPolar * 180) / Math.PI).toFixed(1)}°, 90°] 밖`,
+  )
 })

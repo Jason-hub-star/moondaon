@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useEffect, useRef, useState, type ComponentRef } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
 import type { Group } from 'three'
 import { CaptureRig } from './capture/CaptureRig'
 import { useCapture, buildPrompt, CAPTURE_MS, type CameraPath } from './capture/capture'
@@ -9,7 +9,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { isEditMode } from './scene/sceneProps'
-import { CAMERA } from './scene/props.data'
+import { CAMERA, CAMERA_MOBILE, ORBIT } from './scene/props.data'
 import { useConfig, sizeZone } from './configurator/store'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
@@ -41,8 +41,40 @@ function useIsMobile() {
   return m
 }
 
+/**
+ * 카메라 리그 — 화면비에 따라 fov를 갈아끼우고(모바일은 세로 fov를 넓혀야 가로 시야가 산다),
+ * `시점 초기화`가 눌리면 기본 위치로 되돌린다. Canvas '안'이어야 useThree가 카메라를 잡는다.
+ * `<Canvas camera>`는 마운트 때 한 번만 먹으므로 화면비 전환은 여기서 명령형으로 처리한다.
+ */
+function CameraRig({ isMobile, resetSeq, orbit }: {
+  isMobile: boolean
+  resetSeq: number
+  orbit: React.RefObject<ComponentRef<typeof OrbitControls> | null>
+}) {
+  const camera = useThree((s) => s.camera)
+  const fov = (isMobile ? CAMERA_MOBILE : CAMERA).fov
+  useEffect(() => {
+    if (!('fov' in camera)) return
+    camera.fov = fov
+    camera.updateProjectionMatrix()
+  }, [camera, fov])
+  // 기본 시점을 OrbitControls 내부 상태로 못박아 둔다. 생성자가 잡는 target0은 (0,0,0)이라
+  // drei가 target prop을 적용한 '뒤'에 다시 저장해야 reset()이 문을 향해 돌아온다.
+  // (카메라 position을 직접 써넣는 방식은 매 프레임 도는 controls.update()와 싸워 되돌아오지 않았다 — 실측)
+  useEffect(() => { orbit.current?.saveState() }, [orbit])
+  useEffect(() => {
+    if (resetSeq === 0) return // 첫 렌더는 <Canvas camera>가 이미 잡아둔 상태
+    orbit.current?.reset()
+  }, [resetSeq, orbit])
+  return null
+}
+
 export default function App() {
   const isMobile = useIsMobile()
+  // 시점 이탈 복구 (감사 D2) — 기본 위치에서 벗어났을 때만 버튼을 띄운다
+  const orbitRef = useRef<ComponentRef<typeof OrbitControls> | null>(null)
+  const [resetSeq, setResetSeq] = useState(0)
+  const [viewMoved, setViewMoved] = useState(false)
   const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
@@ -205,12 +237,27 @@ export default function App() {
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           </group>
           <CaptureRig />
-          <OrbitControls target={CAMERA.target} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
+          {/* 감사 D2 — minPolarAngle 부재로 세로 스와이프 한 번에 시점이 머리 위로 넘어가
+              문이 사라졌다. 각도·거리 한계는 천장이 정한 한 쌍이라 props.data.ts ORBIT에 함께 둔다 */}
+          <OrbitControls ref={orbitRef} target={CAMERA.target}
+            minPolarAngle={ORBIT.minPolar} maxPolarAngle={ORBIT.maxPolar}
+            minDistance={ORBIT.minDistance} maxDistance={ORBIT.maxDistance}
+            enablePan={false} enabled={!capActive}
+            onEnd={() => {
+              const p = orbitRef.current?.object.position
+              if (!p) return
+              const [x, y, z] = CAMERA.position
+              setViewMoved(Math.hypot(p.x - x, p.y - y, p.z - z) > ORBIT.resetHintDistance)
+            }} />
+          <CameraRig isMobile={isMobile} resetSeq={resetSeq} orbit={orbitRef} />
         </Canvas>
         <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
           {/* 실측 치수를 함께 넘긴다 — AR 세션 안에는 우리 UI를 못 그리므로 진입 전 가이드가
               폭·높이를 말해줄 유일한 자리다 (ar/openAR.ts) */}
           <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current, spec) }}>실물 크기로 보기 (AR)</TopBtn>
+          {viewMoved && (
+            <TopBtn onClick={() => { setResetSeq((n) => n + 1); setViewMoved(false) }}>↺ 시점 초기화</TopBtn>
+          )}
           {/* 레퍼런스 비교·영상 캡처는 내부 검수 도구 — 맵 편집기(?edit=1)에서만 노출.
               import.meta.env.DEV를 게이트 앞에 직접 두어야 프로덕션 번들에서 이 블록이 통째로 제거된다
               (isEditMode() 호출만으로는 런타임 분기라 코드·문자열이 남는다 — 실측 2026-08-27) */}

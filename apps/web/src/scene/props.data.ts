@@ -358,7 +358,7 @@ export const WALL_LIMITS: Record<keyof WallParams, [number, number]> = {
  * 여기 말고 다른 곳에 좌표를 적지 않는다. 프레임 게이트가 이 값으로 판정하므로
  * 하드코딩이 남으면 게이트가 실제 화면과 다른 걸 재게 된다.
  */
-export const CAMERA = {
+export const CAMERA: Cam = {
   position: [1.8, 1.5, 3.4] as [number, number, number],
   // target y 1.15 → 0.98 (P-E3): 카메라 높이 1.5m·세로 반각 22.5°에서는 시선축이 5.2°만 내려가
   // **바닥이 카메라로부터 3.3m 밖일 때만 프레임에 든다** — 거실 러그를 어디에 깔아도 안 보이는
@@ -377,10 +377,12 @@ export const FRAME_ASPECT = 1.63
 /** 가장자리 여유 + 하단 UI 슬라이더가 캔버스의 ~7%를 덮는 몫 */
 export const FRAME_NDC = { x: 0.94, top: 0.94, bottom: 0.86 }
 
-/** 기본 카메라 기준 정규화 화면좌표. x·y ∈ [-1,1]이면 화면 안, behind면 카메라 뒤 */
-export function frameNdc(p: readonly [number, number, number]) {
-  const [cx, cy, cz] = CAMERA.position
-  const [tx, ty, tz] = CAMERA.target
+export type Cam = { position: [number, number, number]; target: [number, number, number]; fov: number }
+
+/** 카메라 기준 정규화 화면좌표. x·y ∈ [-1,1]이면 화면 안, behind면 카메라 뒤 */
+export function frameNdc(p: readonly [number, number, number], cam: Cam = CAMERA, aspect = FRAME_ASPECT) {
+  const [cx, cy, cz] = cam.position
+  const [tx, ty, tz] = cam.target
   const f: [number, number, number] = [tx - cx, ty - cy, tz - cz]
   const lf = Math.hypot(...f)
   const fw = f.map((v) => v / lf) as [number, number, number]
@@ -393,14 +395,43 @@ export function frameNdc(p: readonly [number, number, number]) {
   ]
   const d: [number, number, number] = [p[0] - cx, p[1] - cy, p[2] - cz]
   const depth = d[0] * fw[0] + d[1] * fw[1] + d[2] * fw[2]
-  const th = Math.tan(((CAMERA.fov / 2) * Math.PI) / 180)
-  const x = (d[0] * rt[0] + d[1] * rt[1] + d[2] * rt[2]) / (depth * th * FRAME_ASPECT)
+  const th = Math.tan(((cam.fov / 2) * Math.PI) / 180)
+  const x = (d[0] * rt[0] + d[1] * rt[1] + d[2] * rt[2]) / (depth * th * aspect)
   const y = (d[0] * up[0] + d[1] * up[1] + d[2] * up[2]) / (depth * th)
   return { x, y, behind: depth <= 0 }
 }
 
 /** 원점이 화면 안인가 (여유분 적용) */
-export function inFrame(p: readonly [number, number, number]): boolean {
-  const n = frameNdc(p)
+export function inFrame(p: readonly [number, number, number], cam: Cam = CAMERA, aspect = FRAME_ASPECT): boolean {
+  const n = frameNdc(p, cam, aspect)
   return !n.behind && Math.abs(n.x) <= FRAME_NDC.x && n.y <= FRAME_NDC.top && n.y >= -FRAME_NDC.bottom
+}
+
+/* ── 모바일 카메라 ──────────────────────────────────────────────────────────
+ * 세로 분할 레이아웃(캔버스 52vh)에서 화면비가 ~0.89로 좁아진다. three의 fov는 **세로**라
+ * 화면비가 좁아지면 가로 시야가 그대로 깎인다 — fov45·화면비 0.89의 가로 반각은 20.2°로
+ * 데스크톱(1.76에서 36.1°)의 56%다. 그 결과 **문 4모서리가 |ndc| 0.90까지 밀려** 제품이
+ * 프레임에 꽉 낀다(소품이 밀려나는 건 그 다음 문제다).
+ *
+ * 카메라를 뒤로 빼는 해법은 못 쓴다 — 거실 깊이가 3.5m라 카메라가 방 밖으로 나간다.
+ * fov만 넓힌다: 54면 문 모서리가 **0.73**으로 내려와 여유가 생긴다(문 화면높이 71%→58%,
+ * 여전히 주인공). 62까지 올리면 0.62지만 광각 왜곡이 제품 비례를 흐린다.
+ */
+export const CAMERA_MOBILE: Cam = { ...CAMERA, fov: 54 }
+/** iPhone 390×844 기준 캔버스(390 × 52vh) 화면비 */
+export const FRAME_ASPECT_MOBILE = 0.888
+
+/* ── OrbitControls 한계 (감사 D2) ───────────────────────────────────────────
+ * `minPolarAngle` 부재로 세로 스와이프 한 번에 시점이 머리 위로 넘어가 문이 사라졌다.
+ * 상한은 **천장**이 정한다 — 카메라 높이 = target.y + 거리·cos(polar) 이므로
+ * 0.98 + 4.6·cos(69.9°) = 2.56 < 천장 2.645. 거리 상한과 각도 하한은 한 쌍이라 같이 둔다.
+ * 팬은 끈다 — 타깃이 문을 벗어나면 회전만으로는 복구가 안 되고, 쇼룸에서 타깃을 옮길 이유도 없다.
+ */
+export const ORBIT = {
+  minPolar: 1.22,           // 69.9° — 이보다 위로 올라가면 천장을 뚫는다
+  maxPolar: Math.PI / 2,    // 90° — 바닥 아래에서 올려다보지 않는다
+  minDistance: 2.2,
+  maxDistance: 4.6,
+  /** 이 거리 이상 벗어나면 '시점 초기화' 버튼을 띄운다 */
+  resetHintDistance: 0.25,
 }
