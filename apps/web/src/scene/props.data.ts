@@ -146,9 +146,9 @@ export const SCENE_PROPS: SceneProp[] = [
     id: 'shoes-b',
     type: 'shoesLight',
     position: [
-      -0.45,
+      0.12,
       -0.045,
-      -1.15
+      -1.38
     ],
     rotation: [
       0,
