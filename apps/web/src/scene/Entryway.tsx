@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { useMemo } from 'react'
-import { sheetTexture, linearTexture } from '../door/materials'
+import { sheetTexture, linearTexture, makeFrameMaterial, makeGlassMaterial } from '../door/materials'
+import type { ColorId, GlassId } from '../generated/cards'
 import { SceneProps, useWallParams } from './sceneProps'
 
 /**
@@ -9,7 +10,11 @@ import { SceneProps, useWallParams } from './sceneProps'
  * 신발장 천장까지 붙박이(하부 띄움+간접등), 현관 타일 단차 -45mm. 개구 실측 중앙값 1214mm.
  * ponytail: 소품은 저폴리 프리미티브 근사 — 문이 주인공, 소품은 무드 담당.
  */
-export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; doorH: number; openCorner?: boolean }) {
+export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, quality }: {
+  doorW: number; doorH: number; openCorner?: boolean
+  /** ㄱ자 부스 측면 고정창은 도어와 같은 제품 — 색상·유리 선택을 그대로 따른다 */
+  colorId: ColorId; glassId: GlassId; quality: 'high' | 'lite'
+}) {
   const mats = useMemo(() => ({
     wall: new THREE.MeshStandardMaterial({ color: '#f1eae0', roughness: 0.95,
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
@@ -26,8 +31,12 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
     art2: new THREE.MeshStandardMaterial({ color: '#c9d2c5', roughness: 0.95 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
     down: new THREE.MeshStandardMaterial({ color: '#fff6e6', emissive: '#fff0d0', emissiveIntensity: 2.2 }),
-    boothGlass: new THREE.MeshStandardMaterial({ color: '#b9a08a', transparent: true, opacity: 0.28, roughness: 0.05, side: THREE.DoubleSide }),
   }), [])
+  // 부스 고정창 — 도어와 동일한 제품 재질 (유리·색상 선택이 여기에도 걸린다)
+  const booth = useMemo(() => ({
+    glass: makeGlassMaterial(glassId, quality),
+    frame: makeFrameMaterial(colorId),
+  }), [glassId, colorId, quality])
   const WP = useWallParams() // 실측 기본값 + ?edit=1 슬라이더 (sceneProps.tsx <wall-params>)
   const WALL_W = 5, WALL_H = WP.wallH, side = (WALL_W - doorW) / 2
   const VEST = doorW / 2 + WP.vestMargin // 현관(유리 너머) 반폭 — 실측 복도폭(개구+0.5~0.6m) 재현
@@ -106,12 +115,24 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
         const len = DEPTH - z0, cz = -(z0 + DEPTH) / 2
         return (
           <group position={[SIDE_PLANE, 0, 0]}>
+            {/* 하프월 가벽 (도장) */}
             <mesh material={mats.wall} position={[0, HALF_H / 2, cz]}>
               <boxGeometry args={[0.08, HALF_H, len]} />
             </mesh>
-            <mesh material={mats.boothGlass} position={[0, HALF_H + (doorH - HALF_H) / 2, cz]}>
+            {/* 고정창 — 유리 + 도어와 같은 색의 상·하 레일과 끝단 스타일 */}
+            <mesh material={booth.glass} position={[0, (HALF_H + doorH) / 2, cz]}>
               <boxGeometry args={[0.02, doorH - HALF_H, len]} />
             </mesh>
+            <mesh material={booth.frame} position={[0, HALF_H + 0.02, cz]}>
+              <boxGeometry args={[0.06, 0.04, len]} />
+            </mesh>
+            <mesh material={booth.frame} position={[0, doorH - 0.02, cz]}>
+              <boxGeometry args={[0.06, 0.04, len]} />
+            </mesh>
+            <mesh material={booth.frame} position={[0, (HALF_H + doorH) / 2, -DEPTH + 0.02]}>
+              <boxGeometry args={[0.06, doorH - HALF_H, 0.04]} />
+            </mesh>
+            {/* 상부 마감 (가벽) */}
             <mesh material={mats.wall} position={[0, doorH + (WALL_H - doorH) / 2, cz]}>
               <boxGeometry args={[0.08, WALL_H - doorH, len]} />
             </mesh>
