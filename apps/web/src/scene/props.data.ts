@@ -53,6 +53,10 @@ export interface SceneProp {
  * - 현관 반폭 VEST=doorW/2+vestMargin — 벽 추종 소품은 doorL/doorR 앵커로 표현
  * - shoe-cabinet: 좌측벽 붙박이(깊이 0.35 → 중심 x=-doorW/2-0.055). ㄱ자 리턴은 우측만 침범, 스윙은 +z로 열림
  * - fire-door: 뒷벽 중앙 — 거실→중문→현관문 시선축(복도형 70%)
+ * - 현관 소품 배치 3원칙 (2026-08-27 주인님 지적으로 확립):
+ *   ① 문짝 x범위(-0.53~0.57) 앞을 막지 않는다 — 우산꽂이가 문에서 0.11m 앞에 서 있었다
+ *   ② 같은 종류끼리 겹치지 않는다 — 신발 두 켤레가 0.014m 간격(폭 0.24m)으로 포개져 있었다
+ *   ③ 그러면서 개구부 시선(passesOpening)을 통과해야 한다 — 셋을 동시에 만족하는 띠가 좁다
  */
 // <scene-props>
 export const SCENE_PROPS: SceneProp[] = [
@@ -114,9 +118,9 @@ export const SCENE_PROPS: SceneProp[] = [
     type: 'umbrellaStand',
     anchor: 'doorL',
     position: [
-      0.36,
+      0.045,
       -0.045,
-      -1.72
+      -1.62
     ],
     rotation: [
       0,
@@ -129,7 +133,7 @@ export const SCENE_PROPS: SceneProp[] = [
     type: 'shoesDark',
     position: [
       -0.17,
-      -0.05,
+      -0.045,
       -1.5
     ],
     rotation: [
@@ -142,9 +146,9 @@ export const SCENE_PROPS: SceneProp[] = [
     id: 'shoes-b',
     type: 'shoesLight',
     position: [
-      -0.16,
-      -0.03,
-      -1.49
+      -0.45,
+      -0.045,
+      -1.15
     ],
     rotation: [
       0,
