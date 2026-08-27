@@ -169,6 +169,11 @@ for (const c of out.products) {
     for (const g of c.railIds)
       if (!railIdSet.has(g)) xerr.push(`products/${c.id}: railIds '${g}' — 존재하지 않는 레일 카드`)
   }
+  // 팜플렛 두 규칙("양개는 강화 기본" × "망입은 강화불가")이 한 제품에서 부딪히면 UI가 답을 못 낸다
+  if (c.temperedDefault)
+    for (const g of c.glassIds ?? [])
+      if (out.glasses.find((x) => x.id === g)?.mesh)
+        xerr.push(`products/${c.id}: 강화 기본 제품인데 망입 유리 '${g}'를 허용한다 — 팜플렛상 강화불가`)
   // 간살 수치는 간살 도어에만 의미가 있다 — 다른 제품에 붙으면 렌더가 조용히 무시해 낡은 값이 남는다
   const isLouver = c.motion === 'louver_sliding'
   const hasLouver = c.louverBarM != null || c.louverGapM != null

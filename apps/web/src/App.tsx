@@ -15,6 +15,8 @@ import { useConfig } from './configurator/store'
 import { sizeZoneOf } from './configurator/sizeZone'
 // 하부레일(문턱) — 팜플렛이 제품마다 다르게 운영한다. 판정은 순수 모듈 하나에서만 한다 (node --test 대상)
 import { railsOf, railAllowed, effectiveRail } from './configurator/rails'
+// 5T 강화유리 — 팜플렛 규칙(망입 불가·양개 기본)을 한 모듈에서만 판정한다
+import { effectiveTempered, temperedLockReason } from './configurator/tempered'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
   COLORS, GLASSES, PATTERNS, HANDLES, RAILS, PRODUCTS,
@@ -81,9 +83,11 @@ export default function App() {
   const orbitRef = useRef<ComponentRef<typeof OrbitControls> | null>(null)
   const [resetSeq, setResetSeq] = useState(0)
   const [viewMoved, setViewMoved] = useState(false)
-  const { t, productId, colorId, glassId, patternId, handleId, railId, widthM, quality, panelPatterns, set } = useConfig()
+  const { t, productId, colorId, glassId, patternId, handleId, railId, tempered, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM, railId)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
+  const temperedOn = effectiveTempered(productId, glassId, tempered)
+  const temperedLock = temperedLockReason(productId, glassId)
   const zone = sizeZoneOf(productId, spec.width) // 팜플렛 구간표가 있는 제품만 표시
   // ㄱ자도 이제 정면 3연동이라 폭 = 개구폭 (구 버전은 1/3을 측면 픽스로 떼어 2/3만 정면에 썼다)
   const wallW = spec.width
@@ -335,7 +339,7 @@ export default function App() {
           {PRODUCTS[productId].name}
           {(() => {
             const p = PRODUCTS[productId] as { hinge?: string; temperedDefault?: boolean }
-            const notes = [p.hinge, p.temperedDefault ? '강화유리 기본' : null].filter(Boolean)
+            const notes = [p.hinge, p.temperedDefault ? '강화유리 기본' : temperedOn ? '5T 강화유리' : null].filter(Boolean)
             return notes.length ? ` · ${notes.join(' · ')}` : ''
           })()}
         </p>
@@ -381,6 +385,16 @@ export default function App() {
               <GlassChip key={id} id={id} active={glassId === id} onClick={() =>
                 set(handleAllowed(id, handleId) ? { glassId: id } : { glassId: id, handleId: fallbackHandle(id) })} />
             ))}
+          </Section>
+        )}
+        {!isAbs && (
+          <Section title="유리 강화 (5T 옵션)">
+            {/* 표시는 실제 적용값(effective), 저장은 고객 의도(tempered) — 망입을 잠깐 거쳐도 의도가 살아남는다 */}
+            <Chip active={temperedOn} onClick={() => { if (!temperedLock) set({ tempered: true }) }}>5T 강화유리</Chip>
+            <Chip active={!temperedOn} onClick={() => { if (!temperedLock) set({ tempered: false }) }}>일반 5mm</Chip>
+            <p style={{ width: '100%', margin: '2px 0 0', fontSize: 11, lineHeight: 1.5, color: '#8a8478' }}>
+              {temperedLock ?? '깨져도 잘게 부서져 다칠 위험이 적습니다. 별도 옵션입니다.'}
+            </p>
           </Section>
         )}
         {!isAbs && (

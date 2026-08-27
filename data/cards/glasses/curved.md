@@ -9,6 +9,7 @@ mesh: false
 requiresIntegratedHandle: true
 source: 팜플렛 2026-08 p2 부속 기타사양 — "유리(모루유리 / 굴곡유리 선택시 기본 일체형 손잡이 적용)"
 confirmWith:
+  mesh: '굴곡유리(성형 유리)가 5T 강화 가능한가 — 팜플렛은 망입만 강화불가로 적었다'
   tint: '굴곡유리 실물 스와치 — 팜플렛에 사진이 없어 모루에스 대비로 근사했다'
 renderSource: approx  # 팜플렛에 스와치 사진 없음 — 모루에스 대비 맑고 리브 굴절만 강한 값으로 근사
 ---
