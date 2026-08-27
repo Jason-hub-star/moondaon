@@ -2,13 +2,15 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Html, TransformControls, useHelper } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { BoxHelper, type Object3D } from 'three'
-import { setWallParams, useWallParams, WALL_LIMITS, type SceneProp, type WallParams } from './sceneProps'
+import { setWallParams, useWallParams } from './sceneProps'
+import { WALL_LIMITS, type SceneProp, type WallParams } from './props.data'
 
 /**
  * dev 전용 씬 편집기 (?edit=1) — 프로덕션 번들에 존재하지 않는다.
  * 선택: 좌측 목록 클릭(가림·크기 무관) 또는 씬에서 소품 클릭 · g=이동 / r=회전 · Esc=해제
  * 편집: ⌘Z 되돌리기 / ⇧⌘Z 다시 · ⌘D 복제 · Delete 삭제 · 90° 회전 버튼 · 좌표 직접 입력
- * 저장: 변경 즉시 /__scene-save가 sceneProps.tsx 마커 블록을 재작성(실패 시 클립보드 폴백).
+ * 저장: 변경 즉시 /__scene-save가 props.data.ts 마커 블록을 재작성(실패 시 클립보드 폴백).
+ * 마커 안 주석은 재작성 때 날아간다 — 배치 근거는 마커 '밖' 주석에 적는다.
  * vite 플러그인이 저장 직후 HMR을 억제하므로 화면이 새로고침되지 않는 것이 정상이다.
  */
 

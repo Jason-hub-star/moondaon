@@ -9,6 +9,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei'
 import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { isEditMode } from './scene/sceneProps'
+import { CAMERA } from './scene/props.data'
 import { useConfig, sizeZone } from './configurator/store'
 import { GlassChip, HandleChip, PatternChip, ProductChip } from './configurator/PatternChip'
 import {
@@ -176,18 +177,24 @@ export default function App() {
   return (
     <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', height: '100vh', background: '#faf9f7', color: '#2b2926', fontFamily: 'system-ui, sans-serif' }}>
       <div style={isMobile ? { height: '52vh', position: 'relative' } : { flex: 1, position: 'relative' }}>
-        <Canvas shadows camera={{ position: [1.8, 1.5, 3.4], fov: 45 }}
+        <Canvas shadows camera={{ position: CAMERA.position, fov: CAMERA.fov }}
           gl={{ preserveDrawingBuffer: true }}
           onCreated={({ gl }) => { canvasRef.current = gl.domElement }}>
           <color attach="background" args={['#f4f1ec']} />
-          <ambientLight intensity={0.55} color="#fff1e0" />
-          <directionalLight position={[2.5, 2.6, 3]} intensity={1.35} color="#fff3e4" castShadow />
-          <directionalLight position={[-2, 2.5, -2]} intensity={0.4} color="#e9edf7" />
-          <pointLight position={[0, 2.4, -1]} intensity={8} color="#fff4e0" />
+          {/* P-E6 명암 — 아늑함은 밝기가 아니라 대비(warm↔cool, bright↔dark)에서 나온다.
+              ambient 0.55는 전면 균일 조명이라 그늘 자체를 원천 차단하고 있었다(프레임 안 최암부가
+              몬스테라 잎이었던 원인). ambient를 깎은 만큼 웜 포인트를 올리되 distance를 짧게 잡아
+              '빛 웅덩이 + 감쇠'를 만든다 */}
+          <ambientLight intensity={0.32} color="#fff1e0" />
+          <directionalLight position={[2.5, 2.6, 3]} intensity={1.25} color="#fff3e4" castShadow />
+          <directionalLight position={[-2, 2.5, -2]} intensity={0.35} color="#e9edf7" />
+          {/* 현관 센서등 — 2700K대로 낮추고 distance로 가둬 거실보다 어둡게. 유리 너머가 거실과
+              같은 밝기면 깊이가 안 생긴다 */}
+          <pointLight position={[0, 2.4, -1]} intensity={5.2} distance={3.4} decay={1.6} color="#ffe2ba" />
           {/* 다운라이트·코브 액센트 (Entryway v2 웜 무드) */}
-          <pointLight position={[-1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
-          <pointLight position={[1.1, 2.45, 1.6]} intensity={3.5} distance={4.5} color="#ffe6bd" />
-          <pointLight position={[-2.2, 2.4, 1.2]} intensity={2.5} distance={3.5} color="#ffd9a0" />
+          <pointLight position={[-1.1, 2.45, 1.6]} intensity={4.6} distance={3.4} color="#ffe6bd" />
+          <pointLight position={[1.1, 2.45, 1.6]} intensity={4.6} distance={3.4} color="#ffe6bd" />
+          <pointLight position={[-2.2, 2.4, 1.2]} intensity={3.2} distance={2.8} color="#ffd9a0" />
           <Entryway doorW={wallW} doorH={spec.height} openCorner={PRODUCTS[productId].motion === 'sliding_multi_panel_corner'}
             colorId={colorId} glassId={glassId} quality={quality} />
           {/* 접지 그림자 — 가구·문 하단의 은은한 앰비언트 접지감 (정적 1프레임: 개폐 동적 그림자는 directional이 담당) */}
@@ -198,7 +205,7 @@ export default function App() {
             handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
           </group>
           <CaptureRig />
-          <OrbitControls target={[0, 1.15, 0]} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
+          <OrbitControls target={CAMERA.target} maxPolarAngle={Math.PI / 2} enabled={!capActive} />
         </Canvas>
         <div style={{ position: 'absolute', top: isMobile ? 10 : 16, left: isMobile ? 12 : 24, right: isMobile ? 12 : undefined, display: 'flex', gap: isMobile ? 6 : 8, flexWrap: 'wrap' }}>
           <TopBtn onClick={() => { if (doorRef.current) openAR(doorRef.current) }}>실물 크기로 보기 (AR)</TopBtn>

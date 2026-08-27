@@ -2,8 +2,11 @@ import { useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useCapture, envelope, CAPTURE_MS } from './capture'
 import { useConfig } from '../configurator/store'
+import { CAMERA } from '../scene/props.data'
 
-const TARGET: [number, number, number] = [0, 1.15, 0]
+// 시선 높이는 기본 카메라와 같은 SSOT를 쓴다 — 여기에 값을 다시 적으면 캡처 결과가
+// 화면에서 본 구도와 어긋난다 (P-E3에서 target y 1.15→0.98로 바뀌며 실제로 어긋났던 지점)
+const TARGET = CAMERA.target
 
 /** 캡처 중 t·카메라 패스 구동 + 비교 뷰 정면 프리셋 (Canvas 내부) */
 export function CaptureRig() {

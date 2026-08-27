@@ -1,223 +1,15 @@
 import * as THREE from 'three'
-import { lazy, Suspense, useState, useSyncExternalStore } from 'react'
-import { sheetTexture } from '../door/materials'
+import { lazy, Suspense, useState, useSyncExternalStore, type ReactElement } from 'react'
 import { Monstera } from './Monstera'
+import { SCENE_PROPS, resolveProp, WALL_PARAMS, WALL_LIMITS, type PropType, type WallParams } from './props.data'
 
 /**
- * 씬 소품 SSOT — 목록·위치·회전을 여기서만 관리한다 (SCENE-PLAN 표와 1:1).
- * 좌표 조절: dev 서버에서 `?edit=1` → 소품 클릭 → 기즈모로 이동 → 클립보드의 배열로 이 파일 갱신.
- * 편집기는 import.meta.env.DEV 분기라 프로덕션 번들에는 코드 자체가 존재하지 않는다.
+ * 씬 렌더러 + 소품 재질 + 편집기 게이트. **배치 숫자는 여기 없다** — `props.data.ts`가 SSOT다
+ * (three/JSX 의존이 0이라야 `frame.test.ts` 프레임 게이트가 node에서 읽는다).
+ * 좌표·카메라·게이트가 필요한 쪽은 `./props.data`를 직접 import 한다 — 여기로 우회시키면
+ * 컴포넌트 파일이 값까지 내보내게 돼 Fast Refresh가 깨진다.
  */
 
-/** anchor: 문폭(doorW)에 따라오는 소품용 — x에 앵커 오프셋이 더해진다 */
-export type PropAnchor = 'abs' | 'doorL' | 'doorR'
-export interface PropOverride {
-  position?: [number, number, number]
-  rotation?: [number, number, number]
-  hidden?: boolean
-}
-export interface SceneProp {
-  id: string
-  type: keyof typeof RENDERERS
-  anchor?: PropAnchor
-  position: [number, number, number]
-  rotation?: [number, number, number]
-  scale?: number
-  /** 씬 모드별 배치 오버라이드 — 개방형 코너(ㄱ자)는 벽이 달라져 소품 자리도 달라진다 */
-  modes?: { openCorner?: PropOverride }
-}
-
-/*
- * 배치 근거(KKARTdoor 실측 + 에디터 실배치 2026-08-26 — 아래 블록은 저장 시 재작성되므로 주석은 여기에):
- * - 현관 바닥 소품 y=-0.045: Entryway v3 타일 단차(step)와 동기
- * - 현관 반폭 VEST=doorW/2+vestMargin — 벽 추종 소품은 doorL/doorR 앵커로 표현
- * - shoe-cabinet: 좌측벽 붙박이(깊이 0.35 → 중심 x=-doorW/2-0.055). ㄱ자 리턴은 우측만 침범, 스윙은 +z로 열림
- * - fire-door: 뒷벽 중앙 — 거실→중문→현관문 시선축(복도형 70%)
- */
-// <scene-props>
-export const SCENE_PROPS: SceneProp[] = [
-  {
-    id: 'shoe-cabinet',
-    type: 'shoeCabinet',
-    anchor: 'doorL',
-    position: [
-      -0.175,
-      -0.28,
-      -1.06
-    ],
-    rotation: [
-      0,
-      1.571,
-      0
-    ]
-  },
-  {
-    id: 'fire-door',
-    type: 'fireDoor',
-    position: [
-      0,
-      -0.045,
-      -1.83
-    ],
-    rotation: [
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    id: 'door-mat',
-    type: 'doorMat',
-    position: [
-      0.03,
-      -0.041,
-      -1.47
-    ],
-    modes: { openCorner: { position: [-0.18, -0.041, -1.47] } },
-    rotation: [
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    id: 'umbrella-stand',
-    type: 'umbrellaStand',
-    anchor: 'doorR',
-    position: [
-      -0.16,
-      -0.045,
-      -1.8
-    ]
-  },
-  {
-    id: 'slipper-l',
-    type: 'slipper',
-    position: [
-      0.32,
-      0,
-      0.62
-    ],
-    rotation: [
-      0,
-      0.25,
-      0
-    ]
-  },
-  {
-    id: 'slipper-r',
-    type: 'slipper',
-    position: [
-      0.5,
-      0,
-      0.66
-    ],
-    rotation: [
-      0,
-      0.1,
-      0
-    ]
-  },
-  {
-    id: 'rug',
-    type: 'rug',
-    position: [
-      0.3,
-      0.006,
-      1.9
-    ]
-  },
-  {
-    id: 'mirror',
-    type: 'mirror',
-    position: [
-      2.15,
-      0.82,
-      0.24
-    ],
-    rotation: [
-      -0.06,
-      -0.35,
-      0
-    ],
-    modes: { openCorner: { hidden: true } } // 기대던 우측 벽이 개방형에선 없다
-  },
-  {
-    id: 'window',
-    type: 'windowSheer',
-    position: [
-      -2.44,
-      1.55,
-      1.15
-    ],
-    rotation: [
-      0,
-      1.5707963267948966,
-      0
-    ]
-  },
-  {
-    id: 'floor-lamp',
-    type: 'floorLamp',
-    position: [
-      -1.85,
-      0,
-      2.85
-    ]
-  },
-  {
-    id: 'wallpad',
-    type: 'wallpad',
-    anchor: 'doorL',
-    position: [
-      -0.32,
-      1.32,
-      0.09
-    ]
-  },
-  {
-    id: 'monstera',
-    type: 'monstera',
-    anchor: 'doorL',
-    position: [
-      -0.55,
-      0,
-      0.6
-    ],
-    scale: 0.85
-  },
-  {
-    id: 'console',
-    type: 'console',
-    position: [
-      -2.22,
-      0,
-      2.2
-    ]
-  }
-]
-// </scene-props>
-
-export function resolveProp(p: SceneProp, doorW: number, openCorner: boolean) {
-  const o = openCorner ? p.modes?.openCorner : undefined
-  const base = o?.position ?? p.position
-  const dx = p.anchor === 'doorL' ? -doorW / 2 : p.anchor === 'doorR' ? doorW / 2 : 0
-  return {
-    position: [base[0] + dx, base[1], base[2]] as [number, number, number],
-    rotation: (o?.rotation ?? p.rotation ?? [0, 0, 0]) as [number, number, number],
-    hidden: o?.hidden ?? false,
-  }
-}
-
-/* ── 벽(구조) 파라미터 — 실측 기반 기본값, ?edit=1 슬라이더로 조절·저장 ── */
-// <wall-params>
-export const WALL_PARAMS = { vestMargin: 0.42, vestDepth: 1.935, wallH: 2.645, step: 0.06 }
-// </wall-params>
-export type WallParams = typeof WALL_PARAMS
-/** 실측 근거 한계 — 슬라이더 범위이자 setWallParams 클램프 */
-export const WALL_LIMITS: Record<keyof WallParams, [number, number]> = {
-  vestMargin: [0.15, 0.6], vestDepth: [1.2, 2.2], wallH: [2.3, 2.9], step: [0, 0.08],
-}
 
 let _wp: WallParams = { ...WALL_PARAMS }
 const _wpSubs = new Set<() => void>()
@@ -234,6 +26,29 @@ export function setWallParams(patch: Partial<WallParams>) {
   _wpSubs.forEach((cb) => cb())
 }
 
+/* 액자 포스터 — 절차적 캔버스(외부 애셋 0). 256px면 원경 수백 px에 충분하다 */
+const _posters = new Map<string, THREE.CanvasTexture>()
+function posterTexture(key: 'sun' | 'hill'): THREE.CanvasTexture {
+  const hit = _posters.get(key)
+  if (hit) return hit
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const g = c.getContext('2d')!
+  if (key === 'sun') {
+    g.fillStyle = '#efe6d8'; g.fillRect(0, 0, 256, 256)
+    g.fillStyle = '#c9805e'; g.beginPath(); g.arc(128, 108, 58, 0, Math.PI * 2); g.fill()
+    g.fillStyle = '#7d6551'; g.fillRect(0, 184, 256, 72)
+  } else {
+    g.fillStyle = '#e8eae3'; g.fillRect(0, 0, 256, 256)
+    g.fillStyle = '#8b9b83'; g.beginPath(); g.moveTo(-10, 206); g.lineTo(96, 96); g.lineTo(186, 206); g.fill()
+    g.fillStyle = '#4d5c4b'; g.beginPath(); g.moveTo(112, 206); g.lineTo(198, 74); g.lineTo(266, 206); g.fill()
+  }
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  _posters.set(key, t)
+  return t
+}
+
 /* ── 소품 재질 (모듈 싱글턴 — 소품 전용, 구조 재질은 Entryway가 보유) ── */
 let _pm: ReturnType<typeof makePropMats> | null = null
 function makePropMats() {
@@ -246,10 +61,25 @@ function makePropMats() {
     steelDark: new THREE.MeshStandardMaterial({ color: '#bdb8b0', metalness: 0.2, roughness: 0.45 }),
     mat: new THREE.MeshStandardMaterial({ color: '#8f8377', roughness: 1 }),
     shoe2: new THREE.MeshStandardMaterial({ color: '#3e4652', roughness: 0.85 }),
-    rug: new THREE.MeshStandardMaterial({ color: '#dcc9ad', roughness: 1 }),
-    mirror: new THREE.MeshStandardMaterial({ color: '#dde4ea', metalness: 0, roughness: 0.05 }), // envMap 없이 금속성은 검게 — 밝은 유전체 근사
-    mirrorFrame: new THREE.MeshStandardMaterial({ color: '#c9b896', roughness: 0.6 }),
-    sheer: new THREE.MeshStandardMaterial({ color: '#fffdf8', transparent: true, opacity: 0.45, roughness: 1, side: THREE.DoubleSide }),
+    shoeLight: new THREE.MeshStandardMaterial({ color: '#cfc4b4', roughness: 0.8 }),
+    shoeSole: new THREE.MeshStandardMaterial({ color: '#8d8880', roughness: 0.9 }),
+    // 코트는 원경 40px짜리 실루엣이다 — 흰 신발장보다 대비를 세우지 않는 중간 값 토프로 둔다
+    // (2026-08-27 "문이 주인공" 피드백 불가침)
+    coat: new THREE.MeshStandardMaterial({ color: '#7f7668', roughness: 1 }),
+    hook: new THREE.MeshStandardMaterial({ color: '#8e887e', metalness: 0.35, roughness: 0.5 }),
+    // 러그가 마루와 같은 값이면 "베이지 방수포"로 읽힌다 — 필드를 한 톤 낮추고 바인딩(테두리)을
+    // 한 톤 더 낮춰 두 값으로 만든다. 면 2개로 원경에서 '깔린 것'이 확정된다 (P-E3)
+    rug: new THREE.MeshStandardMaterial({ color: '#c9bca7', roughness: 1 }),
+    rugEdge: new THREE.MeshStandardMaterial({ color: '#9d8e7b', roughness: 1 }),
+    woodFrame: new THREE.MeshStandardMaterial({ color: '#c9b896', roughness: 0.6 }),
+    // 액자는 프레임(짙은 월넛)+흰 매트+포스터 3겹. 매트가 있어야 저해상도 원경에서도 '액자'로 읽힌다 —
+    // 단색 판 하나로 두면 미완성 3D 신호가 된다 (P-E2, 2026-08-27)
+    artFrame: new THREE.MeshStandardMaterial({ color: '#4a3f34', roughness: 0.55 }),
+    artMat: new THREE.MeshStandardMaterial({ color: '#f7f4ee', roughness: 0.95 }),
+    posterSun: new THREE.MeshStandardMaterial({ map: posterTexture('sun'), roughness: 0.9 }),
+    posterHill: new THREE.MeshStandardMaterial({ map: posterTexture('hill'), roughness: 0.9 }),
+    switchPlate: new THREE.MeshStandardMaterial({ color: '#f6f4f0', roughness: 0.5 }),
+    switchKey: new THREE.MeshStandardMaterial({ color: '#e4e0d9', roughness: 0.6 }),
     daylight: new THREE.MeshStandardMaterial({ color: '#fff8ea', emissive: '#fff3da', emissiveIntensity: 1.4 }),
     lampShade: new THREE.MeshStandardMaterial({ color: '#f3e6cd', emissive: '#ffdba8', emissiveIntensity: 0.9, side: THREE.DoubleSide }),
     lampPole: new THREE.MeshStandardMaterial({ color: '#5c534a', metalness: 0.6, roughness: 0.4 }),
@@ -258,7 +88,13 @@ function makePropMats() {
     slipperSole: new THREE.MeshStandardMaterial({ color: '#ece4d8', roughness: 0.65 }),
     slipperIn: new THREE.MeshStandardMaterial({ color: '#d9ccb8', roughness: 0.9, side: THREE.DoubleSide }),
     slipperBand: new THREE.MeshStandardMaterial({ color: '#b8aa99', roughness: 0.95, side: THREE.DoubleSide }),
-    console: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/sebiji.jpg', 1.6), roughness: 0.7 }),
+    // 짙은 값 앵커 — 프레임 안 최암부가 몬스테라 잎이던 걸 소파가 넘겨받는다.
+    // 현관이 아니라 **거실 쪽**에만 둔다(흰 신발장 피드백 2026-08-27 불가침)
+    sofa: new THREE.MeshStandardMaterial({ color: '#6b6259', roughness: 0.92 }),
+    sofaSeat: new THREE.MeshStandardMaterial({ color: '#7e7568', roughness: 0.95 }),
+    sofaLeg: new THREE.MeshStandardMaterial({ color: '#4a3f34', roughness: 0.6 }),
+    throw: new THREE.MeshStandardMaterial({ color: '#b5765c', roughness: 1 }), // 유일한 채도 액센트
+    cushion: new THREE.MeshStandardMaterial({ color: '#d8cdbb', roughness: 1 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
   }
 }
@@ -300,8 +136,23 @@ function slipperGeos() {
   return _slip
 }
 
+/* 신발 한 켤레 — 밑창+갑피+앞코 3상자 × 2짝. 짝마다 각도를 달리해야 '벗어둔 것'으로 읽힌다 */
+function shoePair(upper: THREE.Material) {
+  return (
+    <>
+      {([[-0.075, 0, 0.06], [0.075, 0.02, -0.13]] as const).map(([x, z, rot], i) => (
+        <group key={i} position={[x, 0, z]} rotation={[0, rot, 0]}>
+          <mesh material={pm().shoeSole} position={[0, 0.012, 0]} castShadow><boxGeometry args={[0.085, 0.024, 0.26]} /></mesh>
+          <mesh material={upper} position={[0, 0.055, -0.045]} castShadow><boxGeometry args={[0.08, 0.07, 0.15]} /></mesh>
+          <mesh material={upper} position={[0, 0.04, 0.085]}><boxGeometry args={[0.075, 0.04, 0.09]} /></mesh>
+        </group>
+      ))}
+    </>
+  )
+}
+
 /* ── 렌더러 레지스트리 — 소품 하나 = 컴포넌트 하나, 로컬 좌표는 소품 원점 기준 ── */
-export const RENDERERS = {
+export const RENDERERS: Record<PropType, () => ReactElement> = {
   // 천장까지 붙박이 톨장 + 하부 띄움 90mm·간접등 — KKARTdoor 실측 국룰 (그룹 y=-0.045 기준 상단 2.7 도달)
   shoeCabinet: () => (
     <>
@@ -330,6 +181,23 @@ export const RENDERERS = {
       <mesh material={pm().shoe2} position={[0.02, 0.42, 0]} rotation={[0, 0, 0.18]}><cylinderGeometry args={[0.012, 0.02, 0.55, 6]} /></mesh>
     </>
   ),
+  /* 신발 2켤레 — census 반복 소품 1순위인데 매트만 있고 신발이 없었다.
+     유리 너머 원경이라 밑창+갑피 상자 2개면 실루엣이 선다 (등급 A) */
+  shoesDark: () => shoePair(pm().shoe2),
+  shoesLight: () => shoePair(pm().shoeLight),
+  /* 벽 후크 + 코트 1벌 — "사람이 산다" 신호 중 최고 가성비.
+     뒷벽 좌측(x −1.05~−0.53)은 개구부 시선이 닿고 신발장에도 안 가리는 유일한 벽면이다 */
+  coatHook: () => (
+    <>
+      <mesh material={pm().hook} position={[0, 0.34, 0.03]}><boxGeometry args={[0.34, 0.03, 0.02]} /></mesh>
+      {([-0.1, 0.1] as const).map((x, i) => (
+        <mesh key={i} material={pm().hook} position={[x, 0.3, 0.05]}><boxGeometry args={[0.015, 0.05, 0.03]} /></mesh>
+      ))}
+      <mesh material={pm().coat} position={[-0.02, 0, 0.07]}><boxGeometry args={[0.3, 0.62, 0.07]} /></mesh>
+      <mesh material={pm().coat} position={[-0.02, 0.26, 0.07]}><boxGeometry args={[0.16, 0.12, 0.07]} /></mesh>
+      <mesh material={pm().coat} position={[-0.03, -0.4, 0.06]}><boxGeometry args={[0.22, 0.2, 0.06]} /></mesh>
+    </>
+  ),
   slipper: () => (
     <>
       <mesh geometry={slipperGeos().sole} material={pm().slipperSole} position={[0, 0.006, 0]} castShadow />
@@ -338,25 +206,52 @@ export const RENDERERS = {
         rotation={[-0.15, 0, 0]} scale={[1, 0.72, 1]} castShadow />
     </>
   ),
+  // 원형 0.85 → 직사각 1.9×1.3. 국내 가이드상 거실 러그는 240×320급이 표준이라 원형 소형은
+  // 애초에 아파트 문법이 아니었고, 바닥이 비어 보이던 하단 1/3을 이게 채운다 (P-E3)
   rug: () => (
-    <mesh material={pm().rug} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><circleGeometry args={[0.85, 36]} /></mesh>
+    <group rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh material={pm().rugEdge} receiveShadow><planeGeometry args={[1.9, 1.3]} /></mesh>
+      <mesh material={pm().rug} position={[0, 0, 0.001]} receiveShadow><planeGeometry args={[1.76, 1.16]} /></mesh>
+    </group>
   ),
-  mirror: () => (
+  // 액자 — 프레임 상자 + 흰 매트 + 포스터. 매트/포스터는 프레임 앞면(z 0.011)보다 살짝 앞이라 z-fight 없음
+  artTall: () => (
     <>
-      <mesh material={pm().mirrorFrame}><boxGeometry args={[0.54, 1.64, 0.03]} /></mesh>
-      <mesh material={pm().mirror} position={[0, 0, 0.017]}><boxGeometry args={[0.46, 1.56, 0.004]} /></mesh>
+      <mesh material={pm().artFrame}><boxGeometry args={[0.36, 0.46, 0.022]} /></mesh>
+      <mesh material={pm().artMat} position={[0, 0, 0.0115]}><planeGeometry args={[0.32, 0.42]} /></mesh>
+      <mesh material={pm().posterSun} position={[0, 0.01, 0.0125]}><planeGeometry args={[0.21, 0.29]} /></mesh>
     </>
   ),
+  // 우측 벽은 카메라에서 1.6m라 좌측(4.5m)보다 3배 크게 잡힌다 — 실측 원근이 맞아도
+  // 시선을 문에서 뺏으므로 실제 액자를 한 치수 작게 건다 (P-E2 실렌더 판정)
+  artWide: () => (
+    <>
+      <mesh material={pm().artFrame}><boxGeometry args={[0.34, 0.26, 0.022]} /></mesh>
+      <mesh material={pm().artMat} position={[0, 0, 0.0115]}><planeGeometry args={[0.3, 0.22]} /></mesh>
+      <mesh material={pm().posterHill} position={[0, 0, 0.0125]}><planeGeometry args={[0.2, 0.15]} /></mesh>
+    </>
+  ),
+  // 2구 스위치 — 월패드 옆 국룰 동반 부재. 상자 2개로 "한국 아파트"가 확정된다
+  lightSwitch: () => (
+    <>
+      <mesh material={pm().switchPlate}><boxGeometry args={[0.086, 0.12, 0.011]} /></mesh>
+      {([0.028, -0.028] as const).map((y, i) => (
+        <mesh key={i} material={pm().switchKey} position={[0, y, 0.007]}><boxGeometry args={[0.058, 0.044, 0.004]} /></mesh>
+      ))}
+    </>
+  ),
+  // 폭 1.42 → 0.9 (P-E3). 좌측벽 창은 z를 문 쪽으로 당길수록 프레임에 드는데, 넓으면 개구부
+  // 벽 모서리(z ±0.075)를 파고든다 — 좁혀야 당길 수 있다. 창의 역할은 크기가 아니라 빛의 근거다.
+  // 커튼·속커튼은 폐기 — 저폴리 상자로는 '천'이 안 나오고 벽과 같은 값으로 뭉갰다 (2026-08-27 판정)
   windowSheer: () => (
     <>
-      <mesh material={pm().daylight} position={[0, 0, -0.005]}><planeGeometry args={[1.3, 1.25]} /></mesh>
-      {([[0, 0.655], [0, -0.655]] as const).map(([x, y], i) => (
-        <mesh key={i} material={pm().mirrorFrame} position={[x, y, 0]}><boxGeometry args={[1.42, 0.06, 0.04]} /></mesh>
+      <mesh material={pm().daylight} position={[0, 0, -0.005]}><planeGeometry args={[0.8, 1.25]} /></mesh>
+      {([0.655, -0.655] as const).map((y, i) => (
+        <mesh key={i} material={pm().woodFrame} position={[0, y, 0]}><boxGeometry args={[0.9, 0.06, 0.04]} /></mesh>
       ))}
-      {([[-0.68, 0], [0.68, 0], [0, 0]] as const).map(([x, y], i) => (
-        <mesh key={i} material={pm().mirrorFrame} position={[x, y, 0]}><boxGeometry args={[0.06, 1.36, 0.04]} /></mesh>
+      {([-0.42, 0.42, 0] as const).map((x, i) => (
+        <mesh key={i} material={pm().woodFrame} position={[x, 0, 0]}><boxGeometry args={[0.06, 1.36, 0.04]} /></mesh>
       ))}
-      <mesh material={pm().sheer} position={[-0.35, -0.06, 0.09]}><planeGeometry args={[0.72, 1.5]} /></mesh>
     </>
   ),
   floorLamp: () => (
@@ -374,12 +269,32 @@ export const RENDERERS = {
     </>
   ),
   monstera: () => <Monstera position={[0, 0, 0]} scale={1} />,
-  console: () => (
+  /* 소파 — 좌측벽 2인용. 깊이는 x, 길이는 z. 프레임 좌측에서 잘리는 컷오프 근경물이라
+     원점만 게이트 안(총 29.7°)에 두고 지오메트리는 밖으로 뻗는다.
+     ponytail: 쿠션 곡률·주름 없는 상자 조합 — 원경 근경물이라 실루엣과 값만 맞으면 된다.
+     ceiling: 카메라를 더 왼쪽으로 돌리면 각진 게 드러난다. 그때 img2threejs 정밀화 대상. */
+  sofa: () => (
     <>
-      <mesh material={pm().console} position={[0, 0.42, 0]} castShadow><boxGeometry args={[0.34, 0.04, 0.9]} /></mesh>
-      {([[-0.13, -0.4], [-0.13, 0.4], [0.13, -0.4], [0.13, 0.4]] as const).map(([x, z], i) => (
-        <mesh key={i} material={pm().console} position={[x, 0.2, z]}><boxGeometry args={[0.03, 0.4, 0.03]} /></mesh>
+      <mesh material={pm().sofa} position={[0, 0.19, 0]} castShadow><boxGeometry args={[0.82, 0.3, 1.1]} /></mesh>
+      <mesh material={pm().sofaSeat} position={[0.02, 0.42, 0]} castShadow><boxGeometry args={[0.74, 0.16, 1.02]} /></mesh>
+      <mesh material={pm().sofa} position={[-0.33, 0.64, 0]} castShadow><boxGeometry args={[0.16, 0.62, 1.1]} /></mesh>
+      {([-0.48, 0.48] as const).map((z, i) => (
+        <mesh key={i} material={pm().sofa} position={[0, 0.53, z]} castShadow><boxGeometry args={[0.78, 0.38, 0.14]} /></mesh>
       ))}
+      {([[-0.34, -0.48], [-0.34, 0.48], [0.32, -0.48], [0.32, 0.48]] as const).map(([x, z], i) => (
+        <mesh key={i} material={pm().sofaLeg} position={[x, 0.02, z]}><boxGeometry args={[0.05, 0.04, 0.05]} /></mesh>
+      ))}
+      {/* 등에 기대둔 쿠션 2개. 팔걸이 안쪽 면(z ±0.41)을 뚫지 않게 z폭 0.3·중심 ±0.21로 물린다 */}
+      {([-0.21, 0.22] as const).map((z, i) => (
+        <mesh key={i} material={pm().cushion} position={[-0.19, 0.62, z]} rotation={[0, 0, i ? 0.2 : -0.14]} castShadow>
+          <boxGeometry args={[0.12, 0.32, 0.3]} />
+        </mesh>
+      ))}
+      {/* 좌판에 던져둔 담요 — 팔걸이에 '걸치는' 형태는 저폴리 상자로는 오렌지 파이프로 읽혀 폐기했다
+          (P-E4 실렌더 판정). 접어둔 천 한 장이 같은 신호를 내면서 실루엣이 안 무너진다 */}
+      <mesh material={pm().throw} position={[0.05, 0.52, 0.26]} rotation={[0.05, 0.14, 0]} castShadow>
+        <boxGeometry args={[0.5, 0.05, 0.4]} />
+      </mesh>
     </>
   ),
 }

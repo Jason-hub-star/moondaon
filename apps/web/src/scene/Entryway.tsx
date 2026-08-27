@@ -20,15 +20,14 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
     wallBack: new THREE.MeshStandardMaterial({ color: '#ece2d4', roughness: 0.95,
       normalMap: linearTexture('/textures/wall-plaster-n.jpg', 3), normalScale: new THREE.Vector2(0.35, 0.35) }),
-    base: new THREE.MeshStandardMaterial({ color: '#cbb499', roughness: 0.8 }),
+    // 걸레받이는 벽보다 반 톤만 낮은 오프화이트 — 국내 아파트 국룰(화이트 or 마루 매치)이고,
+    // 구 #cbb499는 화면에서 채도가 제일 높아 방을 가로로 자르는 띠로 읽혔다 (P-E2, 2026-08-27)
+    base: new THREE.MeshStandardMaterial({ color: '#e6dfd3', roughness: 0.8 }),
     wood: new THREE.MeshStandardMaterial({ map: sheetTexture('/textures/floor-oak.jpg', 2.4),
       normalMap: linearTexture('/textures/floor-oak-n.jpg', 2.4), normalScale: new THREE.Vector2(0.6, 0.6),
       roughnessMap: linearTexture('/textures/floor-oak-r.jpg', 2.4), roughness: 1 }),
     tile: new THREE.MeshStandardMaterial({ color: '#e6dfd4', map: sheetTexture('/textures/tile-porcelain.jpg', 3),
       normalMap: linearTexture('/textures/tile-porcelain-n.jpg', 3), roughness: 0.35 }),
-    frame: new THREE.MeshStandardMaterial({ color: '#a98d68', roughness: 0.6 }),
-    art1: new THREE.MeshStandardMaterial({ color: '#e6d3bd', roughness: 0.95 }),
-    art2: new THREE.MeshStandardMaterial({ color: '#c9d2c5', roughness: 0.95 }),
     cove: new THREE.MeshStandardMaterial({ color: '#fff1da', emissive: '#ffdba8', emissiveIntensity: 1.6 }),
     down: new THREE.MeshStandardMaterial({ color: '#fff6e6', emissive: '#fff0d0', emissiveIntensity: 2.2 }),
   }), [])
@@ -186,17 +185,7 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -DEPTH * 0.55]}>
         <circleGeometry args={[0.09, 20]} />
       </mesh>
-{/* 액자 2 — 개구부 좌우 벽 */}
-      <group position={[-(doorW / 2 + side / 2), 1.55, 0.09]}>
-        <mesh material={mats.frame}><boxGeometry args={[0.34, 0.44, 0.02]} /></mesh>
-        <mesh material={mats.art1} position={[0, 0, 0.011]}><boxGeometry args={[0.28, 0.38, 0.004]} /></mesh>
-      </group>
-      {!openCorner && (
-        <group position={[doorW / 2 + side / 2, 1.42, 0.09]}>
-          <mesh material={mats.frame}><boxGeometry args={[0.28, 0.36, 0.02]} /></mesh>
-          <mesh material={mats.art2} position={[0, 0, 0.011]}><boxGeometry args={[0.22, 0.3, 0.004]} /></mesh>
-        </group>
-      )}
+      {/* 액자는 소품 SSOT(props.data.ts art-l·art-r)로 이관 — 여기 있으면 프레임 게이트가 못 잰다 (P-E2) */}
     </group>
   )
 }
