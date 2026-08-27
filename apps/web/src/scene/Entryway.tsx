@@ -34,12 +34,10 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
   const STEP = WP.step // 현관 타일 단차(실측 40~50mm)
   const DEPTH = WP.vestDepth // 현관 깊이(중문→뒷벽)
   // 개방형 코너(ㄱ자) — 목 없는 현관에 전실을 신설하는 부스: 우측은 벽 대신 하프월 가벽+고정유리 (레퍼런스: 아이지도어 ㄱ자 파티션, 실측 하프월 ≈1.05m)
-  const SIDE_W = doorW / 2 // LShapeDoor 측면 리턴 깊이와 동일 (frontW의 1/2) — 레퍼런스 실측 리턴 ≈650mm과 부합
   const HALF_H = 0.92 // 하프월 높이 — 아이지도어 레퍼런스 실측 0.40×H(2300) ≈ 920mm
-  const boothR = doorW / 2 // 부스 우측 면(도어 리턴 평면)
-  // 도어 측면 픽스의 유리면 x — LShapeDoor가 리턴 패널을 로컬 z+0.033에 두고 -90° 회전시키므로 boothR에서 33mm 안쪽.
-  // 부스 가벽·유리는 이 평면을 그대로 이어받아야 도어와 벽이 한 면으로 보인다 (기존 boothR+0.04는 73mm 어긋나 틈이 보였다)
-  const SIDE_PLANE = boothR - 0.033
+  const boothR = doorW / 2 // 부스 우측 면 = 개구 우측 끝
+  // 가벽(두께 80mm) 중심 — 안쪽 면이 개구 끝선 boothR에 딱 맞게 선다. 도어 우측 문틀이 같은 선이라 한 면으로 이어진다
+  const SIDE_PLANE = boothR + 0.04
   const tileW = openCorner ? VEST + boothR : VEST * 2
   const tileCX = openCorner ? (boothR - VEST) / 2 : 0
   return (
@@ -103,9 +101,8 @@ export function Entryway({ doorW, doorH, openCorner = false }: { doorW: number; 
       )}
       {/* 개방형: 도어 리턴(z 0~-SIDE_W) 뒤를 잇는 하프월 가벽 + 브론즈 고정유리 + 상부 마감 */}
       {openCorner && (() => {
-        // 도어 리턴 끝 기둥(z −SIDE_W ~ −SIDE_W−0.04) 한가운데에서 잇는다 — 가벽 끝면이 기둥에 가려 이음새가 사라진다.
-        // 가벽이 도어와 같은 평면이 된 뒤로는 겹침을 키우면(옛 −0.1) 끝면이 리턴 유리 안쪽으로 튀어나온다
-        const z0 = SIDE_W + 0.02
+        // 도어 문틀(깊이 117mm, z ±0.0585) 안쪽에서 시작 — 가벽 끝면이 문틀에 가려 이음새가 보이지 않는다
+        const z0 = 0.04
         const len = DEPTH - z0, cz = -(z0 + DEPTH) / 2
         return (
           <group position={[SIDE_PLANE, 0, 0]}>

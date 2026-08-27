@@ -45,7 +45,8 @@ export default function App() {
   const { t, productId, colorId, glassId, patternId, handleId, widthM, quality, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
-  const wallW = PRODUCTS[productId].motion === 'sliding_multi_panel_corner' ? (spec.width * 2) / 3 : spec.width
+  // ㄱ자도 이제 정면 3연동이라 폭 = 개구폭 (구 버전은 1/3을 측면 픽스로 떼어 2/3만 정면에 썼다)
+  const wallW = spec.width
   const editTools = isEditMode()
   const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
   const isArch = productId === 'custom-arch'
@@ -268,12 +269,10 @@ export default function App() {
               if (arch && cur.archProfile == null) patch.patternId = 'arch3'
               if (!arch && cur.archProfile != null && cur.spandrel == null) patch.patternId = 'open'
               if (cur.motions && !cur.motions.includes(PRODUCTS[id].motion)) patch.patternId = 'open'
-              // 폭 — 새 제품 범위로 클램프. ㄱ자는 width가 정면+측면 합이라 일반 기본값 1.25m면 정면이 833mm까지
-              // 좁아진다 → 레퍼런스 실측 정면 1147mm를 재현하는 총폭 1.72m로 맞춘다 (KKART-PATTERN.md ㄱ자 실측)
+              // 폭은 새 제품의 허용 범위로 클램프 — 범위 밖 값이 남으면 슬라이더와 렌더가 어긋난다
               if (productId !== id) {
                 const [nMin, nMax] = PRODUCTS[id].widthRangeM
-                const want = PRODUCTS[id].motion === 'sliding_multi_panel_corner' ? 1.72 : widthM
-                patch.widthM = Math.min(nMax, Math.max(nMin, want))
+                patch.widthM = Math.min(nMax, Math.max(nMin, widthM))
               }
               patch.panelPatterns = undefined
               set(patch)

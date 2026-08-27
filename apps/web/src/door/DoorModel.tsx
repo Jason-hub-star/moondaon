@@ -1,6 +1,5 @@
 import { SlidingDoor } from './SlidingDoor'
 import { SwingDoor } from './SwingDoor'
-import { LShapeDoor } from './LShapeDoor'
 import { AbsDoor } from './AbsDoor'
 import type { DoorSpec, PatternGrid } from './types'
 import { mirrorPattern } from './PanelMesh'
@@ -72,7 +71,10 @@ export function DoorModel({ productId, widthM, patternId, panelPatternIds, ...re
     case 'swing_bi_directional':
       return <SwingDoor spec={spec} patterns={patterns} {...rest} />
     case 'sliding_multi_panel_corner':
-      return <LShapeDoor spec={spec} patterns={patterns} {...rest} />
+      // ㄱ의 꺾인 면은 도어 부속이 아니라 전실(부스) 구조물이 만든다 — Entryway openCorner의 가벽·고정유리.
+      // 도어 자체는 정면 3연동과 동일해 SlidingDoor를 재사용한다 (구 LShapeDoor의 폭 1/3 측면 픽스는
+      // 정면 옆에 좁은 문짝이 하나 더 선 것처럼 보여 제거 — 2026-08-27)
+      return <SlidingDoor spec={spec} patterns={patterns} {...rest} />
     case 'abs_hinged':
       return <AbsDoor spec={spec} patterns={patterns} {...rest} />
     case 'automatic_sliding':
