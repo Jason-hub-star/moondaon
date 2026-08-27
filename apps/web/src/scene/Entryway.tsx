@@ -44,11 +44,16 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
   const DEPTH = WP.vestDepth // 현관 깊이(중문→뒷벽)
   // 개방형 코너(ㄱ자) — 목 없는 현관에 전실을 신설하는 부스: 우측은 벽 대신 하프월 가벽+고정유리 (레퍼런스: 아이지도어 ㄱ자 파티션, 실측 하프월 ≈1.05m)
   const HALF_H = 0.92 // 하프월 높이 — 아이지도어 레퍼런스 실측 0.40×H(2300) ≈ 920mm
-  const boothR = doorW / 2 // 부스 우측 면 = 개구 우측 끝
-  // 가벽(두께 80mm) 중심 — 안쪽 면이 개구 끝선 boothR에 딱 맞게 선다. 도어 우측 문틀이 같은 선이라 한 면으로 이어진다
-  const SIDE_PLANE = boothR + 0.04
-  const tileW = openCorner ? VEST + boothR : VEST * 2
-  const tileCX = openCorner ? (boothR - VEST) / 2 : 0
+  const JAMB = 0.04 // SlidingDoor 문틀 세로폭
+  const WALL_T = 0.08 // 부스 가벽 두께
+  const boothR = doorW / 2 // 개구 우측 끝
+  // 가벽 안쪽 면은 도어 문틀 '바깥'에 붙는다 — boothR에 붙이면 가벽(80mm)이 문틀(40mm)을 통째로 삼켜
+  // 문틀이 사라지고 가벽 끝면만 턱처럼 삐져나온다
+  const boothIn = boothR + JAMB
+  const boothOut = boothIn + WALL_T
+  const SIDE_PLANE = boothIn + WALL_T / 2
+  const tileW = openCorner ? VEST + boothIn : VEST * 2
+  const tileCX = openCorner ? (boothIn - VEST) / 2 : 0
   return (
     <group>
       {/* 거실 바닥(우드 실텍스처) / 현관 바닥(마블 타일, 문 뒤쪽) */}
@@ -60,8 +65,8 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       </mesh>
       {/* 개방형: 부스 우측 바깥은 거실 마루가 이어진다 */}
       {openCorner && (
-        <mesh material={mats.wood} rotation={[-Math.PI / 2, 0, 0]} position={[(boothR + WALL_W / 2) / 2, 0, -DEPTH / 2]} receiveShadow>
-          <planeGeometry args={[WALL_W / 2 - boothR, DEPTH]} />
+        <mesh material={mats.wood} rotation={[-Math.PI / 2, 0, 0]} position={[(boothOut + WALL_W / 2) / 2, 0, -DEPTH / 2]} receiveShadow>
+          <planeGeometry args={[WALL_W / 2 - boothOut, DEPTH]} />
         </mesh>
       )}
       {/* 단차면(마루 마구리) — 중문 바로 뒤, 현관 타일로 45mm 내려섬 */}
@@ -80,9 +85,9 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       {/* 개구 상부 벽 — 문틀 상단(doorH+0.04)에서 천장까지 딱 맞게. 높이를 WALL_H-doorH로 두면 천장 위로 솟는다.
           개방형에선 우측 끝을 부스 가벽 바깥면(boothR+0.08)에 맞춰 헤더가 부스보다 튀어나오지 않게 한다 */}
       {(() => {
-        const y0 = doorH + 0.04
+        const y0 = doorH + JAMB
         const xL = -(doorW / 2 + 0.15)
-        const xR = openCorner ? boothR + 0.08 : doorW / 2 + 0.15
+        const xR = openCorner ? boothOut : doorW / 2 + 0.15
         return (
           <mesh material={mats.wall} position={[(xL + xR) / 2, (y0 + WALL_H) / 2, 0]}>
             <boxGeometry args={[xR - xL, WALL_H - y0, 0.15]} />
@@ -120,30 +125,34 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
       {/* 개방형: 도어 리턴(z 0~-SIDE_W) 뒤를 잇는 하프월 가벽 + 브론즈 고정유리 + 상부 마감 */}
       {openCorner && (() => {
         // 도어 문틀(깊이 117mm, z ±0.0585) 안쪽에서 시작 — 가벽 끝면이 문틀에 가려 이음새가 보이지 않는다
-        const z0 = 0.04
-        const len = DEPTH - z0, cz = -(z0 + DEPTH) / 2
+        // 가벽 앞면을 정면 벽 앞면(z +0.075)과 같은 평면에 두면 코너가 한 줄로 떨어진다.
+        // 뒤로 물리면 끝면이 문틀 옆에 턱으로 드러난다
+        const zF = 0.075
+        const len = DEPTH + zF, cz = (zF - DEPTH) / 2
+        const y0 = doorH + JAMB // 상부 마감 시작 = 정면 헤더와 같은 높이
         return (
           <group position={[SIDE_PLANE, 0, 0]}>
             {/* 하프월 가벽 (도장) */}
             <mesh material={mats.wall} position={[0, HALF_H / 2, cz]}>
-              <boxGeometry args={[0.08, HALF_H, len]} />
+              <boxGeometry args={[WALL_T, HALF_H, len]} />
             </mesh>
             {/* 고정창 — 유리 + 도어와 같은 색의 상·하 레일과 끝단 스타일 */}
             <mesh material={booth.glass} position={[0, (HALF_H + doorH) / 2, cz]}>
               <boxGeometry args={[0.02, doorH - HALF_H, len]} />
             </mesh>
+            {/* 하부 레일은 하프월 위에 얹힌 창대 — 벽과 같은 두께로 면을 맞춰야 끝단에 턱이 안 생긴다 */}
             <mesh material={booth.frame} position={[0, HALF_H + 0.02, cz]}>
-              <boxGeometry args={[0.06, 0.04, len]} />
+              <boxGeometry args={[WALL_T, 0.04, len]} />
             </mesh>
-            <mesh material={booth.frame} position={[0, doorH - 0.02, cz]}>
-              <boxGeometry args={[0.06, 0.04, len]} />
+            <mesh material={booth.frame} position={[0, doorH + JAMB / 2, cz]}>
+              <boxGeometry args={[0.06, JAMB, len]} />
             </mesh>
             <mesh material={booth.frame} position={[0, (HALF_H + doorH) / 2, -DEPTH + 0.02]}>
               <boxGeometry args={[0.06, doorH - HALF_H, 0.04]} />
             </mesh>
             {/* 상부 마감 (가벽) */}
-            <mesh material={mats.wall} position={[0, doorH + (WALL_H - doorH) / 2, cz]}>
-              <boxGeometry args={[0.08, WALL_H - doorH, len]} />
+            <mesh material={mats.wall} position={[0, (y0 + WALL_H) / 2, cz]}>
+              <boxGeometry args={[WALL_T, WALL_H - y0, len]} />
             </mesh>
           </group>
         )
