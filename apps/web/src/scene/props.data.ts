@@ -33,9 +33,16 @@ export interface SceneProp {
    * 프레임 게이트 면제 — **의도적으로** 원점이 화면 밖인 소품에만 단다. 사유를 값으로 남긴다.
    * `cutoff` 프레임 가장자리 근경물 — 원점은 밖이지만 지오메트리가 안으로 뻗어 실제로 보인다
    * `light`  화면엔 안 나오고 빛·분위기만 담당한다 (등기구가 프레임 밖, 광원만 유효)
+
    * 안 달면 원점이 화면 안이어야 한다 — 새 소품이 밖으로 새는 걸 계속 잡기 위한 기본값이다
    */
   offFrame?: 'cutoff' | 'light'
+  /**
+   * 가림 게이트 면제 — 원점 한 점으로 재기엔 **폭이 큰** 물체.
+   * 방화문(1.06m)은 원점이 개구부 밖으로 나가도 좌측 절반이 유리 너머로 보인다.
+   * `offFrame`과 별개 축이다: 저건 '프레임 밖', 이건 '한 점 근사가 안 맞음'.
+   */
+  wide?: true
   /** 씬 모드별 배치 오버라이드 — 개방형 코너(ㄱ자)는 벽이 달라져 소품 자리도 달라진다 */
   modes?: { openCorner?: PropOverride }
 }
@@ -67,6 +74,7 @@ export const SCENE_PROPS: SceneProp[] = [
   {
     id: 'fire-door',
     type: 'fireDoor',
+    wide: true,
     position: [
       0.02,
       -0.045,
@@ -106,7 +114,7 @@ export const SCENE_PROPS: SceneProp[] = [
     type: 'umbrellaStand',
     anchor: 'doorL',
     position: [
-      1.375,
+      0.36,
       -0.045,
       -1.72
     ],
@@ -134,7 +142,7 @@ export const SCENE_PROPS: SceneProp[] = [
     id: 'shoes-b',
     type: 'shoesLight',
     position: [
-      0.24,
+      -0.16,
       -0.03,
       -1.49
     ],
@@ -148,7 +156,7 @@ export const SCENE_PROPS: SceneProp[] = [
     id: 'coat-hook',
     type: 'coatHook',
     position: [
-      0.77,
+      -0.82,
       1.45,
       -1.86
     ],
@@ -405,6 +413,22 @@ export function frameNdc(p: readonly [number, number, number], cam: Cam = CAMERA
 export function inFrame(p: readonly [number, number, number], cam: Cam = CAMERA, aspect = FRAME_ASPECT): boolean {
   const n = frameNdc(p, cam, aspect)
   return !n.behind && Math.abs(n.x) <= FRAME_NDC.x && n.y <= FRAME_NDC.top && n.y >= -FRAME_NDC.bottom
+}
+
+/* ── 가림(occlusion) 게이트 ─────────────────────────────────────────────────
+ * 이탈각·절두체는 "화면 안인가"만 잰다. 현관 소품은 그걸 통과하고도 **개구부 벽에 가려**
+ * 0픽셀일 수 있다 — 우산꽂이가 실제로 그랬다(2026-08-27).
+ * 카메라에서 소품으로 쏜 광선이 개구부(z=0 평면의 문 사각형)를 통과하는지 본다.
+ * 얇은 근사다: 원점 한 점만 재므로 방화문처럼 폭이 큰 물체는 일부만 보여도 '가림'으로 나온다
+ * — 그런 소품은 `wide: true`로 사유를 남긴다.
+ */
+export function passesOpening(p: readonly [number, number, number], doorW: number, doorH: number): boolean {
+  const [cx, cy, cz] = CAMERA.position
+  if (p[2] >= 0) return true // 거실 쪽은 개구부를 지날 일이 없다
+  const t = cz / (cz - p[2]) // z=0 평면까지의 보간 비율
+  const x = cx + t * (p[0] - cx)
+  const y = cy + t * (p[1] - cy)
+  return Math.abs(x) <= doorW / 2 && y >= 0 && y <= doorH
 }
 
 /* ── 모바일 카메라 ──────────────────────────────────────────────────────────

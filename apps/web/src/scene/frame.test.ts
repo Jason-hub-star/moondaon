@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  SCENE_PROPS, resolveProp, frameNdc, inFrame, inRemovedCornerWall,
+  SCENE_PROPS, resolveProp, frameNdc, inFrame, inRemovedCornerWall, passesOpening,
   CAMERA, CAMERA_MOBILE, FRAME_ASPECT, FRAME_ASPECT_MOBILE, ORBIT,
 } from './props.data.ts'
 import { DEFAULTS } from '../configurator/shareSchema.ts'
@@ -146,4 +146,26 @@ test('앱 시작 시점은 고정 — 회전 한계 안이고 좌표가 바뀌�
   // 주인님 확인 — 시작 구도는 현재 값 유지. 바뀌면 '시점 초기화'도 다른 곳으로 돌아간다
   assert.deepEqual(CAMERA.position, [1.8, 1.5, 3.4])
   assert.deepEqual(CAMERA.target, [0, 0.98, 0])
+})
+
+/* ── 가림 게이트 ─────────────────────────────────────────────────────────── */
+
+test('현관 소품이 개구부 벽에 가려 0픽셀이 되지 않는다', () => {
+  const blocked = SCENE_PROPS
+    .map((sp) => ({ prop: sp, ...resolveProp(sp, DOOR_W, false) }))
+    .filter((r) => !r.hidden && !r.prop.wide)
+    .filter((r) => !passesOpening(r.position, DOOR_W, DOOR_H))
+  assert.equal(
+    blocked.length, 0,
+    `개구부 벽에 가려 유리 너머에서 안 보이는 현관 소품 ${blocked.length}건 — 프레임 안이어도 0픽셀이다.\n` +
+    `카메라가 x=+${CAMERA.position[0]}에 있어 뒷벽에서 보이는 건 좌측뿐이다. 왼쪽으로 옮기거나 사유를 남겨라.\n` +
+    blocked.map((r) => `  ${r.prop.id} x=${r.position[0].toFixed(2)} z=${r.position[2].toFixed(2)}`).join('\n'),
+  )
+})
+
+test('가림 게이트가 실제로 일한다 — 우측으로 밀면 잡혀야 한다', () => {
+  // 회귀 방지: 게이트가 항상 통과하면 죽은 게이트다. 알려진 가림 지점을 반드시 잡아야 한다
+  assert.equal(passesOpening([0.77, 1.45, -1.86], DOOR_W, DOOR_H), false, '우측 뒷벽은 가려야 한다')
+  assert.equal(passesOpening([-0.82, 1.45, -1.86], DOOR_W, DOOR_H), true, '좌측 뒷벽은 보여야 한다')
+  assert.equal(passesOpening([2, 0, 1], DOOR_W, DOOR_H), true, '거실 쪽(z>=0)은 대상이 아니다')
 })
