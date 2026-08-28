@@ -10,7 +10,7 @@ import { DoorModel, specFrom } from './door/DoorModel'
 import { Entryway } from './scene/Entryway'
 import { isEditMode } from './scene/sceneProps'
 import { useSceneReady, SceneLoading } from './Loading'
-import { CAMERA, CAMERA_MOBILE, ORBIT } from './scene/props.data'
+import { CAMERA, CAMERA_MOBILE, ORBIT, doorSweep } from './scene/props.data'
 import { useConfig } from './configurator/store'
 import { sizeZoneOf } from './configurator/sizeZone'
 // 하부레일(문턱) — 팜플렛이 제품마다 다르게 운영한다. 판정은 순수 모듈 하나에서만 한다 (node --test 대상)
@@ -240,8 +240,10 @@ export default function App() {
           <pointLight position={[-1.1, 2.45, 1.6]} intensity={4.6} distance={3.4} color="#ffe6bd" />
           <pointLight position={[1.1, 2.45, 1.6]} intensity={4.6} distance={3.4} color="#ffe6bd" />
           <pointLight position={[-2.2, 2.4, 1.2]} intensity={3.2} distance={2.8} color="#ffd9a0" />
+          {/* sweep — 여닫이 문짝이 쓸고 갈 자리의 바닥 소품을 숨긴다(문이 뚫고 지나가지 않게) */}
           <Entryway doorW={wallW} doorH={spec.height} openCorner={PRODUCTS[productId].motion === 'sliding_multi_panel_corner'}
-            colorId={colorId} glassId={glassId} quality={quality} />
+            colorId={colorId} glassId={glassId} quality={quality}
+            sweep={doorSweep(PRODUCTS[productId].motion, spec.panels, spec.fixedPanels?.length ?? 0, wallW)} />
           {/* 접지 그림자 — 가구·문 하단의 은은한 앰비언트 접지감 (정적 1프레임: 개폐 동적 그림자는 directional이 담당) */}
           <ContactShadows position={[0, 0.012, 1.3]} scale={[5.5, 4.5]} opacity={0.3} blur={2.6} far={2.2} resolution={512} frames={1} />
           <group ref={doorRef}>

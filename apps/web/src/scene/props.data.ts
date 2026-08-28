@@ -43,6 +43,16 @@ export interface SceneProp {
    * `offFrame`과 별개 축이다: 저건 '프레임 밖', 이건 '한 점 근사가 안 맞음'.
    */
   wide?: true
+  /**
+   * 충돌 검사용 바운딩 박스 — `w`·`d`는 원점 중심 XZ 발자국, `y`는 원점 기준 [아래, 위].
+   * 렌더러의 지오메트리 치수에서 손으로 옮긴 값이다(데이터 층은 three를 모른다).
+   * **없으면 충돌 검사에서 제외된다** — 새 소품에 붙이는 걸 잊으면 조용히 빠지므로,
+   * `collision.test.ts`가 "box 없는 소품 수"를 같이 보고한다.
+   * 회전(`rotation[1]`)은 게이트가 회전 AABB로 환산하므로 여기엔 반영하지 않는다.
+   */
+  box?: { w: number; d: number; y: [number, number] }
+  /** 바닥 마감(매트·러그) — 위에 다른 소품이 올라가는 게 정상이라 겹침 검사에서 뺀다 */
+  flat?: true
   /** 씬 모드별 배치 오버라이드 — 개방형 코너(ㄱ자)는 벽이 달라져 소품 자리도 달라진다 */
   modes?: { openCorner?: PropOverride }
 }
@@ -62,6 +72,7 @@ export interface SceneProp {
 export const SCENE_PROPS: SceneProp[] = [
   {
     id: 'shoe-cabinet',
+    box: { w: 0.78, d: 0.36, y: [0.09, 2.75] },
     type: 'shoeCabinet',
     anchor: 'doorL',
     position: [
@@ -77,6 +88,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'fire-door',
+    box: { w: 1.06, d: 0.06, y: [0, 2.16] },
     type: 'fireDoor',
     wide: true,
     position: [
@@ -92,6 +104,8 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'door-mat',
+    box: { w: 0.85, d: 0.55, y: [0, 0.01] },
+    flat: true,
     type: 'doorMat',
     position: [
       0.04,
@@ -115,6 +129,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'umbrella-stand',
+    box: { w: 0.16, d: 0.16, y: [0, 0.75] },
     type: 'umbrellaStand',
     anchor: 'doorL',
     position: [
@@ -130,11 +145,12 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'shoes-a',
+    box: { w: 0.26, d: 0.32, y: [0, 0.11] },
     type: 'shoesDark',
     position: [
-      -0.17,
+      -0.30,
       -0.045,
-      -1.5
+      -1.52
     ],
     rotation: [
       0,
@@ -144,6 +160,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'shoes-b',
+    box: { w: 0.26, d: 0.32, y: [0, 0.11] },
     type: 'shoesLight',
     position: [
       0.12,
@@ -158,6 +175,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'coat-hook',
+    box: { w: 0.36, d: 0.14, y: [-0.5, 0.36] },
     type: 'coatHook',
     position: [
       -0.82,
@@ -172,6 +190,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'slipper-l',
+    box: { w: 0.11, d: 0.28, y: [0, 0.09] },
     type: 'slipper',
     position: [
       0.32,
@@ -186,6 +205,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'slipper-r',
+    box: { w: 0.11, d: 0.28, y: [0, 0.09] },
     type: 'slipper',
     position: [
       0.5,
@@ -200,6 +220,8 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'rug',
+    box: { w: 1.9, d: 1.3, y: [0, 0.01] },
+    flat: true,
     type: 'rug',
     position: [
       0.03,
@@ -214,6 +236,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'window',
+    box: { w: 0.9, d: 0.05, y: [-0.68, 0.68] },
     type: 'windowSheer',
     position: [
       -2.44,
@@ -228,6 +251,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'floor-lamp',
+    box: { w: 0.34, d: 0.34, y: [0, 1.58] },
     type: 'floorLamp',
     offFrame: 'light',
     position: [
@@ -243,6 +267,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'wallpad',
+    box: { w: 0.13, d: 0.03, y: [-0.1, 0.1] },
     type: 'wallpad',
     anchor: 'doorL',
     position: [
@@ -258,6 +283,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'light-switch',
+    box: { w: 0.09, d: 0.02, y: [-0.06, 0.06] },
     type: 'lightSwitch',
     anchor: 'doorL',
     position: [
@@ -268,6 +294,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'art-l',
+    box: { w: 0.36, d: 0.03, y: [-0.23, 0.23] },
     type: 'artTall',
     position: [
       -1.5625,
@@ -277,6 +304,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'art-r',
+    box: { w: 0.34, d: 0.03, y: [-0.13, 0.13] },
     type: 'artWide',
     position: [
       1.5625,
@@ -291,6 +319,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'monstera',
+    box: { w: 0.75, d: 0.75, y: [0, 1.15] },
     type: 'monstera',
     offFrame: 'cutoff',
     anchor: 'doorL',
@@ -308,6 +337,7 @@ export const SCENE_PROPS: SceneProp[] = [
   },
   {
     id: 'sofa',
+    box: { w: 0.82, d: 1.1, y: [0, 0.9] },
     type: 'sofa',
     offFrame: 'cutoff',
     position: [
@@ -332,8 +362,6 @@ export const SCENE_PROPS: SceneProp[] = [
  * 소품 id를 하나하나 지정하지 않고 **좌표로 판정**한다 — `?edit=1`로 소품을 옮기면 id 목록은
  * 바로 낡지만 규칙은 따라오기 때문이다. 다른 중문을 고르면 조건 자체가 꺼져 전부 복귀한다.
  */
-/** SlidingDoor 문틀 세로폭 — Entryway의 JAMB와 같은 값 */
-const CORNER_JAMB = 0.04
 /** 개구 벽판(두께 0.15)의 앞면 + 벽걸이 소품 두께 여유 */
 const CORNER_Z_MAX = 0.2
 
@@ -417,6 +445,103 @@ export function frameNdc(p: readonly [number, number, number], cam: Cam = CAMERA
 export function inFrame(p: readonly [number, number, number], cam: Cam = CAMERA, aspect = FRAME_ASPECT): boolean {
   const n = frameNdc(p, cam, aspect)
   return !n.behind && Math.abs(n.x) <= FRAME_NDC.x && n.y <= FRAME_NDC.top && n.y >= -FRAME_NDC.bottom
+}
+
+/* ── 충돌 검사 ─────────────────────────────────────────────────────────────
+ * 방은 이미 파라메트릭이다(`WALL_PARAMS` + `doorW` + `anchor`). 없던 건 **경계 검사**뿐이라
+ * 사람이 손으로 좌표를 계산해 "안 겹치네"를 확인해 왔다 — 신발 두 켤레가 0.014m로
+ * 포개진 사고가 그래서 났다. 물리엔진이 아니라 AABB 한 겹으로 충분하다.
+ */
+
+/** SlidingDoor 문틀 세로폭 — Entryway의 JAMB와 같은 값 */
+const CORNER_JAMB = 0.04
+
+export interface Aabb { minX: number; maxX: number; minY: number; maxY: number; minZ: number; maxZ: number }
+
+/** 소품의 축정렬 바운딩 박스. 회전(y축)은 회전 AABB로 환산한다. box가 없으면 null */
+export function propAabb(p: SceneProp, doorW: number, openCorner: boolean): Aabb | null {
+  if (!p.box) return null
+  const r = resolveProp(p, doorW, openCorner)
+  if (r.hidden) return null
+  const { w, d, y } = p.box
+  // 회전한 상자를 감싸는 AABB — |w·cosθ| + |d·sinθ|
+  const c = Math.abs(Math.cos(r.rotation[1])), sn = Math.abs(Math.sin(r.rotation[1]))
+  const W = (w * c + d * sn) / 2, D = (w * sn + d * c) / 2
+  return {
+    minX: r.position[0] - W, maxX: r.position[0] + W,
+    minY: r.position[1] + y[0], maxY: r.position[1] + y[1],
+    minZ: r.position[2] - D, maxZ: r.position[2] + D,
+  }
+}
+
+export const overlaps = (a: Aabb, b: Aabb, eps = 0.005) =>
+  a.minX < b.maxX - eps && b.minX < a.maxX - eps &&
+  a.minY < b.maxY - eps && b.minY < a.maxY - eps &&
+  a.minZ < b.maxZ - eps && b.minZ < a.maxZ - eps
+
+/**
+ * 방 경계. 현관(z<0)과 거실(z>0)은 벽이 다르다 —
+ * 거실은 우측·뒷벽이 **없어서** 경계가 벽이 아니라 바닥 끝이다(줌아웃하면 드러나는 그 가장자리).
+ */
+export function roomBounds(doorW: number, wall: WallParams, openCorner: boolean) {
+  const VEST = doorW / 2 + wall.vestMargin
+  const boothIn = doorW / 2 + CORNER_JAMB
+  return {
+    /** 현관 — 좌우 전실벽, 뒷벽, 천장. ㄱ자면 우측이 부스 가벽까지 */
+    vest: { minX: -VEST + 0.05, maxX: (openCorner ? boothIn : VEST) - 0.05, minZ: -wall.vestDepth + 0.05, maxZ: 0, maxY: wall.wallH },
+    /** 거실 — 좌측 측벽만 실재, 나머지는 바닥 끝 */
+    living: { minX: -2.45, maxX: 2.5, minZ: 0, maxZ: 3.5, maxY: wall.wallH },
+  }
+}
+
+/**
+ * 문짝이 쓸고 가는 영역. **추측이 아니라 렌더 구현에서 읽은 값이다.**
+ * - `AbsDoor.tsx`: 피벗 `[-W/2, …]`, `angle = -t·MAX` → **좌측 경첩, 거실(+z) 쪽 안여닫이 한 방향**
+ * - `SwingDoor.tsx`: `hingeLeft = N===1 || center<0`, `angle = t·MAX·dir` → **바깥 문틀 경첩, 양방향**
+ * - 슬라이딩 7종은 벽을 따라 미끄러지므로 문틀·레일 앞 최소 여유만
+ *
+ * 경첩 중심으로 재야 한다 — 개구부 선분 전체를 중심으로 잡으면 반원이 아니라 캡슐이 돼
+ * 멀쩡한 소품을 문다(실제로 13건을 오탐했다).
+ */
+export function doorSweep(motion: string, panels: number, fixedPanels: number, doorW: number) {
+  const h = doorW / 2
+  if (motion === 'abs_hinged') return { hinges: [-h], radius: doorW, sides: [1] }
+  if (motion === 'swing_bi_directional') {
+    const leaves = Math.max(1, panels - fixedPanels)
+    // **양방향이 아니라 한 방향이다.** 제품명은 양방향이지만 `SwingDoor`의 `dir`(±1)을
+    // `DoorModel`이 넘기지 않아 항상 기본값 +1(거실 쪽)로만 렌더된다.
+    // 같은 파일의 88° 클램프 주석이 근거 — "90° 초과 시 문짝 끝이 문 평면 뒤로 넘어가
+    // 신발장을 관통"은 평상시 스윙이 신발장 반대쪽(거실)임을 뜻한다.
+    // 양방향으로 잡았더니 붙박이 신발장이 숨어버렸다(2026-08-28). 붙박이는 문 때문에 사라지지 않는다.
+    return { hinges: leaves === 1 ? [-h] : [-h, h], radius: doorW / leaves, sides: [1] }
+  }
+  return { hinges: [], radius: 0.12, sides: [1, -1] } // 슬라이딩 — 문틀 깊이(117mm) + 여유
+}
+
+/** 점이 문짝 궤적 안인가 */
+export function inDoorSweep(x: number, z: number, sweep: ReturnType<typeof doorSweep>): boolean {
+  if (!sweep.sides.some((s) => z * s > -0.05)) return false // 문이 안 도는 쪽은 대상 아님
+  return sweep.hinges.some((hx) => Math.hypot(x - hx, z) < sweep.radius)
+}
+
+/** 문짝 아래 여유(m). 이보다 낮은 것(매트·러그)은 문이 그 위를 지난다 */
+export const DOOR_UNDERCUT = 0.03
+
+/**
+ * 여닫이를 고르면 문짝이 쓸고 갈 자리의 **바닥 소품을 숨긴다.**
+ * ㄱ자에서 사라진 벽에 걸린 소품을 숨기는 것(`inRemovedCornerWall`)과 같은 패턴이다 —
+ * 좌표로는 못 푼다: 반경 1.25m 문이 양방향으로 쓸면 **보이는 바닥이 거의 다 궤적 안**이라
+ * 소품을 빼면 프레임 밖으로 나가고, 남기면 문이 뚫고 지나간다.
+ * 슬라이딩(7종)에선 반경이 0.12m라 사실상 아무것도 안 걸린다.
+ */
+export function hiddenByDoorSweep(box: Aabb, sweep: ReturnType<typeof doorSweep>): boolean {
+  if (!sweep.hinges.length) return false          // 슬라이딩 — 대상 아님
+  if (box.minY > 0.4) return false                // 벽걸이는 문짝 높이 위
+  if (box.maxY - box.minY < DOOR_UNDERCUT) return false // 매트·러그 위로는 문이 지난다
+  const corners: [number, number][] = [
+    [box.minX, box.minZ], [box.maxX, box.minZ], [box.minX, box.maxZ], [box.maxX, box.maxZ],
+  ]
+  return corners.some(([x, z]) => inDoorSweep(x, z, sweep))
 }
 
 /* ── 가림(occlusion) 게이트 ─────────────────────────────────────────────────

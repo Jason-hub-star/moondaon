@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { sheetTexture, linearTexture, makeFrameMaterial, makeGlassMaterial } from '../door/materials'
 import type { ColorId, GlassId } from '../generated/cards'
 import { SceneProps, useWallParams } from './sceneProps'
+import type { doorSweep } from './props.data'
 
 /**
  * 현관 목업 v3 — 오늘의집st 컷어웨이 + KKARTdoor 쇼츠 64편 실측 패턴(2026-08-26, scratchpad/kkart/census.json).
@@ -10,8 +11,10 @@ import { SceneProps, useWallParams } from './sceneProps'
  * 신발장 천장까지 붙박이(하부 띄움+간접등), 현관 타일 단차 -45mm. 개구 실측 중앙값 1214mm.
  * ponytail: 소품은 저폴리 프리미티브 근사 — 문이 주인공, 소품은 무드 담당.
  */
-export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, quality }: {
+export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, quality, sweep }: {
   doorW: number; doorH: number; openCorner?: boolean
+  /** 여닫이 문짝 궤적 — 소품 자동 숨김에 쓴다 */
+  sweep?: ReturnType<typeof doorSweep>
   /** ㄱ자 부스 측면 고정창은 도어와 같은 제품 — 색상·유리 선택을 그대로 따른다 */
   colorId: ColorId; glassId: GlassId; quality: 'high' | 'lite'
 }) {
@@ -180,7 +183,7 @@ export function Entryway({ doorW, doorH, openCorner = false, colorId, glassId, q
         </mesh>
       ))}
       {/* 소품 일체 — sceneProps.tsx SSOT (dev ?edit=1 기즈모로 배치) */}
-      <SceneProps doorW={doorW} openCorner={openCorner} />
+      <SceneProps doorW={doorW} openCorner={openCorner} sweep={sweep} />
       {/* 현관 센서등 — 등기구 원판 (광원은 기존 pointLight가 담당) */}
       <mesh material={mats.down} rotation={[Math.PI / 2, 0, 0]} position={[0, WALL_H - 0.015, -DEPTH * 0.55]}>
         <circleGeometry args={[0.09, 20]} />
