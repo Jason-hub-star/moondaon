@@ -18,6 +18,8 @@ interface Props {
   handleLengthM: number
   quality: 'high' | 'lite'
   t: number
+  /** 여닫이 여는 방향 — +1 거실(기본) / -1 현관. 슬라이딩 계열에선 무시된다 */
+  dir?: 1 | -1
 }
 
 /** 패턴 카드(readonly) → 가변 PatternGrid */
@@ -74,20 +76,21 @@ export function resolvePanelPatterns(productId: ProductId, spec: DoorSpec, patte
 }
 
 /** 제품 카드 motion → 개폐 컴포넌트 디스패치 */
-export function DoorModel({ productId, widthM, patternId, panelPatternIds, railId, ...rest }: Props) {
+export function DoorModel({ productId, widthM, patternId, panelPatternIds, railId, dir = 1, ...rest }: Props) {
   const p = PRODUCTS[productId]
   const spec = specFrom(productId, widthM, railId)
   const patterns = resolvePanelPatterns(productId, spec, patternId, panelPatternIds)
+  // dir은 여닫이 두 종에만 넘긴다 — 슬라이딩 컴포넌트는 받지 않는 prop이다
   switch (p.motion) {
     case 'swing_bi_directional':
-      return <SwingDoor spec={spec} patterns={patterns} {...rest} />
+      return <SwingDoor spec={spec} patterns={patterns} dir={dir} {...rest} />
     case 'sliding_multi_panel_corner':
       // ㄱ의 꺾인 면은 도어 부속이 아니라 전실(부스) 구조물이 만든다 — Entryway openCorner의 가벽·고정유리.
       // 도어 자체는 정면 3연동과 동일해 SlidingDoor를 재사용한다 (구 LShapeDoor의 폭 1/3 측면 픽스는
       // 정면 옆에 좁은 문짝이 하나 더 선 것처럼 보여 제거 — 2026-08-27)
       return <SlidingDoor spec={spec} patterns={patterns} {...rest} />
     case 'abs_hinged':
-      return <AbsDoor spec={spec} patterns={patterns} {...rest} />
+      return <AbsDoor spec={spec} patterns={patterns} dir={dir} {...rest} />
     case 'automatic_sliding':
       // 자동문은 손잡이가 없다 — 센서 개폐 (실물 관행)
       return <SlidingDoor spec={spec} patterns={patterns} {...rest} handleLengthM={0} />

@@ -83,7 +83,7 @@ export default function App() {
   const orbitRef = useRef<ComponentRef<typeof OrbitControls> | null>(null)
   const [resetSeq, setResetSeq] = useState(0)
   const [viewMoved, setViewMoved] = useState(false)
-  const { t, productId, colorId, glassId, patternId, handleId, railId, tempered, widthM, quality, panelPatterns, set } = useConfig()
+  const { t, productId, colorId, glassId, patternId, handleId, railId, tempered, widthM, quality, doorDir, panelPatterns, set } = useConfig()
   const spec = specFrom(productId, widthM, railId)
   const [wMin, wMax] = PRODUCTS[productId].widthRangeM
   const temperedOn = effectiveTempered(productId, glassId, tempered)
@@ -93,6 +93,8 @@ export default function App() {
   const wallW = spec.width
   const editTools = isEditMode()
   const isAbs = PRODUCTS[productId].motion === 'abs_hinged'
+  // 여닫이만 여는 방향이 뜻을 갖는다 — 슬라이딩 7종은 벽을 따라 미끄러진다
+  const isHinged = isAbs || PRODUCTS[productId].motion === 'swing_bi_directional'
   const isArch = productId === 'custom-arch'
   type Constrained = { glassIds?: readonly string[]; colorIds?: readonly string[]; colorCats?: readonly string[] }
   const colorAllowed = (pid: ProductId, id: ColorId) => {
@@ -243,13 +245,13 @@ export default function App() {
           {/* sweep — 여닫이 문짝이 쓸고 갈 자리의 바닥 소품을 숨긴다(문이 뚫고 지나가지 않게) */}
           <Entryway doorW={wallW} doorH={spec.height} openCorner={PRODUCTS[productId].motion === 'sliding_multi_panel_corner'}
             colorId={colorId} glassId={glassId} quality={quality}
-            sweep={doorSweep(PRODUCTS[productId].motion, spec.panels, spec.fixedPanels?.length ?? 0, wallW)} />
+            sweep={doorSweep(PRODUCTS[productId].motion, spec.panels, spec.fixedPanels?.length ?? 0, wallW, doorDir)} />
           {/* 접지 그림자 — 가구·문 하단의 은은한 앰비언트 접지감 (정적 1프레임: 개폐 동적 그림자는 directional이 담당) */}
           <ContactShadows position={[0, 0.012, 1.3]} scale={[5.5, 4.5]} opacity={0.3} blur={2.6} far={2.2} resolution={512} frames={1} />
           <group ref={doorRef}>
           <DoorModel productId={productId} widthM={widthM} colorId={colorId} glassId={glassId}
             patternId={patternId} panelPatternIds={panelPatterns ?? undefined} railId={railId}
-            handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} />
+            handleLengthM={HANDLES[handleId].lengthM} quality={quality} t={t} dir={doorDir} />
           </group>
           <CaptureRig />
           {/* 감사 D2 — minPolarAngle 부재로 세로 스와이프 한 번에 시점이 머리 위로 넘어가
@@ -440,6 +442,18 @@ export default function App() {
           <input type="range" min={wMin} max={wMax} step={0.01} value={Math.min(wMax, Math.max(wMin, widthM))} aria-label="가로 치수"
             onChange={(e) => set({ widthM: Number(e.target.value) })} style={{ width: '100%', accentColor: '#c5a572' }} />
         </Section>
+        {isHinged && (
+          <Section title="여는 방향 (미리보기)">
+            <Chip active={doorDir === 1} onClick={() => set({ doorDir: 1 })}>거실 쪽</Chip>
+            <Chip active={doorDir === -1} onClick={() => set({ doorDir: -1 })}>현관 쪽</Chip>
+            <p style={{ width: '100%', margin: '2px 0 0', fontSize: 11, lineHeight: 1.5, color: '#8a8478' }}>
+              {doorDir === 1
+                ? '거실 쪽으로 열립니다. 문짝이 지나갈 자리의 바닥 소품은 잠시 숨겼습니다 — 실제로도 그만큼 비워두셔야 합니다.'
+                : '현관 쪽으로 열립니다. 신발장·신발과 어떻게 만나는지 확인해보세요.'}
+              {' '}화면 확인용이라 공유 링크에는 담기지 않습니다.
+            </p>
+          </Section>
+        )}
         <Section title="품질">
           <Chip active={quality === 'high'} onClick={() => set({ quality: 'high' })}>고급 유리</Chip>
           <Chip active={quality === 'lite'} onClick={() => set({ quality: 'lite' })}>간단</Chip>

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { lazy, Suspense, useState, useSyncExternalStore, type ReactElement } from 'react'
 import { Monstera } from './Monstera'
-import { SCENE_PROPS, resolveProp, propAabb, hiddenByDoorSweep, WALL_PARAMS, WALL_LIMITS, type PropType, type WallParams, type doorSweep } from './props.data'
+import { SCENE_PROPS, resolveProp, propHiddenByDoorSweep, WALL_PARAMS, WALL_LIMITS, type PropType, type WallParams, type doorSweep } from './props.data'
 
 /**
  * 씬 렌더러 + 소품 재질 + 편집기 게이트. **배치 숫자는 여기 없다** — `props.data.ts`가 SSOT다
@@ -380,10 +380,7 @@ export function SceneProps({ doorW, openCorner = false, sweep }: {
         const r = resolveProp(p, doorW, openCorner)
         if (r.hidden) return null
         // 여닫이 궤적 안 바닥 소품은 숨긴다 — 좌표로는 못 푼다(props.data.ts 주석 참조)
-        if (sweep) {
-          const box = propAabb(p, doorW, openCorner)
-          if (box && hiddenByDoorSweep(box, sweep)) return null
-        }
+        if (sweep && propHiddenByDoorSweep(p, doorW, openCorner, sweep)) return null
         const Renderer = RENDERERS[p.type]
         return (
           <group key={p.id} name={`prop:${p.id}`} position={r.position}

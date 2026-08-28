@@ -3,6 +3,7 @@ import type { DoorSpec, PatternGrid } from './types'
 import { makeFrameMaterial, makeGlassMaterial, makeWrapMaterial } from './materials'
 import type { ColorId, GlassId } from '../generated/cards'
 import { PanelMesh } from './PanelMesh'
+import { doorAngle } from '../scene/props.data'
 
 interface Props {
   spec: DoorSpec
@@ -12,13 +13,10 @@ interface Props {
   patterns: PatternGrid[]
   handleLengthM: number
   quality: 'high' | 'lite'
-  /** t: 0=닫힘, 1=열림. 양방향 스윙 — 방향은 dir(+1 안쪽/-1 바깥쪽) */
+  /** t: 0=닫힘, 1=열림. 양방향 스윙 — 방향은 dir(+1 거실/-1 현관, 규약은 doorAngle) */
   t: number
   dir?: 1 | -1
 }
-
-// 88° 클램프 — 90° 초과 시 문짝 끝이 문 평면 뒤로 넘어가 신발장(전면이 문 평면과 동일선)을 관통 (실측 2026-08-27)
-const MAX_ANGLE = (88 * Math.PI) / 180
 
 /**
  * 양방향 스윙 도어 — 1S/2S + 픽스 사이드라이트 (팜플렛: 스마트 양방향 베젤양개).
@@ -38,7 +36,7 @@ export function SwingDoor({ spec, colorId, glassId, patterns, handleLengthM, qua
   const N = spec.panels
   const fr = spec.panelWidthFr && spec.panelWidthFr.length === N ? spec.panelWidthFr : Array.from({ length: N }, () => 1 / N)
   const fixed = new Set(spec.fixedPanels ?? [])
-  const angle = t * MAX_ANGLE * dir
+  const angle = doorAngle(t, dir)
   let acc = -W / 2
   const slots = fr.map((f) => { const lw = f * W; const x0 = acc; acc += lw; return { lw, x0 } })
 

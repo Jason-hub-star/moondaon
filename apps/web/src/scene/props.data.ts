@@ -53,6 +53,12 @@ export interface SceneProp {
   box?: { w: number; d: number; y: [number, number] }
   /** 바닥 마감(매트·러그) — 위에 다른 소품이 올라가는 게 정상이라 겹침 검사에서 뺀다 */
   flat?: true
+  /**
+   * 붙박이 구조물(신발장·방화문) — **문 궤적으로 숨기지 않는다.**
+   * 옮길 수 있는 소품은 문이 지나갈 자리에서 치우는 게 현실이지만, 붙박이는 문 때문에
+   * 사라지지 않는다. 여는 방향을 현관 쪽으로 돌렸더니 신발장이 증발했다(2026-08-28).
+   */
+  fixture?: true
   /** 씬 모드별 배치 오버라이드 — 개방형 코너(ㄱ자)는 벽이 달라져 소품 자리도 달라진다 */
   modes?: { openCorner?: PropOverride }
 }
@@ -73,6 +79,7 @@ export const SCENE_PROPS: SceneProp[] = [
   {
     id: 'shoe-cabinet',
     box: { w: 0.78, d: 0.36, y: [0.09, 2.75] },
+    fixture: true,
     type: 'shoeCabinet',
     anchor: 'doorL',
     position: [
@@ -89,6 +96,7 @@ export const SCENE_PROPS: SceneProp[] = [
   {
     id: 'fire-door',
     box: { w: 1.06, d: 0.06, y: [0, 2.16] },
+    fixture: true,
     type: 'fireDoor',
     wide: true,
     position: [
@@ -494,26 +502,38 @@ export function roomBounds(doorW: number, wall: WallParams, openCorner: boolean)
   }
 }
 
+/* ── 여닫이 방향 규약 ────────────────────────────────────────────────────────
+ * `dir`은 **문짝이 열려 가는 쪽**이다: `+1` 거실(+z, 안여닫이·기본) / `-1` 현관(-z).
+ * 좌표계 뜻이지 힌지 좌우(좌수·우수)가 아니다 — 그건 각 렌더러의 `hingeLeft`가 정한다.
+ *
+ * 회전각 식을 여기 하나만 둔다. 렌더러(`AbsDoor`·`SwingDoor`)와 아래 궤적 게이트가
+ * 같은 식을 봐야 "화면은 이쪽으로 열리는데 게이트는 저쪽을 검사"가 안 난다 —
+ * 실제로 났었다: `SwingDoor`가 `+t·MAX·dir`이라 기본값에서 현관 쪽으로 열리는데
+ * 게이트는 거실 쪽을 검사하고 있었다(2026-08-28 three 변환으로 실측).
+ *
+ * 부호 근거: three의 Y축 회전은 `z' = -x·sinθ`다. 자유단이 +z로 가려면 θ가 **음수**여야 한다.
+ */
+export const DOOR_MAX_ANGLE = (88 * Math.PI) / 180 // 90° 초과 시 문짝 끝이 좌측 문틀 밖으로 넘어가 붙박이 신발장을 관통
+export const doorAngle = (t: number, dir: 1 | -1) => -t * DOOR_MAX_ANGLE * dir
+
 /**
  * 문짝이 쓸고 가는 영역. **추측이 아니라 렌더 구현에서 읽은 값이다.**
- * - `AbsDoor.tsx`: 피벗 `[-W/2, …]`, `angle = -t·MAX` → **좌측 경첩, 거실(+z) 쪽 안여닫이 한 방향**
- * - `SwingDoor.tsx`: `hingeLeft = N===1 || center<0`, `angle = t·MAX·dir` → **바깥 문틀 경첩, 양방향**
+ * - `AbsDoor.tsx`: 피벗 `[-W/2, …]` → **좌측 경첩**, 회전각은 위 `doorAngle`
+ * - `SwingDoor.tsx`: `hingeLeft = N===1 || center<0` → **바깥 문틀 경첩**, 회전각 동일
  * - 슬라이딩 7종은 벽을 따라 미끄러지므로 문틀·레일 앞 최소 여유만
  *
  * 경첩 중심으로 재야 한다 — 개구부 선분 전체를 중심으로 잡으면 반원이 아니라 캡슐이 돼
  * 멀쩡한 소품을 문다(실제로 13건을 오탐했다).
+ *
+ * `sides`는 **여는 쪽 한쪽만**이다. 제품명이 "양방향"이어도 한 번에 한 방향으로만 열리므로,
+ * 양쪽을 다 잡으면 반대쪽 붙박이 신발장까지 숨는다(2026-08-28). 붙박이는 문 때문에 사라지지 않는다.
  */
-export function doorSweep(motion: string, panels: number, fixedPanels: number, doorW: number) {
+export function doorSweep(motion: string, panels: number, fixedPanels: number, doorW: number, dir: 1 | -1 = 1) {
   const h = doorW / 2
-  if (motion === 'abs_hinged') return { hinges: [-h], radius: doorW, sides: [1] }
+  if (motion === 'abs_hinged') return { hinges: [-h], radius: doorW, sides: [dir] }
   if (motion === 'swing_bi_directional') {
     const leaves = Math.max(1, panels - fixedPanels)
-    // **양방향이 아니라 한 방향이다.** 제품명은 양방향이지만 `SwingDoor`의 `dir`(±1)을
-    // `DoorModel`이 넘기지 않아 항상 기본값 +1(거실 쪽)로만 렌더된다.
-    // 같은 파일의 88° 클램프 주석이 근거 — "90° 초과 시 문짝 끝이 문 평면 뒤로 넘어가
-    // 신발장을 관통"은 평상시 스윙이 신발장 반대쪽(거실)임을 뜻한다.
-    // 양방향으로 잡았더니 붙박이 신발장이 숨어버렸다(2026-08-28). 붙박이는 문 때문에 사라지지 않는다.
-    return { hinges: leaves === 1 ? [-h] : [-h, h], radius: doorW / leaves, sides: [1] }
+    return { hinges: leaves === 1 ? [-h] : [-h, h], radius: doorW / leaves, sides: [dir] }
   }
   return { hinges: [], radius: 0.12, sides: [1, -1] } // 슬라이딩 — 문틀 깊이(117mm) + 여유
 }
@@ -534,6 +554,14 @@ export const DOOR_UNDERCUT = 0.03
  * 소품을 빼면 프레임 밖으로 나가고, 남기면 문이 뚫고 지나간다.
  * 슬라이딩(7종)에선 반경이 0.12m라 사실상 아무것도 안 걸린다.
  */
+export function propHiddenByDoorSweep(
+  p: SceneProp, doorW: number, openCorner: boolean, sweep: ReturnType<typeof doorSweep>,
+): boolean {
+  if (p.fixture) return false // 붙박이는 문 때문에 사라지지 않는다
+  const box = propAabb(p, doorW, openCorner)
+  return box != null && hiddenByDoorSweep(box, sweep)
+}
+
 export function hiddenByDoorSweep(box: Aabb, sweep: ReturnType<typeof doorSweep>): boolean {
   if (!sweep.hinges.length) return false          // 슬라이딩 — 대상 아님
   if (box.minY > 0.4) return false                // 벽걸이는 문짝 높이 위

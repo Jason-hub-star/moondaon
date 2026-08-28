@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   SCENE_PROPS, resolveProp, propAabb, overlaps, roomBounds, doorSweep, hiddenByDoorSweep,
-  WALL_PARAMS, type Aabb,
+  propHiddenByDoorSweep, doorAngle, WALL_PARAMS, type Aabb,
 } from './props.data.ts'
 import { DEFAULTS } from '../configurator/shareSchema.ts'
 import { PRODUCTS } from '../generated/cards.ts'
@@ -84,16 +84,64 @@ test('여닫이 제품마다 숨김 규칙이 일하되, 씬을 통째로 비우
   for (const id of hinged) {
     const p = PRODUCTS[id] as (typeof PRODUCTS)[typeof id] & { fixedPanels?: readonly number[] }
     const dw = clampWidth(id, DEFAULTS.widthM)
-    const sweep = doorSweep(p.motion, p.panels, p.fixedPanels?.length ?? 0, dw)
     const items = boxed(false)
-    const hidden = items.filter(({ aabb }) => hiddenByDoorSweep(aabb, sweep)).map(({ p: q }) => q.id)
-    // 규칙이 아무것도 안 잡으면 죽은 것이고, 다 잡으면 씬이 빈다. 둘 다 회귀다.
-    assert.ok(hidden.length > 0, `${id}: 반경 ${sweep.radius.toFixed(2)}m인데 숨는 소품이 0건 — 규칙이 죽었다`)
-    assert.ok(
-      hidden.length < items.length / 2,
-      `${id}: ${items.length}개 중 ${hidden.length}개가 숨는다 — 씬이 비어버린다: ${hidden.join(', ')}`,
-    )
+    const perDir = ([1, -1] as const).map((dir) => {
+      const sweep = doorSweep(p.motion, p.panels, p.fixedPanels?.length ?? 0, dw, dir)
+      const hidden = SCENE_PROPS.filter((q) => propHiddenByDoorSweep(q, dw, false, sweep)).map((q) => q.id)
+      // 다 잡으면 씬이 빈다.
+      assert.ok(
+        hidden.length < items.length / 2,
+        `${id}/dir=${dir}: ${items.length}개 중 ${hidden.length}개가 숨는다 — 씬이 비어버린다: ${hidden.join(', ')}`,
+      )
+      return hidden
+    })
+    // 아무것도 안 잡으면 규칙이 죽은 것이다. 단 **방향별로** 요구하지 않는다 —
+    // 현관 쪽 문짝 반경 안은 배치 3원칙 때문에 원래 비어 있어서 0건이 정상이다.
+    assert.ok(perDir.flat().length > 0, `${id}: 양방향 어디서도 숨는 소품이 0건 — 규칙이 죽었다`)
   }
+})
+
+test('붙박이(신발장·방화문)는 문 방향을 어느 쪽으로 돌려도 사라지지 않는다', () => {
+  const fixtures = SCENE_PROPS.filter((p) => p.fixture)
+  assert.ok(fixtures.length > 0, 'fixture 표시된 소품이 없다 — 표식이 사라졌다')
+  for (const dir of [1, -1] as const) {
+    for (const motion of ['abs_hinged', 'swing_bi_directional']) {
+      const sweep = doorSweep(motion, 1, 0, 1.25, dir)
+      for (const f of fixtures) {
+        assert.equal(
+          propHiddenByDoorSweep(f, 1.25, false, sweep), false,
+          `${f.id}이 ${motion}/dir=${dir}에서 숨는다 — 붙박이는 문 때문에 사라지지 않는다`,
+        )
+      }
+    }
+  }
+})
+
+test('여는 방향을 바꾸면 궤적도 반대편으로 간다 — 붙박이 신발장은 한쪽에서만 걸린다', () => {
+  const living = doorSweep('swing_bi_directional', 1, 0, 1.25, 1)
+  const vest = doorSweep('swing_bi_directional', 1, 0, 1.25, -1)
+  assert.deepEqual(living.sides, [1], 'dir=+1은 거실(+z)만 검사해야 한다')
+  assert.deepEqual(vest.sides, [-1], 'dir=-1은 현관(-z)만 검사해야 한다')
+  // 양쪽을 동시에 잡으면 반대편 붙박이까지 숨는다 — 2026-08-28에 실제로 그랬다
+  assert.equal(living.sides.length, 1, '한 번에 한 방향으로만 열린다')
+
+  const inLiving: Aabb = { minX: 0, maxX: 0.2, minY: 0, maxY: 0.1, minZ: 0.3, maxZ: 0.5 }
+  const inVest: Aabb = { minX: 0, maxX: 0.2, minY: 0, maxY: 0.1, minZ: -0.5, maxZ: -0.3 }
+  assert.equal(hiddenByDoorSweep(inLiving, living), true)
+  assert.equal(hiddenByDoorSweep(inLiving, vest), false, '현관 쪽으로 여는데 거실 소품이 숨으면 안 된다')
+  assert.equal(hiddenByDoorSweep(inVest, vest), true)
+  assert.equal(hiddenByDoorSweep(inVest, living), false, '거실 쪽으로 여는데 현관 소품이 숨으면 안 된다')
+})
+
+test('회전각 부호 규약 — 렌더러와 게이트가 같은 쪽을 가리킨다', () => {
+  // three의 Y축 회전은 z' = -x·sinθ다. 자유단이 +z(거실)로 가려면 θ가 음수여야 한다.
+  // 이 관계가 깨진 채 배포됐었다: SwingDoor가 +t·MAX·dir이라 기본값에서 현관 쪽으로 열리는데
+  // doorSweep은 거실 쪽을 검사했다. 두 렌더러가 doorAngle을 쓰므로 여기서 한 번만 고정한다.
+  const tipZ = (dir: 1 | -1) => -Math.sin(doorAngle(1, dir)) // 자유단 z의 부호 (x>0인 자유단 기준)
+  assert.ok(tipZ(1) > 0, 'dir=+1이면 문짝이 거실(+z)로 열려야 한다 — doorSweep sides:[+1]과 같은 쪽')
+  assert.ok(tipZ(-1) < 0, 'dir=-1이면 문짝이 현관(-z)로 열려야 한다')
+  assert.equal(Math.abs(doorAngle(0, 1)), 0, '닫힘(t=0)은 각 0') // -0도 닫힘이다
+  assert.ok(Math.abs(doorAngle(1, 1)) < Math.PI / 2, '88° 클램프 — 90°를 넘으면 문짝 끝이 문틀 밖 신발장을 관통한다')
 })
 
 test('숨김 규칙이 실제로 일한다 — 문 바로 앞 바닥 소품을 잡는가', () => {
